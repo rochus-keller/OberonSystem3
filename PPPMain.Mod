@@ -50,7 +50,7 @@ CONST
 TYPE
 	Options* = LCP.Options;
 	(*es*)
-	PhysAdr = ARRAY 6 OF SYSTEM.BYTE; 
+	PhysAdr = ARRAY 6 OF BYTE; 
 	CommDevice* = POINTER TO RECORD (PT.Device)
 		IpAdr*, GwAdr*, NetMask*: NetIP.Adr;
 		AdrLen*: INTEGER;
@@ -107,11 +107,11 @@ END Connect;
 	BEGIN RETURN V24.Available(dev(CommDevice).c) > 0; END AvailableInst;
 	
 	PROCEDURE * ReceiveInst (dev: PT.Device; VAR prno: INTEGER;  
-							VAR src: ARRAY OF SYSTEM.BYTE; VAR item: PT.Item);
+							VAR src: ARRAY OF BYTE; VAR item: PT.Item);
 	BEGIN  HDLC.ReceivePacket(ppp, prno, item); END ReceiveInst;
 	
 	PROCEDURE SendInst* (dev: PT.Device; prno: INTEGER; 
-	VAR dest: ARRAY OF  SYSTEM.BYTE; item: PT.Item);
+	VAR dest: ARRAY OF  BYTE; item: PT.Item);
 	BEGIN SendPacket(ppp, prno, item) END SendInst;
 	
 	PROCEDURE ResetInst*; BEGIN END ResetInst;

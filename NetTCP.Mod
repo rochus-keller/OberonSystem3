@@ -33,7 +33,7 @@ TYPE
 		offs*, code*: SHORTINT;
 		win*: INTEGER;
 		chksum*, up*: INTEGER;
-		data*: ARRAY 1 OF SYSTEM.BYTE
+		data*: ARRAY 1 OF BYTE
 	END;
 
 	Connection* = POINTER TO ConnectionDesc;
@@ -41,7 +41,7 @@ TYPE
 	Listener* = POINTER TO ListenerDesc;
 
 	ConnectionDesc* = RECORD (NetPorts.PortDesc)
-		rbuf, sbuf: ARRAY BufSize OF SYSTEM.BYTE;	(* receive/send buffer *)
+		rbuf, sbuf: ARRAY BufSize OF BYTE;	(* receive/send buffer *)
 		rfst, rlst, sfst, slst: LONGINT;	(* buffer admin indexes *)
 		rcnt, scnt: LONGINT;	(* number of bytes in buffer *)
 		instate, outstate: SHORTINT;	(* I/O - state machines *)
@@ -74,7 +74,7 @@ TYPE
 		next: Event
 	END;
 
-	Word = ARRAY 2 OF SYSTEM.BYTE;
+	Word = ARRAY 2 OF BYTE;
 
 	ProcState = PROCEDURE (C: Connection; item: NetBase.Item; iph: NetIP.IPHeader; tcph: Header; code: SET);
 
@@ -144,7 +144,7 @@ END Min;
 PROCEDURE ChkSum* (src, dst: NetIP.Adr; tcph: Header; len: INTEGER): LONGINT;
 TYPE
 	Data = POINTER TO DataDesc;
-	DataDesc = RECORD data: ARRAY 1500 OF SYSTEM.BYTE END;
+	DataDesc = RECORD data: ARRAY 1500 OF BYTE END;
 VAR
 	tcpph: RECORD src, dst: NetIP.Adr; proto, len: INTEGER END;
 	data: Data;
@@ -495,7 +495,7 @@ END ProcessAck;
 
 PROCEDURE ProcessOpts (C: Connection; item: NetBase.Item; len: INTEGER; code: SET);
 VAR
-	l: ARRAY 2 OF SYSTEM.BYTE;
+	l: ARRAY 2 OF BYTE;
 	smss, i: INTEGER;
 BEGIN
 	i := NetIP.MinHdrLen + MinHLen;
@@ -842,7 +842,7 @@ BEGIN
 	END
 END Poll;
 
-PROCEDURE Send* (C: Connection; VAR buf: ARRAY OF SYSTEM.BYTE; beg: LONGINT; VAR len: LONGINT);
+PROCEDURE Send* (C: Connection; VAR buf: ARRAY OF BYTE; beg: LONGINT; VAR len: LONGINT);
 VAR
 	dst, len0, l, l0: LONGINT;
 BEGIN
@@ -865,7 +865,7 @@ BEGIN
 	END
 END Send;
 
-PROCEDURE Receive* (C: Connection; VAR buf: ARRAY OF SYSTEM.BYTE; beg: LONGINT; VAR len: LONGINT);
+PROCEDURE Receive* (C: Connection; VAR buf: ARRAY OF BYTE; beg: LONGINT; VAR len: LONGINT);
 VAR
 	dst, len0, l: LONGINT;
 BEGIN

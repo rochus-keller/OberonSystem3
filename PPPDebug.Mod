@@ -89,7 +89,7 @@ version for PPP 1.0.0
 		str[8]:=0X; String(str)
 	END Hex;
 	
-	PROCEDURE HexByte*(b: SYSTEM.BYTE);
+	PROCEDURE HexByte*(b: BYTE);
 		VAR n: INTEGER; pos: LONGINT;	str: ARRAY 3 OF CHAR;
 	BEGIN
 		n := ORD(b); pos:=1; 

@@ -36,7 +36,7 @@ TYPE
 	
 	Data = POINTER TO DataDesc;
 	DataDesc = RECORD
-		data: ARRAY 1500 OF SYSTEM.BYTE	(* Note: SendPacket may access data[1500] & data[1501] *)
+		data: ARRAY 1500 OF BYTE	(* Note: SendPacket may access data[1500] & data[1501] *)
 	END;
 	
 	Device = POINTER TO DeviceDesc;
@@ -94,7 +94,7 @@ END RepOut4n2;
 
 (* Send - Send a packet.  Interrupts must be enabled. *)
 
-PROCEDURE Send(dev: NetBase.Device; prno: INTEGER; VAR dest: ARRAY OF SYSTEM.BYTE; item: NetBase.Item);
+PROCEDURE Send(dev: NetBase.Device; prno: INTEGER; VAR dest: ARRAY OF BYTE; item: NetBase.Item);
 VAR p, free, len: INTEGER;  s, u: SET;  t: LONGINT;  data: Data;
 BEGIN
 	len := item.len;
@@ -204,7 +204,7 @@ END Copy;
 
 (* ReceivePacket - Remove a packet from the input buffer *)
 
-PROCEDURE Receive(dev: NetBase.Device;  VAR prno: INTEGER; VAR src: ARRAY OF SYSTEM.BYTE; VAR item: NetBase.Item);
+PROCEDURE Receive(dev: NetBase.Device;  VAR prno: INTEGER; VAR src: ARRAY OF BYTE; VAR item: NetBase.Item);
 VAR len, size, left, prno0, dlen: INTEGER;  t: LONGINT;  data: Data;  hdr: Header;
 BEGIN
 	IF bufhead # buftail THEN

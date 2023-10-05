@@ -256,7 +256,7 @@ PROCEDURE ^Delete*(name: ARRAY OF CHAR; VAR res: LONGINT);
 
 (* GetUWord - get unsigned word from array of bytes. *)
 
-PROCEDURE GetUWord(VAR buf : ARRAY OF SYSTEM.BYTE; idx : LONGINT): LONGINT;
+PROCEDURE GetUWord(VAR buf : ARRAY OF BYTE; idx : LONGINT): LONGINT;
 VAR val: LONGINT;
 BEGIN
 	val := 0;
@@ -266,7 +266,7 @@ END GetUWord;
 
 (* ReadSectors - Read sectors from a partition *)
 
-PROCEDURE ReadSectors(d: Drive;  sec, num: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE; VAR res : LONGINT);
+PROCEDURE ReadSectors(d: Drive;  sec, num: LONGINT; VAR buf: ARRAY OF BYTE; VAR res : LONGINT);
 BEGIN
 	IF d.part >= 0 THEN	(* hard disk *)
 		IF d.part < info.numpar THEN
@@ -283,7 +283,7 @@ END ReadSectors;
 
 (* WriteSectors - Write sectors in a partition *)
 
-PROCEDURE WriteSectors(d: Drive;  sec, num: LONGINT;  VAR buf: ARRAY OF SYSTEM.BYTE; VAR res: LONGINT);
+PROCEDURE WriteSectors(d: Drive;  sec, num: LONGINT;  VAR buf: ARRAY OF BYTE; VAR res: LONGINT);
 VAR error: ARRAY 32 OF CHAR;
 BEGIN
 	IF d.part >= 0 THEN	(* hard disk *)
@@ -864,7 +864,7 @@ END New0;
 (* ReadCluster - read cluster number *apos* of file from disk. *)
 
 PROCEDURE ReadCluster(drive: Drive; firstcl: LONGINT; VAR ccl, capos: LONGINT;
-	VAR data: ARRAY OF SYSTEM.BYTE; apos: LONGINT;  VAR res, rplen: LONGINT);
+	VAR data: ARRAY OF BYTE; apos: LONGINT;  VAR res, rplen: LONGINT);
 VAR d: Drive;  cl, p: LONGINT;
 BEGIN (* Pre: the file contains a cluster corresponding to apos *)
 	res := -1;
@@ -910,7 +910,7 @@ END ReadCluster;
 	firstcl returns the new (first) cluster allocated for the file. *)
 
 PROCEDURE WriteCluster(drive: Drive; VAR firstcl: LONGINT; attr: SET;
-	VAR data: ARRAY OF SYSTEM.BYTE; apos: LONGINT;  VAR res: LONGINT);
+	VAR data: ARRAY OF BYTE; apos: LONGINT;  VAR res: LONGINT);
 VAR d: Drive;  p, cl, pcl, mcl: LONGINT;
 BEGIN
 	IF ReadOnly IN attr THEN
@@ -1390,7 +1390,7 @@ END Base;
 (** Read - Read a byte from a file, advancing the Rider one byte further.  R.eof indicates if the end of the 
 	file has been reached. *)
 
-PROCEDURE Read*(VAR r: Rider; VAR x: SYSTEM.BYTE; VAR res: LONGINT);
+PROCEDURE Read*(VAR r: Rider; VAR x: BYTE; VAR res: LONGINT);
 VAR buf: Buffer; old: Rider;
 BEGIN
 	res := 0;
@@ -1419,7 +1419,7 @@ END Read;
 (** ReadBytes - Reads a sequence of length n bytes into the buffer x, advancing the Rider. Less bytes will 
 	be read when reading over the length of the file. r.res indicates the number of unread bytes. *)
 
-PROCEDURE ReadBytes*(VAR r: Rider; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT;  VAR res: LONGINT);
+PROCEDURE ReadBytes*(VAR r: Rider; VAR x: ARRAY OF BYTE; n: LONGINT;  VAR res: LONGINT);
 VAR src, dst, m: LONGINT;  buf: Buffer; old: Rider;
 BEGIN
 	res := 0;
@@ -1514,7 +1514,7 @@ Portable routines to read the standard Oberon types.
 
 (** Writes a byte into the file at the Rider position, advancing the Rider by one. *)
 
-PROCEDURE Write*(VAR r: Rider; x: SYSTEM.BYTE; VAR res: LONGINT);
+PROCEDURE Write*(VAR r: Rider; x: BYTE; VAR res: LONGINT);
 VAR f: File; buf: Buffer; oldR: Rider; oldH: Handle0;
 BEGIN
 	IF r.file.handle.readOnly THEN
@@ -1551,7 +1551,7 @@ END Write;
 
 (** Writes the buffer x containing n bytes into a file at the Rider position. *)
 
-PROCEDURE WriteBytes*(VAR r: Rider; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT;  VAR res: LONGINT);
+PROCEDURE WriteBytes*(VAR r: Rider; VAR x: ARRAY OF BYTE; n: LONGINT;  VAR res: LONGINT);
 VAR src, dst, m: LONGINT; f: File; buf: Buffer; oldR: Rider; oldH: Handle0;
 BEGIN
 	IF r.file.handle.readOnly THEN

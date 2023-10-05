@@ -329,7 +329,7 @@ BEGIN
 	Display.DisplayBlock(SYSTEM.VAL(LONGINT, B), SX, SY, W, H, DX, DY, mode);
 END DisplayBlock;
 
-PROCEDURE GetPix*(VAR addr: LONGINT; VAR buf: SYSTEM.BYTE; depth: INTEGER);
+PROCEDURE GetPix*(VAR addr: LONGINT; VAR buf: BYTE; depth: INTEGER);
 VAR s1, s2, s3: SHORTINT;
 BEGIN 
 	IF depth = 8 THEN SYSTEM.GET(addr, buf); INC(addr)
@@ -341,7 +341,7 @@ BEGIN
 	END;
 END GetPix;
 
-PROCEDURE PutPix*(VAR addr: LONGINT; border: LONGINT; buf: SYSTEM.BYTE; depth: INTEGER);
+PROCEDURE PutPix*(VAR addr: LONGINT; border: LONGINT; buf: BYTE; depth: INTEGER);
 VAR s1: SHORTINT;
 BEGIN 
 	IF (depth = 8) & (addr < border) THEN SYSTEM.PUT(addr, buf); INC(addr)

@@ -374,7 +374,7 @@ MODULE TextStreams;	(** portable *)
 		WriteHex(S, Reals.Int(x))
 	END WriteRealHex;
 
-	PROCEDURE *ReadTextBytes(S: Streams.Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE *ReadTextBytes(S: Streams.Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 		VAR i: LONGINT;
 	BEGIN
 		WITH S: ReaderStream DO
@@ -426,7 +426,7 @@ MODULE TextStreams;	(** portable *)
 		RETURN S
 	END OpenReader;
 
-	PROCEDURE *WriteTextBytes(S: Streams.Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE *WriteTextBytes(S: Streams.Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 		VAR i: LONGINT;
 	BEGIN
 		WITH S: WriterStream DO

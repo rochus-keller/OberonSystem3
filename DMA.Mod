@@ -109,8 +109,8 @@ BEGIN
 END ClrMask;
 
 (** ReadStatus : read statusregister of the controller of the chosen channel *)
-PROCEDURE ReadStatus*(Chan : INTEGER) : SYSTEM.BYTE;
-	VAR val: SYSTEM.BYTE;
+PROCEDURE ReadStatus*(Chan : INTEGER) : BYTE;
+	VAR val: BYTE;
 BEGIN
 	SYSTEM.PORTIN(dstat[Chan DIV 4], val);
 	RETURN val;

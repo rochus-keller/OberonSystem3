@@ -128,7 +128,7 @@ END Interrogate;
 	"buf" - buffer to read into
 	"ofs" - offset from start of buf in bytes *)
 
-PROCEDURE GetBlocks*(drive, start,num: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE; ofs: LONGINT);
+PROCEDURE GetBlocks*(drive, start,num: LONGINT; VAR buf: ARRAY OF BYTE; ofs: LONGINT);
 VAR
 	cmd: ARRAY 10 OF CHAR;
 BEGIN
@@ -158,7 +158,7 @@ END GetBlocks;
 	"buf" - buffer to write from
 	"ofs" - offset from start of buf in bytes *)
 
-PROCEDURE PutBlocks*(drive, start,num: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE; ofs: LONGINT);
+PROCEDURE PutBlocks*(drive, start,num: LONGINT; VAR buf: ARRAY OF BYTE; ofs: LONGINT);
 VAR
 	cmd: ARRAY 10 OF CHAR;
 BEGIN

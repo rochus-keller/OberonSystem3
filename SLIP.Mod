@@ -43,7 +43,7 @@ TYPE
 
 	SlotDesc = RECORD
 		hlen: INTEGER;	(* size of header (receive only) *)
-		hdr: ARRAY MAXHDR OF SYSTEM.BYTE
+		hdr: ARRAY MAXHDR OF BYTE
 	END;
 	
 	Device* = POINTER TO DeviceDesc;
@@ -59,7 +59,7 @@ TYPE
 VAR
 	default: Device;
 	
-PROCEDURE Decode(VAR a: ARRAY OF SYSTEM.BYTE; VAR index: INTEGER; VAR n: LONGINT);
+PROCEDURE Decode(VAR a: ARRAY OF BYTE; VAR index: INTEGER; VAR n: LONGINT);
 VAR s1, s2: SHORTINT;
 BEGIN
 	n := 0;
@@ -169,7 +169,7 @@ BEGIN
 		iph.checksum := 0; iph.checksum := SHORT(NetBase.CheckSum(iph^, NetIP.HdrLen(iph), 0));
 
 	ELSE 													(* TYPE UNCOMPRESSED TCP *)
-		item.data[0] := SYSTEM.VAL(SYSTEM.BYTE,SYSTEM.VAL(SET,item.data[0]) * {0..3,6..7});
+		item.data[0] := SYSTEM.VAL(BYTE,SYSTEM.VAL(SET,item.data[0]) * {0..3,6..7});
 		(* locate the saved header fo this connection
 			if the slot index is legal, clear the 'discard' flag *)
 		iphlen := NetIP.HdrLen(iph); tcph := SYSTEM.VAL(NetTCP.Header,SYSTEM.ADR(item.data[iphlen]));
@@ -190,7 +190,7 @@ BEGIN
 	END
 END SLDecompress;
 
-PROCEDURE Receive (dev: NetBase.Device; VAR prno: INTEGER; VAR src: ARRAY OF SYSTEM.BYTE; VAR item: NetBase.Item);
+PROCEDURE Receive (dev: NetBase.Device; VAR prno: INTEGER; VAR src: ARRAY OF BYTE; VAR item: NetBase.Item);
 VAR
 	ch: CHAR;
 	t, res, len: LONGINT;
@@ -273,15 +273,15 @@ BEGIN
 	PutSlot(dev.slist, GetSlot(dev.slist,id));
 END SendUncompressed;
 
-PROCEDURE Encode (VAR a: ARRAY OF SYSTEM.BYTE; VAR index: INTEGER; n: LONGINT);
+PROCEDURE Encode (VAR a: ARRAY OF BYTE; VAR index: INTEGER; n: LONGINT);
 BEGIN
 	n := SYSTEM.VAL(LONGINT,SYSTEM.VAL(SET,n) * {0..15});
 	IF (n >= 256) OR (n = 0) THEN
 		a[index] := 0; INC(index);
-		a[index] := SYSTEM.VAL(SYSTEM.BYTE,SYSTEM.LSH(n,-8)); INC(index);
-		a[index] := SYSTEM.VAL(SYSTEM.BYTE,n); INC(index);
+		a[index] := SYSTEM.VAL(BYTE,SYSTEM.LSH(n,-8)); INC(index);
+		a[index] := SYSTEM.VAL(BYTE,n); INC(index);
 	ELSE
-		a[index] := SYSTEM.VAL(SYSTEM.BYTE,n); INC(index);
+		a[index] := SYSTEM.VAL(BYTE,n); INC(index);
 	END
  END Encode;
 
@@ -294,7 +294,7 @@ VAR
 	frag, csfrag, iphlen, tcphlen, tothlen, index, newindex, newindex0, temp1, temp2: INTEGER;
 	deltaS, deltaA, templ1, templ2: LONGINT;
 	ind: SHORTINT;
-	newseq: ARRAY 16 OF SYSTEM.BYTE; changes: SET;
+	newseq: ARRAY 16 OF BYTE; changes: SET;
 	new: NetBase.Item;
 	d1, d2: Data;
 BEGIN (* test if TCP packet is compressible -> it's not a fragment and ACK = 1 and the others are 0 *)
@@ -391,10 +391,10 @@ BEGIN (* test if TCP packet is compressible -> it's not a fragment and ACK = 1 a
 	newindex := new.ofs;  newindex0 := newindex;
 	IF (dev.lastxmit # ind) THEN
 		dev.lastxmit := ind; INCL(changes, NEWC);
-		new.data[newindex] := SYSTEM.VAL(SYSTEM.BYTE,changes); INC(newindex);
+		new.data[newindex] := SYSTEM.VAL(BYTE,changes); INC(newindex);
 		new.data[newindex] := ind; INC(newindex)
 	ELSE
-		new.data[newindex] := SYSTEM.VAL(SYSTEM.BYTE,changes); INC(newindex)
+		new.data[newindex] := SYSTEM.VAL(BYTE,changes); INC(newindex)
 	END;
 	new.data[newindex] := SHORT(SYSTEM.LSH(temp1,-8)); INC(newindex);		(* Write TCP Checksum *)
 	new.data[newindex] := SHORT(temp1); INC(newindex);
@@ -405,7 +405,7 @@ BEGIN (* test if TCP packet is compressible -> it's not a fragment and ACK = 1 a
 	RETURN(TYPECOMPRESSEDTCP)
 END SLCompress;
 
-PROCEDURE Send (dev: NetBase.Device; prno: INTEGER; VAR dest: ARRAY OF SYSTEM.BYTE; item: NetBase.Item);
+PROCEDURE Send (dev: NetBase.Device; prno: INTEGER; VAR dest: ARRAY OF BYTE; item: NetBase.Item);
 VAR
 	iph: NetIP.IPHeader;
 	ch: CHAR;
@@ -416,7 +416,7 @@ BEGIN
 		(* compress TCP header *)
 		iph := SYSTEM.VAL(NetIP.IPHeader, SYSTEM.ADR(item.data[item.ofs]));
 		IF dev.compressed & (iph.protocol = NetIP.TCP) THEN type := SLCompress(dev, item);
-			item.data[item.ofs] := SYSTEM.VAL(SYSTEM.BYTE,SYSTEM.VAL(SET, item.data[item.ofs]) + SYSTEM.VAL(SET, type));
+			item.data[item.ofs] := SYSTEM.VAL(BYTE,SYSTEM.VAL(SET, item.data[item.ofs]) + SYSTEM.VAL(SET, type));
 		END;
 		(* send item to V24 *)
 		V24.Send(dev.port,SLIPEND,res); i := 0;

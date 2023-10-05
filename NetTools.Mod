@@ -166,7 +166,7 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 		NetSystem.WriteBytes(C, 0, i, str)
 	END SendString;
 
-	PROCEDURE *ReadTCPBytes(S: Streams.Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE *ReadTCPBytes(S: Streams.Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 		VAR len, pos, time: LONGINT;
 	BEGIN
 		WITH S: TCPStream DO
@@ -197,7 +197,7 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 		END
 	END ReadTCPBytes;
 
-	PROCEDURE *WriteTCPBytes(S: Streams.Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE *WriteTCPBytes(S: Streams.Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 	BEGIN
 		WITH S: TCPStream DO
 			NetSystem.WriteBytes(S.C, 0, n, x); S.res := 0;

@@ -68,13 +68,13 @@ END Available;
 
 (** Receive - Read one byte from the specified port.  Waits until a byte is available.  res = Ok iff ok. *)
 
-PROCEDURE Receive*(port: LONGINT;  VAR x: SYSTEM.BYTE;  VAR res: LONGINT);
+PROCEDURE Receive*(port: LONGINT;  VAR x: BYTE;  VAR res: LONGINT);
 
 END Receive;
 
 (** ReceiveBytes - Read n bytes from the specified port.  Waits until n bytes are available.  res = Ok iff ok. *)
 
-PROCEDURE ReceiveBytes*(port: LONGINT;  VAR x: ARRAY OF SYSTEM.BYTE;  n: LONGINT;  VAR res: LONGINT);
+PROCEDURE ReceiveBytes*(port: LONGINT;  VAR x: ARRAY OF BYTE;  n: LONGINT;  VAR res: LONGINT);
 VAR i: LONGINT;
 BEGIN
 	i := 0;  res := Ok;
@@ -85,13 +85,13 @@ END ReceiveBytes;
 
 (** Send - Send a byte to the specified port.  Waits until buffer space is available.  res = Ok iff ok. *)
 
-PROCEDURE Send*(port: LONGINT;  x: SYSTEM.BYTE;  VAR res: LONGINT);
+PROCEDURE Send*(port: LONGINT;  x: BYTE;  VAR res: LONGINT);
 
 END Send;
 
 (** SendBytes - Send n bytes to the specified port.  Waits until buffer space is available.  res = Ok iff all ok. *)
 
-PROCEDURE SendBytes*(port: LONGINT;  VAR x: ARRAY OF SYSTEM.BYTE;  n: LONGINT;  VAR res: LONGINT);
+PROCEDURE SendBytes*(port: LONGINT;  VAR x: ARRAY OF BYTE;  n: LONGINT;  VAR res: LONGINT);
 VAR i: LONGINT;
 BEGIN
 	i := 0;  res := Ok;

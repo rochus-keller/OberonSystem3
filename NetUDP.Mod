@@ -48,7 +48,7 @@ VAR
 PROCEDURE ChkSum* (src, dst: NetIP.Adr; udph: Header; len: INTEGER): LONGINT;
 TYPE
 	Data = POINTER TO DataDesc;
-	DataDesc = RECORD data: ARRAY 1500 OF SYSTEM.BYTE END;
+	DataDesc = RECORD data: ARRAY 1500 OF BYTE END;
 VAR
 	udpph: RECORD src, dst: NetIP.Adr; proto, len: INTEGER END;
 	data: Data;
@@ -115,7 +115,7 @@ BEGIN
 	RETURN C.rq.len
 END Available;
 
-PROCEDURE Send* (C: Connection; radr: NetIP.Adr; rport: INTEGER; VAR buf: ARRAY OF SYSTEM.BYTE; beg, len: LONGINT);
+PROCEDURE Send* (C: Connection; radr: NetIP.Adr; rport: INTEGER; VAR buf: ARRAY OF BYTE; beg, len: LONGINT);
 VAR
 	item: NetBase.Item;
 	udph: Header;
@@ -139,7 +139,7 @@ BEGIN
 	END
 END Send;
 
-PROCEDURE Receive* (C: Connection; VAR radr: NetIP.Adr; VAR rport: INTEGER; VAR buf: ARRAY OF SYSTEM.BYTE;
+PROCEDURE Receive* (C: Connection; VAR radr: NetIP.Adr; VAR rport: INTEGER; VAR buf: ARRAY OF BYTE;
 	beg: LONGINT; VAR len: LONGINT);
 VAR
 	item: NetBase.Item;

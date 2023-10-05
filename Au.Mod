@@ -53,8 +53,8 @@ Last Update:
 		utd, dtu: ARRAY 256 OF INTEGER;
 
 (* ConvLongInt: convertion of Little Endian to Big Endian and vice-versa *)
-PROCEDURE ConvLongInt(VAR s: ARRAY OF SYSTEM.BYTE);
-	VAR x: SYSTEM.BYTE;
+PROCEDURE ConvLongInt(VAR s: ARRAY OF BYTE);
+	VAR x: BYTE;
 BEGIN
 	x := s[0]; s[0] := s[3]; s[3] := x;
 	x := s[1]; s[1] := s[2]; s[2] := x
@@ -129,7 +129,7 @@ BEGIN
 	i:= 0;
 	WHILE i < b.len DO
 		j:= ORD(SYSTEM.VAL(CHAR, b.data[i]));
-		b.data[i]:= SYSTEM.VAL(SYSTEM.BYTE, utd[j]);
+		b.data[i]:= SYSTEM.VAL(BYTE, utd[j]);
 		INC(i) END
 END ConvUtD;
 
@@ -140,7 +140,7 @@ BEGIN
 	i:= 0;
 	WHILE i < b.len DO
 		j:= ORD(SYSTEM.VAL(CHAR, b.data[i]));
-		b.data[i]:= SYSTEM.VAL(SYSTEM.BYTE, dtu[j]);
+		b.data[i]:= SYSTEM.VAL(BYTE, dtu[j]);
 		INC(i) END
 END ConvDtU;
 

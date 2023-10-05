@@ -23,7 +23,7 @@ MODULE Streams;	(** portable *)
 	TYPE
 		Stream* = POINTER TO StreamDesc;
 		StreamDesc* = RECORD
-			ReadBytes*, WriteBytes*: PROCEDURE (S: Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+			ReadBytes*, WriteBytes*: PROCEDURE (S: Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 			Available*: PROCEDURE (S: Stream): LONGINT; (** returns the number of bytes which may read without blocking *)
 			State*: PROCEDURE (S: Stream): INTEGER; (** closed, error, in, out, inout *)
 			Flush*: PROCEDURE (S: Stream); (** flush all buffers of the stream *)
@@ -157,11 +157,11 @@ MODULE Streams;	(** portable *)
 		S.WriteBytes(S, x, i+1)
 	END WriteString;
 
-	PROCEDURE *NULLReadBytes(S: Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE *NULLReadBytes(S: Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 	BEGIN
 	END NULLReadBytes;
 
-	PROCEDURE *NULLWriteBytes(S: Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE *NULLWriteBytes(S: Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 	BEGIN
 	END NULLWriteBytes;
 
@@ -183,7 +183,7 @@ MODULE Streams;	(** portable *)
 	BEGIN
 	END NULLClose;
 
-	PROCEDURE *ReadFileBytes(S: Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE *ReadFileBytes(S: Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 		VAR pos: LONGINT;
 	BEGIN
 		WITH S: FileStream DO
@@ -196,7 +196,7 @@ MODULE Streams;	(** portable *)
 		END
 	END ReadFileBytes;
 
-	PROCEDURE *WriteFileBytes(S: Stream; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE *WriteFileBytes(S: Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 	BEGIN
 		WITH S: FileStream DO
 			Files.WriteBytes(S.R, x, n);

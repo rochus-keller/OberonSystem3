@@ -420,7 +420,7 @@ BEGIN
 	END
 END GetGeometry;
 
-PROCEDURE GetBlocks*(d: Device; start, num: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE; ofs: LONGINT; VAR res: LONGINT);
+PROCEDURE GetBlocks*(d: Device; start, num: LONGINT; VAR buf: ARRAY OF BYTE; ofs: LONGINT; VAR res: LONGINT);
 VAR Cmd: CommandDesc; cmd: ARRAY 10 OF CHAR; dummy: BOOLEAN;
 BEGIN
 	ASSERT(num < 10000H);
@@ -438,7 +438,7 @@ BEGIN
 	SubmitAndSense(d, Cmd, 10, "GetBlocks", res);
 END GetBlocks;
 
-PROCEDURE PutBlocks*(d: Device; start, num: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE; ofs: LONGINT; VAR res: LONGINT);
+PROCEDURE PutBlocks*(d: Device; start, num: LONGINT; VAR buf: ARRAY OF BYTE; ofs: LONGINT; VAR res: LONGINT);
 VAR Cmd: CommandDesc; cmd: ARRAY 10 OF CHAR;
 BEGIN
 	ASSERT(num < 10000H);
@@ -456,13 +456,13 @@ BEGIN
 	SubmitAndSense(d, Cmd, 10, "PutBlocks", res);
 END PutBlocks;
 
-PROCEDURE DiskGet*(drive, start, num: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE; ofs: LONGINT);
+PROCEDURE DiskGet*(drive, start, num: LONGINT; VAR buf: ARRAY OF BYTE; ofs: LONGINT);
 VAR res: LONGINT;
 BEGIN
 	GetBlocks(DeviceCache[drive], start, num, buf, ofs, res);
 END DiskGet;
 
-PROCEDURE DiskPut*(drive, start, num: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE; ofs: LONGINT);
+PROCEDURE DiskPut*(drive, start, num: LONGINT; VAR buf: ARRAY OF BYTE; ofs: LONGINT);
 VAR res: LONGINT;
 BEGIN
 	PutBlocks(DeviceCache[drive], start, num, buf, ofs, res);

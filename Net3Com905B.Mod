@@ -122,7 +122,7 @@ MODULE Net3Com905B;	(* Reto Strobl *)
 			
 		Adr = ARRAY 6 OF CHAR;	
 		
-		PacketData = ARRAY MaxPacketSize OF SYSTEM.BYTE;
+		PacketData = ARRAY MaxPacketSize OF BYTE;
 		PacketBuffer = ARRAY  MaxPackets OF PacketData;
 
 		HeaderDesc = RECORD
@@ -132,7 +132,7 @@ MODULE Net3Com905B;	(* Reto Strobl *)
 		
 		Data = POINTER TO DataDesc;
 		DataDesc = RECORD
-			data: ARRAY 1500 OF SYSTEM.BYTE	(* Note: SendPacket may access data[1500] & data[1501] *)
+			data: ARRAY 1500 OF BYTE	(* Note: SendPacket may access data[1500] & data[1501] *)
 		END;
 	
 	VAR
@@ -415,7 +415,7 @@ VAR
 	i, link, ic0, ic1, info1, cmreg, adr, mediaStatus, mediaOptions: INTEGER; 
 	s, intConfig,val : SET; 
 	dummy, res1, version, lastPCIbus, hwMech, dev, t: LONGINT;
-	dummyb: SYSTEM.BYTE;
+	dummyb: BYTE;
 	tryPort: MediaList;
 	found, stillTrying: BOOLEAN;
 BEGIN
@@ -608,8 +608,8 @@ BEGIN
 	END;
 END InitDriver;		
 	
-PROCEDURE Send(dev: NetBase.Device; prno: INTEGER; VAR dest: ARRAY OF SYSTEM.BYTE; item: NetBase.Item);
-VAR dummy, DnListPtr : LONGINT; s : SET; int, i : INTEGER; dummyb: SYSTEM.BYTE; txStatus: CHAR;
+PROCEDURE Send(dev: NetBase.Device; prno: INTEGER; VAR dest: ARRAY OF BYTE; item: NetBase.Item);
+VAR dummy, DnListPtr : LONGINT; s : SET; int, i : INTEGER; dummyb: BYTE; txStatus: CHAR;
 BEGIN
 	IF (item.len < 0) OR (item.len > 1500) THEN  RETURN END;	(* packet too big *)
 		
@@ -669,7 +669,7 @@ END Send;
 
 (* ReceivePacket - Remove a packet from the input buffer *)
 
-PROCEDURE Receive(dev: NetBase.Device;  VAR prno: INTEGER; VAR src: ARRAY OF SYSTEM.BYTE; VAR item: NetBase.Item);
+PROCEDURE Receive(dev: NetBase.Device;  VAR prno: INTEGER; VAR src: ARRAY OF BYTE; VAR item: NetBase.Item);
 VAR  prno0, dlen: INTEGER;
 BEGIN
 	IF 15 IN UpListRoot.UpPktStatus THEN																			(* There is a uploadet Packet availible *)

@@ -271,7 +271,7 @@ MODULE NCR810Disk;	(** non-portable *)	(* Contributed by P. Ryser to the System 
 	"buf" - buffer to read into
 	"ofs" - offset from start of buf in bytes *)
 
-PROCEDURE GetBlocks*(drive, start, num: LONGINT;  VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+PROCEDURE GetBlocks*(drive, start, num: LONGINT;  VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 VAR err: LONGINT;
 BEGIN
 	err := ReadBlocks(drive, start, num, SYSTEM.ADR(buf[ofs]), 0);
@@ -285,7 +285,7 @@ END GetBlocks;
 	"buf" - buffer to write from
 	"ofs" - offset from start of buf in bytes *)
 
-PROCEDURE PutBlocks*(drive, start, num: LONGINT;  VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+PROCEDURE PutBlocks*(drive, start, num: LONGINT;  VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 VAR err: LONGINT;
 BEGIN
 	err := WriteBlocks(drive, start, num, SYSTEM.ADR(buf[ofs]), 0);

@@ -22,7 +22,7 @@ IMPORT SYSTEM, Kernel;
 TYPE
 	Sector* = RECORD END;	(** 2k Oberon Sector *)
 
-	TransferProc* = PROCEDURE (drive, start, num: LONGINT;  VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+	TransferProc* = PROCEDURE (drive, start, num: LONGINT;  VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 	GetParamsProc* = PROCEDURE (drive: LONGINT;  VAR cyls, hds, spt: LONGINT);
 
 CONST

@@ -49,7 +49,7 @@ under a public-key cryptosystem such as RSA. *)
 		RETURN cont
 	END New;
 
-	PROCEDURE ByteReverse(VAR in: ARRAY OF SYSTEM.BYTE; VAR out: ARRAY OF LONGINT; longs: LONGINT);
+	PROCEDURE ByteReverse(VAR in: ARRAY OF BYTE; VAR out: ARRAY OF LONGINT; longs: LONGINT);
 		VAR
 			adr, t, i: LONGINT;
 			bytes: ARRAY 4 OF CHAR;

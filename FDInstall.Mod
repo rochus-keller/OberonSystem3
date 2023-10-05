@@ -44,7 +44,7 @@ PROCEDURE Equal4(adr0, adr1, len: LONGINT): BOOLEAN;
 	SETE AL*)
 END Equal4;
 
-PROCEDURE PutSectors(start, num: INTEGER;  VAR buf: ARRAY OF SYSTEM.BYTE; ofs: LONGINT);
+PROCEDURE PutSectors(start, num: INTEGER;  VAR buf: ARRAY OF BYTE; ofs: LONGINT);
 CONST Size = 32;
 VAR
 	error: ARRAY 32 OF CHAR;
@@ -80,7 +80,7 @@ BEGIN
 	END
 END PutSectors;
 
-PROCEDURE GetSectors(start, num: INTEGER;  VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+PROCEDURE GetSectors(start, num: INTEGER;  VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 VAR r: Files.Rider;
 BEGIN
 	IF virtual = NIL THEN

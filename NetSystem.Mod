@@ -42,8 +42,8 @@ TYPE
 		res*: INTEGER;	(** result of last operation on a connection (error indication) *)
 		state: INTEGER;
 		Available: PROCEDURE (C: Connection; VAR res: INTEGER): LONGINT;
-		Receive: PROCEDURE (C: Connection; VAR buf: ARRAY OF SYSTEM.BYTE; beg, len: LONGINT; VAR res: INTEGER);
-		Send: PROCEDURE (C: Connection; VAR buf: ARRAY OF SYSTEM.BYTE; beg, len: LONGINT; VAR res: INTEGER);
+		Receive: PROCEDURE (C: Connection; VAR buf: ARRAY OF BYTE; beg, len: LONGINT; VAR res: INTEGER);
+		Send: PROCEDURE (C: Connection; VAR buf: ARRAY OF BYTE; beg, len: LONGINT; VAR res: INTEGER);
 	END;
 
 	IPAdr* = LONGINT; (** IP address in network byte order *)
@@ -149,7 +149,7 @@ END Read;
 
 (** Blocking read len bytes of data (beginning at pos in buf) to buf. *)
 
-PROCEDURE ReadBytes* (C: Connection; pos, len: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE);
+PROCEDURE ReadBytes* (C: Connection; pos, len: LONGINT; VAR buf: ARRAY OF BYTE);
 BEGIN C.Receive(C, buf, pos, len, C.res);
 END ReadBytes;
 
@@ -179,7 +179,7 @@ END Write;
 
 (** Blocking write len bytes of data (beginning at pos in buf) to C. *)
 
-PROCEDURE WriteBytes* (C: Connection; pos, len: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE);
+PROCEDURE WriteBytes* (C: Connection; pos, len: LONGINT; VAR buf: ARRAY OF BYTE);
 
 END WriteBytes;
 
@@ -227,7 +227,7 @@ END CloseSocket;
 (** Sends len bytes of data (beginning at pos in buf) to the host specified by remIP and remPort. *)
 
 PROCEDURE SendDG* (S: Socket; remIP: IPAdr; remPort: INTEGER; pos, len: LONGINT; 
-  VAR buf: ARRAY OF SYSTEM.BYTE);
+  VAR buf: ARRAY OF BYTE);
 
 END SendDG;
 
@@ -235,7 +235,7 @@ END SendDG;
 	len indicate the length of valid data. *)
 
 PROCEDURE ReceiveDG*(S: Socket; VAR remIP: IPAdr; VAR remPort: INTEGER; pos: LONGINT; 
-  VAR len: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE)
+  VAR len: LONGINT; VAR buf: ARRAY OF BYTE)
 
 END ReceiveDG;
 
@@ -249,28 +249,28 @@ END AvailableDG;
 
 (** Write 2 bytes in network byte ordering to buf[pos]. *)
 
-PROCEDURE PutInt* (VAR buf: ARRAY OF SYSTEM.BYTE; pos: INTEGER; x: INTEGER);
+PROCEDURE PutInt* (VAR buf: ARRAY OF BYTE; pos: INTEGER; x: INTEGER);
 BEGIN NetBase.HostToNet(x);
 	//SYSTEM.PUT(SYSTEM.ADR(buf[pos]), x)
 END PutInt;
 
 (** Write 4 bytes in network byte ordering to buf[pos]. *)
 
-PROCEDURE PutLInt* (VAR buf: ARRAY OF SYSTEM.BYTE; pos: INTEGER; x: LONGINT);
+PROCEDURE PutLInt* (VAR buf: ARRAY OF BYTE; pos: INTEGER; x: LONGINT);
 BEGIN NetBase.HostLToNet(x);
 	//SYSTEM.PUT(SYSTEM.ADR(buf[pos]), x)
 END PutLInt;
 
 (** Read 2 bytes in network byte ordering from buf[pos]. *)
 
-PROCEDURE GetInt* (VAR buf: ARRAY OF SYSTEM.BYTE; pos: INTEGER; VAR x: INTEGER);
+PROCEDURE GetInt* (VAR buf: ARRAY OF BYTE; pos: INTEGER; VAR x: INTEGER);
 BEGIN // SYSTEM.GET(SYSTEM.ADR(buf[pos]), x);
 	NetBase.NetToHost(x)
 END GetInt;
 
 (** Read 4 bytes in network byte ordering from buf[pos]. *)
 
-PROCEDURE GetLInt* (VAR buf: ARRAY OF SYSTEM.BYTE; pos: INTEGER; VAR x: LONGINT);
+PROCEDURE GetLInt* (VAR buf: ARRAY OF BYTE; pos: INTEGER; VAR x: LONGINT);
 BEGIN // SYSTEM.GET(SYSTEM.ADR(buf[pos]), x);
 	NetBase.NetLToHost(x)
 END GetLInt;

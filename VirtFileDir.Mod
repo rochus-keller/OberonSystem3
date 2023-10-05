@@ -67,7 +67,7 @@ be set to FALSE to stop the Enumerate operation mid-way. *)
 
 		DataSector* =
 			RECORD (Disk.Sector)
-				B*: ARRAY SectorSize OF SYSTEM.BYTE
+				B*: ARRAY SectorSize OF BYTE
 			END ;
 
 		DirEntry* =  (*B-tree node*)

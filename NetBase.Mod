@@ -36,7 +36,7 @@ TYPE
 	Item* = POINTER TO ItemDesc;	(** basic network data item *)
 
 	ItemDesc* = RECORD
-		data*: ARRAY MaxDataLen OF SYSTEM.BYTE;
+		data*: ARRAY MaxDataLen OF BYTE;
 		padding: CHAR;	(* temporary until UDP/TCP chksum fixed *)
 		ofs*, len*: INTEGER;	(** item.data[ofs..ofs+len-1] is current item data *)
 		next: Item
@@ -51,9 +51,9 @@ TYPE
 	DeviceDesc* = RECORD
 		typ*, state*, num*: INTEGER;	(* broadcast/nobroadcast, close/open, index *)
 		sndCnt*, recCnt*: LONGINT;	(* send/receive counters *)
-		hostAdr*, castAdr*: ARRAY AdrLen OF SYSTEM.BYTE;
-		Receive*: PROCEDURE (dev: Device; VAR prno: INTEGER; VAR src: ARRAY OF SYSTEM.BYTE; VAR item: Item);
-		Send*: PROCEDURE (dev: Device; prno: INTEGER; VAR dest: ARRAY OF SYSTEM.BYTE; item: Item);
+		hostAdr*, castAdr*: ARRAY AdrLen OF BYTE;
+		Receive*: PROCEDURE (dev: Device; VAR prno: INTEGER; VAR src: ARRAY OF BYTE; VAR item: Item);
+		Send*: PROCEDURE (dev: Device; prno: INTEGER; VAR dest: ARRAY OF BYTE; item: Item);
 		Available*: PROCEDURE (dev: Device): BOOLEAN
 	END;
 
@@ -67,7 +67,7 @@ TYPE
 	END;
 
 VAR
-	anyadr*: ARRAY AdrLen OF SYSTEM.BYTE;
+	anyadr*: ARRAY AdrLen OF BYTE;
 
 	device: ARRAY MaxDevices OF Device;
 	protocols: ARRAY MaxProtocols OF Entry;
@@ -76,7 +76,7 @@ VAR
 
 	freeList: Queue;
 
-PROCEDURE CheckSum* (VAR data: ARRAY OF SYSTEM.BYTE; len: INTEGER; base: LONGINT): LONGINT;
+PROCEDURE CheckSum* (VAR data: ARRAY OF BYTE; len: INTEGER; base: LONGINT): LONGINT;
 (*CODE {SYSTEM.i386}
 	MOV EAX, base[EBP]
 	MOV EBX, data[EBP]
@@ -99,7 +99,7 @@ csloop:
 	AND EAX, 0FFFFH*)
 END CheckSum;
 
-PROCEDURE ByteSum* (VAR data: ARRAY OF SYSTEM.BYTE; len: INTEGER): LONGINT;
+PROCEDURE ByteSum* (VAR data: ARRAY OF BYTE; len: INTEGER): LONGINT;
 (*CODE {SYSTEM.i386}
 	XOR EAX, EAX
 	MOV EBX, data[EBP]
@@ -121,26 +121,26 @@ PROCEDURE HostToNet* (VAR i: INTEGER);
 BEGIN i := SYSTEM.ROT(i, 8)
 END HostToNet;
 
-PROCEDURE NetLToHost* (VAR l: ARRAY OF SYSTEM.BYTE);
+PROCEDURE NetLToHost* (VAR l: ARRAY OF BYTE);
 VAR
-	b: SYSTEM.BYTE;
+	b: BYTE;
 BEGIN b := l[3]; l[3] := l[0]; l[0] := b; b := l[2]; l[2] := l[1]; l[1] := b
 END NetLToHost;
 
-PROCEDURE HostLToNet* (VAR l: ARRAY OF SYSTEM.BYTE);
+PROCEDURE HostLToNet* (VAR l: ARRAY OF BYTE);
 VAR
-	b: SYSTEM.BYTE;
+	b: BYTE;
 BEGIN b := l[3]; l[3] := l[0]; l[0] := b; b := l[2]; l[2] := l[1]; l[1] := b
 END HostLToNet;
 
-PROCEDURE Equal* (VAR a, b: ARRAY OF SYSTEM.BYTE; len: INTEGER): BOOLEAN;
+PROCEDURE Equal* (VAR a, b: ARRAY OF BYTE; len: INTEGER): BOOLEAN;
 VAR i: LONGINT;
 BEGIN
 	i := 0; WHILE (i < len) & (a[i] = b[i]) DO INC(i) END;
 	RETURN i = len
 END Equal;
 
-PROCEDURE Copy* (VAR src, dst: ARRAY OF SYSTEM.BYTE; len: INTEGER);
+PROCEDURE Copy* (VAR src, dst: ARRAY OF BYTE; len: INTEGER);
 BEGIN SYSTEM.MOVE(SYSTEM.ADR(src[0]), SYSTEM.ADR(dst[0]), len)
 END Copy;
 
@@ -262,7 +262,7 @@ END InstallDevice;
 (** Poll - Poll all installed devices for packets and deliver them upstream. *)
 
 PROCEDURE Poll*;
-VAR item: Item;  src: ARRAY AdrLen OF SYSTEM.BYTE;  prno: INTEGER;  i, j: SHORTINT;
+VAR item: Item;  src: ARRAY AdrLen OF BYTE;  prno: INTEGER;  i, j: SHORTINT;
 BEGIN
 	FOR i := 0 TO nofDevices-1 DO
 		IF device[i].state = open THEN

@@ -54,7 +54,7 @@ CONST
 	Trace = FALSE;
 	
 TYPE
-	Adr* = ARRAY AdrLen OF SYSTEM.BYTE;
+	Adr* = ARRAY AdrLen OF BYTE;
 
 	IPHeader* = POINTER TO IPHeaderDesc;
 
@@ -66,9 +66,9 @@ TYPE
 		hwlen*: SHORTINT;
 		prlen*: SHORTINT;
 		op*: INTEGER;
-		sha*: ARRAY NetBase.AdrLen OF SYSTEM.BYTE;
+		sha*: ARRAY NetBase.AdrLen OF BYTE;
 		spa*: Adr;
-		tha*: ARRAY NetBase.AdrLen OF SYSTEM.BYTE;
+		tha*: ARRAY NetBase.AdrLen OF BYTE;
 		tpa*: Adr
 	END;
 
@@ -79,7 +79,7 @@ TYPE
 		state: INTEGER;
 		att, ttl: INTEGER;
 		queue: NetBase.Queue;	(* state = free => Empty(queue) *)
-		hwa: ARRAY NetBase.AdrLen OF SYSTEM.BYTE;
+		hwa: ARRAY NetBase.AdrLen OF BYTE;
 		pra: Adr;
 		route: Route;
 		next: Entry
@@ -105,7 +105,7 @@ TYPE
 	
 	EchoMsgDesc* = RECORD
 		id*, seq*: INTEGER;
-		optdata*: ARRAY DataLength OF SYSTEM.BYTE
+		optdata*: ARRAY DataLength OF BYTE
 	END;
 	
 	ParamMsg* = POINTER TO ParamMsgDesc;
@@ -113,7 +113,7 @@ TYPE
 	ParamMsgDesc* = RECORD
 		ptr*, uusd1*: SHORTINT;
 		uusd2*: INTEGER;
-		optdata*: ARRAY MinHdrLen + PLen OF SYSTEM.BYTE
+		optdata*: ARRAY MinHdrLen + PLen OF BYTE
 	END;
 	
 	MaskMsg* = POINTER TO MaskMsgDesc;
@@ -127,7 +127,7 @@ TYPE
 	
 	GenMsgDesc* = RECORD
 		uusd*: LONGINT;
-		optdata*: ARRAY MinHdrLen + PLen OF SYSTEM.BYTE
+		optdata*: ARRAY MinHdrLen + PLen OF BYTE
 	END;
 	
 	RouteDesc* = RECORD
@@ -325,7 +325,7 @@ PROCEDURE IPSend* (src, dst: Adr; protocol: SHORTINT; item: NetBase.Item);
 VAR
 	hdr: IPHeader;
 	dev: NetBase.Device;
-	dmy: ARRAY 1 OF SYSTEM.BYTE;
+	dmy: ARRAY 1 OF BYTE;
 BEGIN DEC(item.ofs, iplen); INC(item.len, iplen);	(* add IP header *)
 	hdr := SYSTEM.VAL(IPHeader, SYSTEM.ADR(item.data[item.ofs]));
 	VerLen(hdr); hdr.tos := 0; hdr.len := item.len;	(* length includes IP header *)
@@ -372,7 +372,7 @@ END ICMPCheckSum;
 
 (** ICMPSend - Send an ICMP packet *)
 
-PROCEDURE ICMPSend* (dst: Adr; type, code: SHORTINT; val1, val2: INTEGER; data: ARRAY OF SYSTEM.BYTE);
+PROCEDURE ICMPSend* (dst: Adr; type, code: SHORTINT; val1, val2: INTEGER; data: ARRAY OF BYTE);
 VAR
 	item: NetBase.Item;
 	icmphdr: ICMPHeader;

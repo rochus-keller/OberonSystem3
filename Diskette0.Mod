@@ -251,7 +251,7 @@ END CopyDWord;
 
 (* Do - Perform a floppy operation *)
 
-PROCEDURE Do(op, drive, sector, head, track, num: LONGINT;  VAR buf: ARRAY OF SYSTEM.BYTE): BOOLEAN;
+PROCEDURE Do(op, drive, sector, head, track, num: LONGINT;  VAR buf: ARRAY OF BYTE): BOOLEAN;
 CONST MaxLoops = 18;  MaxTries = 3;
 VAR s: SET;  t, i, loops, try: LONGINT;  dmabuf: LONGINT;  ok: BOOLEAN;  media: SHORTINT;
 BEGIN
@@ -392,7 +392,7 @@ END Do;
 (** GetSectors - Read sectors from diskette *)
 
 PROCEDURE GetSectors*(drive, start, num: LONGINT;
-		VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+		VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 VAR sector, head, track, s, ofs0, n, max, start0, num0: LONGINT;
 BEGIN
 	IF param[drive].type = T0 THEN Error("Invalid drive") END;
@@ -418,7 +418,7 @@ END GetSectors;
 (** PutSectors - Write sectors to diskette *)
 
 PROCEDURE PutSectors*(drive, start, num: LONGINT;
-		VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+		VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 VAR sector, head, track, s, ofs0, n, max, start0, num0: LONGINT;
 BEGIN
 	IF param[drive].type = T0 THEN Error("Invalid drive") END;

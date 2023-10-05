@@ -366,7 +366,7 @@ IMPORT SYSTEM;
 (** ExpandBlock - Expand a block of maximum len bytes of the stream.  outLen is actual number of bytes
 expanded, and is -1 on error.  eof is set when attempting to read past the end-of-file the first time. *)
 
-	PROCEDURE ExpandBlock*(VAR buf: ARRAY OF SYSTEM.BYTE;  len: LONGINT;  VAR outLen: LONGINT;  VAR eof: BOOLEAN);
+	PROCEDURE ExpandBlock*(VAR buf: ARRAY OF BYTE;  len: LONGINT;  VAR outLen: LONGINT;  VAR eof: BOOLEAN);
 		VAR
 			ch: CHAR; count: LONGINT;
 	BEGIN

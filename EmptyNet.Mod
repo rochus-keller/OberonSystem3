@@ -29,7 +29,7 @@ VAR
 
 (* Send - Send a packet. *)
 
-PROCEDURE Send(dev: NetBase.Device; prno: INTEGER; VAR dest: ARRAY OF SYSTEM.BYTE; item: NetBase.Item);
+PROCEDURE Send(dev: NetBase.Device; prno: INTEGER; VAR dest: ARRAY OF BYTE; item: NetBase.Item);
 END Send;
 
 (* Avail - Return TRUE iff a packet is available *)
@@ -41,7 +41,7 @@ END Avail;
 
 (* ReceivePacket - Remove a packet from the input buffer *)
 
-PROCEDURE Receive(dev: NetBase.Device;  VAR prno: INTEGER; VAR src: ARRAY OF SYSTEM.BYTE; VAR item: NetBase.Item);
+PROCEDURE Receive(dev: NetBase.Device;  VAR prno: INTEGER; VAR src: ARRAY OF BYTE; VAR item: NetBase.Item);
 BEGIN
 	item.len := 0
 END Receive;

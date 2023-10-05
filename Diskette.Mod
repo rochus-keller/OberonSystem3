@@ -103,13 +103,13 @@ BEGIN
 	offtask.time := Input.Time() + 3*Input.TimeUnit;	(* switch off after 3s *)
 END SetupMotorTask;
 
-PROCEDURE GetSectors*(start, num: INTEGER;  VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+PROCEDURE GetSectors*(start, num: INTEGER;  VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 BEGIN
 	SetupMotorTask;
 	Diskette0.GetSectors(drive, start, num, buf, ofs)
 END GetSectors;
 
-PROCEDURE PutSectors*(start, num: INTEGER;  VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+PROCEDURE PutSectors*(start, num: INTEGER;  VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 BEGIN
 	SetupMotorTask;
 	Diskette0.PutSectors(drive, start, num, buf, ofs)

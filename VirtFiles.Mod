@@ -75,8 +75,8 @@ MODULE VirtFiles;	(** portable *)  (* pjm *)
 				sec: FileDir.IndexSector
 			END ;
 		
-		Bytes4 = ARRAY 4 OF SYSTEM.BYTE;
-		Bytes8 = ARRAY 8 OF SYSTEM.BYTE;
+		Bytes4 = ARRAY 4 OF BYTE;
+		Bytes8 = ARRAY 8 OF BYTE;
 
 		(*aleng * SS + bleng = length (including header)
 			apos * SS + bpos = current position
@@ -428,7 +428,7 @@ at different locations in a file. A Rider cannot be positioned beyond the end of
 
 (** Read a byte from a file, advancing the Rider one byte further.  R.eof indicates if the end 
 of the file has been passed. *)
-	PROCEDURE Read*(VAR r: Rider; VAR x: SYSTEM.BYTE);
+	PROCEDURE Read*(VAR r: Rider; VAR x: BYTE);
 		VAR buf: Buffer;
 	BEGIN
 		IF r.apos # r.buf.apos THEN r.buf := GetBuf(r.file, r.apos) END ;
@@ -450,7 +450,7 @@ of the file has been passed. *)
 (** Reads a sequence of length n bytes into the buffer x, advancing the Rider. Less bytes 
 will be read when reading over the length of the file. r.res indicates the number of unread bytes. 
 x must be big enough to hold n bytes. *)
-	PROCEDURE ReadBytes*(VAR r: Rider; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE ReadBytes*(VAR r: Rider; VAR x: ARRAY OF BYTE; n: LONGINT);
 		VAR src, dst, m: LONGINT; buf: Buffer;
 	BEGIN dst := SYSTEM.ADR(x[0]);
 		IF LEN(x) < n THEN CoreHalt(19) END ;
@@ -540,7 +540,7 @@ Portable routines to read the standard Oberon types.
 	END NewExt;
 
 (** Writes a byte into the file at the Rider position, advancing the Rider by one. *)
-	PROCEDURE Write*(VAR r: Rider; x: SYSTEM.BYTE);
+	PROCEDURE Write*(VAR r: Rider; x: BYTE);
 		VAR f: File; buf: Buffer;
 	BEGIN
 		IF r.apos # r.buf.apos THEN r.buf := GetBuf(r.file, r.apos) END ;
@@ -562,7 +562,7 @@ Portable routines to read the standard Oberon types.
 	END Write;
 
 (** Writes the buffer x containing n bytes into a file at the Rider position. *)
-	PROCEDURE WriteBytes*(VAR r: Rider; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE WriteBytes*(VAR r: Rider; VAR x: ARRAY OF BYTE; n: LONGINT);
 		VAR src, dst, m: LONGINT; f: File; buf: Buffer;
 	BEGIN src := SYSTEM.ADR(x[0]);
 		IF LEN(x) < n THEN CoreHalt(19) END ;

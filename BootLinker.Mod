@@ -242,7 +242,7 @@ VAR
 	nofEntryPoints: LONGINT;
 	initPointList: InitPoint;
 
-	padding: ARRAY PaddingSize OF S.BYTE;
+	padding: ARRAY PaddingSize OF BYTE;
 
 	logName: Name;
 	logWriter: Texts.Writer;
@@ -421,7 +421,7 @@ END FindModule;
 
 
 (* ---------------------------------------------------------- *)
-PROCEDURE PutDWord (VAR code: ARRAY OF S.BYTE; idx, value: LONGINT);
+PROCEDURE PutDWord (VAR code: ARRAY OF BYTE; idx, value: LONGINT);
 BEGIN
 	S.PUT (S.ADR (code[idx]), value)
 END PutDWord;

@@ -22,7 +22,7 @@ MODULE CRC32; (* ejz   *)
 	VAR
 		crcTable: ARRAY 256 OF SET;
 
-	PROCEDURE CRC32*(crc: SET; VAR buf: ARRAY OF SYSTEM.BYTE; len: LONGINT): SET;
+	PROCEDURE CRC32*(crc: SET; VAR buf: ARRAY OF BYTE; len: LONGINT): SET;
 		VAR i, j: LONGINT;
 	BEGIN
 		i := 0; crc := crc / {0 .. 31};

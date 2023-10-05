@@ -837,14 +837,14 @@ END TransferBlocks;
 
 (* Disk.GetBlocks implementation. *)
 
-PROCEDURE GetBlocks*(drive, start, num: LONGINT;  VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+PROCEDURE GetBlocks*(drive, start, num: LONGINT;  VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 BEGIN
 	TransferBlocks(TRUE, drive, start, num, SYSTEM.ADR(buf[ofs]))
 END GetBlocks;
 
 (* Disk.PutBlocks implementation. *)
 
-PROCEDURE PutBlocks*(drive, start, num: LONGINT;  VAR buf: ARRAY OF SYSTEM.BYTE;  ofs: LONGINT);
+PROCEDURE PutBlocks*(drive, start, num: LONGINT;  VAR buf: ARRAY OF BYTE;  ofs: LONGINT);
 BEGIN
 	TransferBlocks(FALSE, drive, start, num, SYSTEM.ADR(buf[ofs]))
 END PutBlocks;
