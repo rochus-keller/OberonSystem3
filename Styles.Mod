@@ -196,7 +196,7 @@ MODULE Styles;	(** portable *) (* RS, Wed, 9-Jun-1993 *)
 	PROCEDURE ReadLong (VAR R: Files.Rider; VAR x: LONGINT);
 	VAR c0, c1, c2: CHAR; s1: SHORTINT;
 	BEGIN Files.Read(R, c0); Files.Read(R, c1); Files.Read(R, c2); Files.Read(R, s1);
-		x := s1; x := ((x * 100H + LONG(c2)) * 100H + LONG(c1)) * 100H + LONG(c0)
+		x := s1; x := ((x * 100H + ORD(c2)) * 100H + ORD(c1)) * 100H + ORD(c0)
 	END ReadLong;
 
 	(*new*)

@@ -144,72 +144,7 @@ MODULE TextPopups;	(** portable *)	(* tk 6.12.95 *)
 	
 (* build item list *)
 	PROCEDURE ExtractProcTypeNames(T: Texts.Text; VAR lastProc, lastType: MenuItem);
-		CONST	rec = 0; proc = 1; mod = 2;
-		VAR R: Texts.Reader; isType, init: BOOLEAN; sym, prevsym: SHORTINT;
-			Stack: ARRAY 16 OF SHORTINT; ST, i: LONGINT;
-			Context, name: ARRAY 128 OF CHAR;startP, startT, q: MenuItem; p: PMarkerMenuItem; t: TMarkerMenuItem;
-	BEGIN
-		Texts.OpenReader(R, T, 0);
-		OPM.Init({}, R, Oberon.Log(*Null*)); OPS.Init; startP := lastProc; startT := lastType; isType := FALSE;
-		ST := 0; Stack[ST] := mod; Context := ""; OPS.Get(sym);
-		REPEAT
-			IF sym = type THEN	isType := TRUE
-			ELSIF (sym = ident) & isType THEN
-				COPY(OPS.name, name); i := OPM.curpos-1;
-				OPS.Get(sym);
-				IF sym = times THEN OPS.Get(sym) END;
-				IF (sym =  eql) THEN
-					NEW(t); COPY(Context, t.val); Strings.Append(t.val, name); t.pos := i;
-					q := startT; WHILE (q.link # NIL) & (q.link.val < t.val) DO q := q.link END;
-					IF q.link = NIL THEN lastType := t END; t.link := q.link; q.link := t;
-					OPS.Get(sym);
-					IF sym=procedure THEN
-						OPS.Get(sym);
-						IF sym = lparen THEN
-							WHILE (sym#rparen)&(sym#eof) DO OPS.Get(sym) END
-						END
-					END
-				END
-			ELSIF (sym = const) OR (sym = var) OR (sym = begin) THEN
-				isType := FALSE
-			ELSIF sym = record THEN
-				INC(ST); Stack[ST] := rec; Strings.Append(Context, name); Strings.AppendCh(Context, ".");
-				isType := FALSE
-			ELSIF (sym = procedure) & ((prevsym # colon) & (prevsym # eql)) THEN	(*procdecl*)
-				OPS.Get(sym);
-				IF sym # arrow THEN	(*skip forw*)
-					IF sym = lparen THEN	(*O2-method*)
-						OPS.Get(sym);
-						IF sym = var THEN OPS.Get(sym) END;
-						IF sym = ident THEN OPS.Get(sym);
-							OPS.Get(sym);	(*colon*)
-							IF sym = ident THEN
-								COPY(OPS.name, Context); Strings.AppendCh(Context, ".");
-								OPS.Get(sym)
-							END
-						END
-					END;
-					init := sym = and;
-					IF (sym=and) OR (sym=minus) OR (sym=plus) OR (sym=times) THEN OPS.Get(sym) END;	(*skip &, -, ... *)
-					IF sym = ident THEN
-						COPY(OPS.name, name);
-						NEW(p); COPY(Context, p.val); Strings.Append(p.val, name); p.pos := OPM.curpos-1;
-						q := startP; WHILE (q.link # NIL) & (q.link.val < p.val) DO q := q.link END;
-						IF q.link = NIL THEN lastProc := p END; p.link := q.link; q.link := p;
-						INC(ST); Stack[ST] := proc; Strings.Append(Context, name); Strings.AppendCh(Context, ".");
-						isType := FALSE
-					END
-				END
-			ELSIF (Stack[ST] = rec)&(sym = end) OR (Stack[ST] = proc)&(prevsym=end)&(sym=ident) THEN
-				isType := (Stack[ST] = rec)OR(Stack[ST-1] = rec);
-				DEC(ST);
-				i := Strings.Length(Context)-2;
-				WHILE (i>0) & (Context[i]#".") DO DEC(i) END;
-				IF i <= 0 THEN Context[0] := 0X ELSE Context[i+1] := 0X END;
-			END;
-			prevsym := sym; OPS.Get(sym);
-		UNTIL sym = eof;
-		OPM.Close;  OPS.Init
+  // TODO
 	END ExtractProcTypeNames;
 	
 	PROCEDURE ExtractHistory(nof: INTEGER);

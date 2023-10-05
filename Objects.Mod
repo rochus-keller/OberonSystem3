@@ -205,7 +205,7 @@ Most entities in Oberon are derived from this base type.
 
 	(* Delete library L from the list, without changing L.next. *)
 	
-	PROCEDURE Cleanup(L: SYSTEM.PTR);
+	PROCEDURE Cleanup(L: Kernel.PTR);
 	VAR p0, p: Library; a0, a: Alias;
 	BEGIN
 		WITH L: Library DO
@@ -732,9 +732,9 @@ Most entities in Oberon are derived from this base type.
 
 BEGIN LibBlockId := 0DBX;
 	NEW(FirstLib);  FirstLib.next := NIL;
-	Kernel.DisableTracing(SYSTEM.ADR(FirstLib^), SYSTEM.ADR(FirstLib.next));
+	//Kernel.DisableTracing(SYSTEM.ADR(FirstLib^), SYSTEM.ADR(FirstLib.next));
 	NEW(FirstAlias);  FirstAlias.next := NIL;
-	Kernel.DisableTracing(SYSTEM.ADR(FirstAlias^), SYSTEM.ADR(FirstAlias.lib));
+	//Kernel.DisableTracing(SYSTEM.ADR(FirstAlias^), SYSTEM.ADR(FirstAlias.lib));
 	stamp := MIN(LONGINT);
 	NEW(NoObj);
 	nofreg := 0;

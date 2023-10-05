@@ -255,29 +255,29 @@ MODULE GfxPictures;	(** eos   **)
 			WHILE y > 0 DO
 				DEC(y);
 				GfxMaps.GetPixels(map, 0, y, map.width, fmt, pix^, GfxMaps.SrcCopy);
-				buf[0] := 0; buf[1] := SHORT(ORD(pix[0])); x := 1;
+				buf[0] := 0; buf[1] := CAST(SHORTINT,ORD(pix[0])); x := 1;
 				WHILE x < map.width DO
 					IF buf[0] < 0 THEN	(* accumulating equal bytes *)
 						IF (buf[0] > -128) & (pix[x] = CHR(buf[1])) THEN
 							DEC(buf[0])
 						ELSE
 							Files.WriteBytes(r, buf, 2);
-							buf[0] := 0; buf[1] := SHORT(ORD(pix[x]))
+							buf[0] := 0; buf[1] := CAST(SHORTINT,ORD(pix[x]))
 						END
 					ELSIF buf[1] > 0 THEN	(* accumulating different bytes *)
 						IF buf[0] = 127 THEN	(* buffer full *)
 							Files.WriteBytes(r, buf, buf[0]+2);
-							buf[0] := 0; buf[1] := SHORT(ORD(pix[x]))
+							buf[0] := 0; buf[1] := CAST(SHORTINT,ORD(pix[x]))
 						ELSIF pix[x] # CHR(buf[buf[0]+1]) THEN
-							INC(buf[0]); buf[buf[0]+1] := SHORT(ORD(pix[x]))
+							INC(buf[0]); buf[buf[0]+1] := CAST(SHORTINT,ORD(pix[x]))
 						ELSE
 							Files.WriteBytes(r, buf, buf[0]+1);
-							buf[0] := -1; buf[1] := SHORT(ORD(pix[x]))
+							buf[0] := -1; buf[1] := CAST(SHORTINT,ORD(pix[x]))
 						END
 					ELSIF pix[x] = CHR(buf[1]) THEN	(* starting to accumulate equal bytes *)
 						buf[0] := -1
 					ELSE	(* starting to accumulate different bytes *)
-						buf[0] := 1; buf[2] := SHORT(ORD(pix[x]))
+						buf[0] := 1; buf[2] := CAST(SHORTINT,ORD(pix[x]))
 					END;
 					INC(x)
 				END;

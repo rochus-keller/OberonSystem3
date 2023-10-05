@@ -154,8 +154,8 @@ MODULE Decoder;	(** non-portable *) (* NM 2.3.93 / 26.10.93 *)
 	PROCEDURE GetNum (VAR x: LONGINT);
 		VAR ch: CHAR; n: INTEGER; y: LONGINT;
 	BEGIN n := 0; y := 0; Next (ch);
-		WHILE ch >= 80X DO INC(y, SYSTEM.LSH(LONG(ch) - 128, n)); INC(n, 7); Next (ch) END;
-		x := ASH(SYSTEM.LSH(LONG(ch), 25), n-25) + y
+		WHILE ch >= 80X DO INC(y, SYSTEM.LSH(ORD(ch) - 128, n)); INC(n, 7); Next (ch) END;
+		x := ASH(SYSTEM.LSH(ORD(ch), 25), n-25) + y
 	END GetNum;
 	
 	PROCEDURE WriteLn; 

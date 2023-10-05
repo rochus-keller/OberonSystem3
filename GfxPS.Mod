@@ -22,8 +22,8 @@ MODULE GfxPS;	(** eos   **)
 	CONST
 		(** useful units **)
 		Inch* = 91.44; mm* = Inch/25.4;
-		A4W* = 209.9 * mm; A4H* = 297 * mm;
-		LetterW* = 215.9 * mm; LetterH* = 279 * mm;
+		A4W* = 209.9 * mm; A4H* = 297.0 * mm;
+		LetterW* = 215.9 * mm; LetterH* = 279.0 * mm;
 		
 		ScreenDPI = 91.44; PSDPI = 72;
 		LF = 0AX; CR = 0DX;

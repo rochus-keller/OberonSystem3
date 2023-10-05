@@ -7,8 +7,8 @@ MODULE Figures;	(** eos   **)
 	CONST
 		(** units **)
 		Inch* = 91.44; cm* = Inch/2.54;
-		A4W* = 21 * cm; A4H* = 29.7 * cm;
-		LetterW* = 8.5 * Inch; LetterH* = 11 * Inch;
+		A4W* = 21.0 * cm; A4H* = 29.7 * cm;
+		LetterW* = 8.5 * Inch; LetterH* = 11.0 * Inch;
 		
 		(** shape message ids **)
 		Get* = 0;

@@ -205,7 +205,7 @@ BEGIN
 	NetSystem.Write(C, 0FFX); NetSystem.Write(C, 0FBX); NetSystem.Write(C, 018X)
 END SetUp;
 
-	PROCEDURE CloseFrame(F: SYSTEM.PTR);
+	PROCEDURE CloseFrame(F: Kernel.PTR);
 	BEGIN
 		WITH F: TerminalGadgets.Frame DO
 			IF (F.text # NIL) & (F.text IS Terminal) THEN

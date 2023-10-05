@@ -17,7 +17,7 @@ MODULE System; (** portable, except where noted *) (* pjm *)
 
 (* contributions: JG 3.10.90 / NW 26.11.91 / ARD 4. 2. 93 / nm / jm / ejz *)
 
-IMPORT SYSTEM, Kernel, Disk, FileDir, Files, Modules, Objects, Display, Input, Fonts, 
+IMPORT SYSTEM, Kernel, FileDir, Files, Modules, Objects, Display, Input, Fonts, 
 	Viewers, Reals, Texts, Oberon, TextFrames;
 
 CONST
@@ -525,8 +525,8 @@ BEGIN
 	Texts.WriteLn(W);
 	Texts.Write(W, 9X);  Texts.WriteInt(W, largest, 1);
 	Texts.WriteString(W, "K contiguous memory free");  Texts.WriteLn(W);
-	free := Disk.Available()*Disk.SectorSize DIV 1024;
-	total := Disk.Size()*Disk.SectorSize DIV 1024;
+	free := 0; // Disk.Available()*Disk.SectorSize DIV 1024;
+	total := 0; // Disk.Size()*Disk.SectorSize DIV 1024;
 	Texts.Write(W, 9X);  Texts.WriteInt(W, free, 1);  Texts.WriteString(W, "K of ");
 	Texts.WriteInt(W, total, 1);  Texts.WriteString(W, "K disk space free");
 	Texts.WriteLn(W);

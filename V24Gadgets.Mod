@@ -109,7 +109,7 @@ BEGIN
 	END
 END Receiver;
 
-PROCEDURE *Cleanup(f: SYSTEM.PTR);
+PROCEDURE *Cleanup(f: Kernel.PTR);
 VAR t: Terminal;
 BEGIN
 	WITH f: TerminalGadgets.Frame DO

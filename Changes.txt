@@ -25,4 +25,11 @@ Modification steps:
 - Removed redundant modules: Empty.CD, Mitsumi.CD, GD54xx.Display, W32.Display, VGA.Display, S3C924.Display, S3Trio.Display,
   SVGA.Display, Trace.Display, SVGAH.Display, S3C805.Display
 - Syntax git commit
-
+- Removed low-level hardware driver (no longer useful) and corresponding tools: AHA1520, AHA1520Disk, ASPI, NCR810Disk, ATADisk, BootLinker, Disk, 
+  SCSI, Partition, IDEDisk, FATFiles, DOS, Diskette, Diskette0, FDInstall, DMA, Backup, DSP, FPA, NCRScript, Net3Com*, PCI, VirtDisk,
+  VirtFileDir, VirtFiles, HPLaserPrinter, LPRPrinter, PSPrinter
+- Removed network stack (use the one from the OS instead): NetDNS, NetTCP, NetUDP, NetIP, NetPorts, SLIP
+- Removed PPP stack (no longer our repsonsibility): all PPP* modules
+- Stubbed for later implementation: Input, V24, NetSystem, CD, Centronics, Sound, Files, FileDir
+- Minimal implementation of Kernel and Modules; fixes
+- Validator 1 git commit

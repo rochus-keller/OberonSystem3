@@ -15,7 +15,7 @@ of the source code to another platform with the name OBERON. *)
 
 MODULE Backup;	(** portable, except where noted *) (*JG 20.5.94/pm 16.6.94*)
 
-	IMPORT Diskette, Diskette0, Oberon, Texts, TextFrames;
+	IMPORT Oberon, Texts, TextFrames;
 
 	VAR W: Texts.Writer; diroption: CHAR;
 

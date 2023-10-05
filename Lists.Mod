@@ -28,8 +28,7 @@ MODULE Lists;	(** portable *) (* jm 18.4.95 *)
 	15.5.95 - changed scrolling behaviour back
 	9.5.95 - changed copy over, now works even when focus ist alredy set (ps - 9.5.96)
 *)
-IMPORT Files, Fonts, Display, Display3, Printer, Printer3, Effects, Objects, Gadgets, Oberon, Input, Texts, Attributes, FileDir,
-	Floppy := Diskette;
+IMPORT Files, Fonts, Display, Display3, Printer, Printer3, Effects, Objects, Gadgets, Oberon, Input, Texts, Attributes, FileDir;
 	
 CONST
 	barw = 18;
@@ -1155,50 +1154,6 @@ PROCEDURE *EntryHandler(name: ARRAY OF CHAR; date, time, size: LONGINT);
 BEGIN
 	IF (name[0] > " ") & (name[0] < CHR(127)) & Match(name,pat) THEN Texts.WriteString(W,name); Texts.WriteLn(W) END
 END EntryHandler;
-
-PROCEDURE GetDiskette(mask: ARRAY OF CHAR; text: Texts.Text);
-	VAR i, a, b: INTEGER; 
-BEGIN
-	i := 0;
-	WHILE (mask[i] > " ") & (mask[i] # "/") DO pat[i] := mask[i]; INC(i);  END;
-	pat[i] := 0X;
-	Floppy.OpenVol(a, b);
-	Floppy.Enumerate(EntryHandler);
-	Floppy.CloseVol();
-	Texts.Append(text,W.buf);
-END GetDiskette;
-
-(* Windows version
-PROCEDURE GetDiskette(mask: ARRAY OF CHAR; text: Texts.Text);
-	VAR  i : INTEGER; 
-BEGIN
-	i := 0;
-	WHILE (mask[i] > " ") & (mask[i] # "/") DO pat[i] := mask[i]; INC(i);  END;
-	pat[i] := 0X;
-	Texts.Append(text,W.buf);
-END GetDiskette;
-*)
-
-(** Same as Directory, except the files on Diskette are searched. This command is not functional on all platforms. *)
-PROCEDURE Diskette*; (* "mask" "objname" *)
-VAR S: Attributes.Scanner; mask: ARRAY 32 OF CHAR; o: Objects.Object;
-		text: Texts.Text;
-BEGIN	
-	Attributes.OpenScanner(S,Oberon.Par.text,Oberon.Par.pos); Attributes.Scan(S); 
-	IF (S.class = Attributes.Name) OR (S.class  = Attributes.String)  THEN Copy(S.s, mask);
-		Attributes.Scan(S);
-		IF (S.class = Attributes.Name) OR (S.class = Attributes.String) THEN 
-			Copy(S.s, S.s); o := Gadgets.FindObj(Gadgets.context, S.s);
-			IF (o # NIL) & (o IS List) THEN
-				WITH o: List DO
-					NEW(text); Texts.Open(text, ""); 
-					GetDiskette(mask, text); o.beg := NIL; o.items := NIL; o.noitems := 0;
-					InsertItems(o, text, 0, text.len);
-				END
-			END
-		END
-	END
-END Diskette;
 		
 PROCEDURE LibDir(name: ARRAY OF CHAR; text: Texts.Text);
 VAR  L: Objects.Library; ref, i: INTEGER; libName, objName: ARRAY 32 OF CHAR; 

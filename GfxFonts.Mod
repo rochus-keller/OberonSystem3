@@ -125,7 +125,7 @@ MODULE GfxFonts;	(** eos   **)
 	(* append path element to Bezier control points *)
 	PROCEDURE AddSplineElem (VAR data: GfxPaths.EnumData);
 		CONST
-			sqrt3 = 1.7320508; t = 4/3*(sqrt3 - 1);
+			sqrt3 = 1.7320508; t = 4.0/3.0*(sqrt3 - 1.0);
 		VAR
 			rx, ry, trx, try: REAL;
 	BEGIN

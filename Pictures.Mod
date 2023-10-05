@@ -483,13 +483,6 @@ BEGIN
 	END
 END Open;
 
-(** Returns the address of the bitmap data of a picture. *)
-PROCEDURE Address*(P: Picture): LONGINT;	(** non-portable *)
-VAR val, x, i, j: INTEGER; w: LONGINT;
-BEGIN 
-	HALT(99)	(* should not be used *)
-END Address;
-
 (** Default picture object handler. *)
 
 PROCEDURE Handle*(obj: Objects.Object; VAR msg: Objects.ObjMsg);

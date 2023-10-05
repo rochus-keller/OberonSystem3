@@ -274,7 +274,7 @@ BEGIN
 					IF Trace THEN
 						Kernel.WriteString("Recv:");  Kernel.WriteHex(prno, 9);  Kernel.WriteLn;
 						(*Kernel.WriteMemory(SYSTEM.ADR(item.data[item.ofs-14]), 14);*)	(* peek into ethernet header *)
-						Kernel.WriteMemory(SYSTEM.ADR(item.data[item.ofs]), item.len)
+						// TODO Kernel.WriteMemory(SYSTEM.ADR(item.data[item.ofs]), item.len)
 					END;
 					protocols[j].proc(item)
 				ELSE
