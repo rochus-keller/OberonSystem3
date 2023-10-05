@@ -77,7 +77,7 @@ VAR
 	freeList: Queue;
 
 PROCEDURE CheckSum* (VAR data: ARRAY OF SYSTEM.BYTE; len: INTEGER; base: LONGINT): LONGINT;
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV EAX, base[EBP]
 	MOV EBX, data[EBP]
 	MOV CX, len[EBP]
@@ -96,11 +96,11 @@ csloop:
 	SAR EBX, 16
 	ADD EAX, EBX
 	NOT EAX
-	AND EAX, 0FFFFH
+	AND EAX, 0FFFFH*)
 END CheckSum;
 
 PROCEDURE ByteSum* (VAR data: ARRAY OF SYSTEM.BYTE; len: INTEGER): LONGINT;
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	XOR EAX, EAX
 	MOV EBX, data[EBP]
 	MOV CX, len[EBP]
@@ -110,7 +110,7 @@ sloop:
 	ADD EAX, EDX
 	ADD EBX, 2
 	DEC CX
-	JNZ sloop
+	JNZ sloop*)
 END ByteSum;
 
 PROCEDURE NetToHost* (VAR i: INTEGER);
@@ -147,7 +147,7 @@ END Copy;
 (* FastCopy - Copy size bytes from source to dest.  (No overlap allowed) *)
 
 PROCEDURE FastCopy*(source, dest, size: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV ESI, source[EBP]
 	MOV EDI, dest[EBP]
 	MOV ECX, size[EBP]
@@ -183,7 +183,7 @@ copyd:
 	REP MOVSD
 	SHLD ECX, EAX, 2
 bytemove:
-	REP MOVSB
+	REP MOVSB*)
 END FastCopy;
 
 PROCEDURE ^ GetItem* (VAR Q: Queue; VAR item: Item);

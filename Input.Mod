@@ -134,7 +134,7 @@ VAR
 (* TableUS - US keyboard translation table (dead keys: ^=1, '=2, `=3, ~=4, "=5) *)
 
 PROCEDURE TableUS(): LONGINT;
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	CALL L1
 L1:
 	POP EAX
@@ -218,7 +218,7 @@ L1:
 	DB 44X, 0FAX, 0FFX, 0X	(* F10 *)
 	DB 57X, 0FBX, 0FFX, 0X	(* F11 *)
 	DB 58X, 0FCX, 0FFX, 0X	(* F12 *)
-	DB 0FFX
+	DB 0FFX*)
 END TableUS;
 
 PROCEDURE TableFromFile(name: ARRAY OF CHAR): LONGINT;
@@ -242,9 +242,9 @@ BEGIN
 	RETURN TableUS()
 END TableFromFile;
 
-PROCEDURE -CoreHalt(n: LONGINT);
-CODE {SYSTEM.i386}
-	INT 3
+PROCEDURE CoreHalt(n: LONGINT);
+(*CODE {SYSTEM.i386}
+	INT 3*)
 END CoreHalt;
 
 (* Translate - Translate scan code "c" to key. *)
@@ -361,18 +361,18 @@ END LedKey;
 
 (* DisableInterrupts - Disable interrupts and return original flags state *)
 
-PROCEDURE -DisableInterrupts(): SET;
-CODE {SYSTEM.i386}
+PROCEDURE DisableInterrupts(): SET;
+(*CODE {SYSTEM.i386}
 	PUSHFD
 	POP EAX
-	CLI
+	CLI*)
 END DisableInterrupts;
 
 (* RestoreInterrupts - Set flags state to restore interrupts to previous state *)
 
-PROCEDURE -RestoreInterrupts(state: SET);
-CODE {SYSTEM.i386}
-	POPFD
+PROCEDURE RestoreInterrupts(state: SET);
+(*CODE {SYSTEM.i386}
+	POPFD*)
 END RestoreInterrupts;
 
 (* MapScanCode - Map a scan code "c" to a key code. *)
@@ -455,10 +455,10 @@ PROCEDURE -CS(): LONGINT
 	066H, 08CH, 0C8H;	(* MOV AX,CS *)
 *)
 
-PROCEDURE -CS(): LONGINT;
-CODE {SYSTEM.i386}
+PROCEDURE CS(): LONGINT;
+(*CODE {SYSTEM.i386}
 	XOR EAX, EAX
-	MOV AX, CS
+	MOV AX, CS*)
 END CS;
 
 (* KeyboardInterrupt - Handle interrupts from keyboard *)

@@ -380,77 +380,77 @@ BEGIN
 END RemScsiCmd;
 
 PROCEDURE RepInDouble(data,len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,BRSTCNTRL
 	MOV EDI,data[EBP]
 	MOV ECX,len[EBP]
 	CLD
-	REP INSD
+	REP INSD*)
 END RepInDouble;
 
 PROCEDURE RepInByte(data,len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,DATAPORT
 	MOV EDI,data[EBP]
 	MOV ECX,len[EBP]
 	CLD
-	REP INSB
+	REP INSB*)
 END RepInByte;
 
 PROCEDURE RepOutDouble(data,len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,BRSTCNTRL
 	MOV ESI,data[EBP]
 	MOV ECX,len[EBP]
 	CLD
-	REP OUTSD
+	REP OUTSD*)
 END RepOutDouble;
 
 PROCEDURE RepOutWord(data,len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,DATAPORT
 	MOV ESI,data[EBP]
 	MOV ECX,len[EBP]
 	CLD
-	REP OUTSW
+	REP OUTSW*)
 END RepOutWord;
 
 PROCEDURE RepOutByte(data,len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,DATAPORT
 	MOV ESI,data[EBP]
 	MOV ECX,len[EBP]
 	CLD
-	REP OUTSB
+	REP OUTSB*)
 END RepOutByte;
 
 PROCEDURE SetBits(port: INTEGER; bits: SET);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,port[EBP]
 	IN AL,DX
 	OR EAX,bits[EBP]
-	OUT DX,AL
+	OUT DX,AL*)
 END SetBits;
 
 PROCEDURE ClrBits(port: INTEGER; bits: SET);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,port[EBP]
 	MOV EBX,bits[EBP]
 	NOT EBX
 	IN AL,DX
 	AND EAX,EBX
-	OUT DX,AL
+	OUT DX,AL*)
 END ClrBits;
 
 PROCEDURE ClrSetBits(port: INTEGER; clr,set: SET);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,port[EBP]
 	MOV EBX,clr[EBP]
@@ -458,28 +458,28 @@ CODE {SYSTEM.i386}
 	IN AL,DX
 	AND EAX,EBX
 	OR EAX,set[EBP]
-	OUT DX,AL
+	OUT DX,AL*)
 END ClrSetBits;
 
 PROCEDURE TestHi(port: INTEGER; bits: SET): BOOLEAN;
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,port[EBP]
 	MOV EBX,bits[EBP]
 	IN AL,DX
 	AND EAX,EBX
 	CMP AL,BL
-	SETE AL
+	SETE AL*)
 END TestHi;
 
 PROCEDURE TestLo(port: INTEGER; bits: SET): BOOLEAN;
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV DX,portbase
 	ADD DX,port[EBP]
 	MOV EBX,bits[EBP]
 	IN AL,DX
 	AND AL, BL
-	SETE AL
+	SETE AL*)
 END TestLo;
 
 PROCEDURE LowerACK();

@@ -59,37 +59,37 @@ VAR
 (* RepInDWord - Block port input instruction. *)
 
 PROCEDURE RepInDWord(port, buf, len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV EDX, port[EBP]
 	MOV EDI, buf[EBP]
 	MOV ECX, len[EBP]
 	CLD
-	REP INSD
+	REP INSD*)
 END RepInDWord;
 
 (* RepOut14 - Block port output instruction (14 bytes). *)
 
 PROCEDURE RepOut14(port, buf: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV EDX, port[EBP]
 	MOV ESI, buf[EBP]
 	CLD
 	OUTSD
 	OUTSD
 	OUTSD
-	OUTSW
+	OUTSW*)
 END RepOut14;
 
 (* RepOut4n2 - Block port output instruction (4*n+2 bytes). *)
 
 PROCEDURE RepOut4n2(port, buf, n: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV EDX, port[EBP]
 	MOV ESI, buf[EBP]
 	MOV ECX, n[EBP]
 	CLD
 	REP OUTSD
-	OUTSW
+	OUTSW*)
 END RepOut4n2;
 
 (* Send - Send a packet.  Interrupts must be enabled. *)
@@ -152,18 +152,18 @@ END Avail;
 (* Copy4 - Copy len dwords from src to dst. *)
 
 PROCEDURE Copy4(src, dst, len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV ESI, src[EBP]
 	MOV EDI, dst[EBP]
 	MOV ECX, len[EBP]
 	CLD
-	REP MOVSD
+	REP MOVSD*)
 END Copy4;
 
 (* Copy - Copy size bytes from source to dest.  (No overlap allowed) *)
 
 PROCEDURE Copy(source, dest, size: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV ESI, source[EBP]
 	MOV EDI, dest[EBP]
 	MOV ECX, size[EBP]
@@ -199,7 +199,7 @@ copyd:
 	REP MOVSD
 	SHLD ECX, EAX, 2
 bytemove:
-	REP MOVSB
+	REP MOVSB*)
 END Copy;
 
 (* ReceivePacket - Remove a packet from the input buffer *)
@@ -523,5 +523,5 @@ BEGIN
 END Net3Com509.
 
 NetSystem.Stop
-!Net3Com509.InstallDevice
+Net3Com509.InstallDevice
 NetSystem.Start

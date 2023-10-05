@@ -46,12 +46,12 @@ of the source code to another platform with the name OBERON. *)
 	...
 *)
 
-MODULE TextPopups;	(** portable *)	(* tk 6.12.95 *)
+MODULE TextPopups;	(** portable *)	(* tk 6.12.95 *)
 
 	(* some marked compiler calls are not portable - but can easily be adopted for different implementations *)
 
 	IMPORT
-		Modules, Display, Objects, OPM, OPS, ListRiders, Links, Attributes, Documents, Desktops,
+		Modules, Display, Objects, ListRiders, Links, Attributes, Documents, Desktops,
 		Texts, Oberon, Effects, Fonts, Display3, Gadgets, TextDocs, TextGadgets0, TextGadgets, 
 		Input, Views, Strings;
 

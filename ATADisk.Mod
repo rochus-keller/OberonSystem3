@@ -243,24 +243,24 @@ END StartInterrupt;
 
 (* Block port input instruction. *)
 
-PROCEDURE -RepInWord(port, bufAdr, len: LONGINT);
-CODE {SYSTEM.i386}
+PROCEDURE RepInWord(port, bufAdr, len: LONGINT);
+(*CODE {SYSTEM.i386}
 	POP ECX
 	POP EDI
 	POP EDX
 	CLD
-	REP INSW
+	REP INSW*)
 END RepInWord;
 
 (* Block port out instruction. *)
 
-PROCEDURE -RepOutWord(port, bufAdr, len: LONGINT);
-CODE {SYSTEM.i386}
+PROCEDURE RepOutWord(port, bufAdr, len: LONGINT);
+(*CODE {SYSTEM.i386}
 	POP ECX
 	POP ESI
 	POP EDX
 	CLD
-	REP OUTSW
+	REP OUTSW*)
 END RepOutWord;
 
 (* Read blocks using PIO protocol. *)
@@ -786,10 +786,10 @@ END InitBusMaster;
 (* Report a disk error. *)
 
 PROCEDURE Report(err: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV EAX, err[EBP]
 	PUSH 17	(* Disk error *)
-	INT 3
+	INT 3*)
 END Report;
 
 (* Main transfer procedure. *)

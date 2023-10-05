@@ -132,32 +132,32 @@ VAR
 * end debug *)
 
 	PROCEDURE MULTU(r4, r5: LONGINT);
-	CODE {SYSTEM.i386}
+	(*CODE {SYSTEM.i386}
 		MOV EAX, r4[EBP]
 		MUL r5[EBP]
 		MOV low, EAX
-		MOV hi, EDX
+		MOV hi, EDX*)
 	END MULTU;
 	
 	PROCEDURE DIVU(r4, r5: LONGINT);
-	CODE {SYSTEM.i386}
+	(*CODE {SYSTEM.i386}
 		XOR EDX, EDX
 		MOV EAX, r4[EBP]
 		DIV r5[EBP]
 		MOV low, EAX
-		MOV hi, EDX
+		MOV hi, EDX*)
 	END DIVU;
 
 	PROCEDURE Carry(r4, r5: LONGINT): LONGINT;
-	CODE {SYSTEM.i386}
+	(*CODE {SYSTEM.i386}
 		XOR EAX, EAX
 		MOV EBX, r5[EBP]
 		ADD EBX, r4[EBP]
-		SETB AL
+		SETB AL*)
 	END Carry;
 	
 	PROCEDURE SLRVD(r4, r5, r6: LONGINT): LONGINT;
-	CODE {SYSTEM.i386}
+	(*CODE {SYSTEM.i386}
 			MOV EDX, r5[EBP]
 			MOV EAX, r4[EBP]
 			MOV ECX, r6[EBP]
@@ -169,7 +169,7 @@ VAR
 lab1:	MOV EAX, EDX
 			XOR EDX, EDX
 			SHR EAX, CL
-end:	MOV R3, EDX
+end:	MOV R3, EDX*)
 	END SLRVD;
 	
 	PROCEDURE ABSD*(d, s: LONGINT);	(* FPR[d] := ABS(FPR[s]) *)
@@ -502,7 +502,7 @@ end:	MOV R3, EDX
 	END CVTWD;
 
 	PROCEDURE GetAdr(start, len: LONGINT);	(* start is ADR(OP2), len is length-2 *)
-	CODE {SYSTEM.i386}	(* implicit: PUSH EBP; MOV EBP, ESP (interrupts are off)*)
+	(*CODE {SYSTEM.i386}	(* implicit: PUSH EBP; MOV EBP, ESP (interrupts are off)*)
 		POP oldebp	; save caller EBP
 		POP return	; save caller return address
 		POP ECX	; len (max 5)
@@ -538,7 +538,7 @@ end:	MOV R3, EDX
 		MOV ESP, uESP
 		
 			; call assembled instruction
-		JMP codeptr
+		JMP codeptr*)
 	END GetAdr;
 	
 	PROCEDURE GetLength;

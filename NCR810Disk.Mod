@@ -52,16 +52,16 @@ MODULE NCR810Disk;	(** non-portable *)	(* Contributed by P. Ryser to the System 
 		Kernel.WriteInt(i, 1)
 	END LogInt;
 	
-	PROCEDURE -CoreHalt(n: LONGINT);
-	CODE {SYSTEM.i386}
-		INT 3
+	PROCEDURE CoreHalt(n: LONGINT);
+	(*CODE {SYSTEM.i386}
+		INT 3*)
 	END CoreHalt;
 	
-	PROCEDURE -Error(err: LONGINT);
-	CODE {SYSTEM.i386}
+	PROCEDURE Error(err: LONGINT);
+	(*CODE {SYSTEM.i386}
 		POP EAX	(* for register dump *)
 		PUSH 17	(* Disk error *)
-		INT 3
+		INT 3*)
 	END Error;
 
 (* ReadBlocks - Read disk blocks *)

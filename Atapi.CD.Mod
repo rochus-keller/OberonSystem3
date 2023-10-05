@@ -41,23 +41,23 @@ VAR
 (* RepInWord - Block port input instruction. *)
 
 PROCEDURE RepInWord(port, buf, len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV EDX, port[EBP]
 	MOV EDI, buf[EBP]
 	MOV ECX, len[EBP]
 	CLD
-	REP INSW
+	REP INSW*)
 END RepInWord;
 
 (* RepOutWord - Block port output instruction. *)
 
 PROCEDURE RepOutWord(port, buf, len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV EDX, port[EBP]
 	MOV ESI, buf[EBP]
 	MOV ECX, len[EBP]
 	CLD
-	REP OUTSW
+	REP OUTSW*)
 END RepOutWord;
 
 (* ---- Disk driver (GST506 device-specific part) ---- *)

@@ -141,7 +141,7 @@ CONST
 		(*SetWidth / SetSyncRate special flags*)
 	TransActive = 0; TransCur = 1; TransGoal = 2;
 	
-(*SCSI Register Block *)
+(*SCSI Register Block *)
 	(* 00H	SCSI Sequence Control *)	SCSISEQ = 00H;
 		(* Bit 0	SCSI Reset Out *)		SCSIRSTO = 0;
 		(* Bit 1	Enable Auto ATN on parity *)		ENAUTOATNP = 1;
@@ -364,14 +364,14 @@ CONST
 		(* Bit 16	SCBSIZE32, 7895 only? *)		SCBSIZE32 = 16;
 		(* Bit 31	PCI Error Generation Disable *)		PCIERRGENDIS = 31;
 	
-	SCAMCTL = 1AH;			(*ultra2 only*)
+	SCAMCTL = 1AH;			(*ultra2 only*)
 	
 	
 	MaxScb = 255;	(*DON'T FORGET TO CHANGE THE SCB MASK IN THE SEQUENCER CODE IF THIS IS MODIFIED!*)
 	MaxTargets = 16;
 	
 	ScbNull = 0FFX;  ScbNullSet = {0..15} (*=SYSTEM.VAL(SET, ScbNull)*);
-	
+	
 TYPE
 		(*helper structures*)
 	BigSet = ARRAY 256 DIV 32 OF SET;		(* set with 256 elements*)

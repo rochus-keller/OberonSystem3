@@ -89,7 +89,7 @@ MODULE VirtFiles;	(** portable *)  (* pjm *)
 	(* Copy - Copy size bytes from source to dest.  (No overlap allowed) *)
 	
 	PROCEDURE Copy(source, dest, size: LONGINT);
-	CODE {SYSTEM.i386}
+	(*CODE {SYSTEM.i386}
 		MOV ESI, source[EBP]
 		MOV EDI, dest[EBP]
 		MOV ECX, size[EBP]
@@ -125,12 +125,12 @@ MODULE VirtFiles;	(** portable *)  (* pjm *)
 		REP MOVSD
 		SHLD ECX, EAX, 2
 	bytemove:
-		REP MOVSB
+		REP MOVSB*)
 	END Copy;
 
-	PROCEDURE -CoreHalt(n: LONGINT);
-	CODE {SYSTEM.i386}
-		INT 3
+	PROCEDURE CoreHalt(n: LONGINT);
+	(*CODE {SYSTEM.i386}
+		INT 3*)
 	END CoreHalt;
 
 	PROCEDURE Check(VAR s: ARRAY OF CHAR;

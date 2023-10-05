@@ -16,7 +16,13 @@ Kernel and compiler source code is apparently missing.
 Modification steps:
 - Converted all *.Mod files to plain text UTF-8 format, where the Oberon character set was translated to regular ISO 8859-1
 - Initial git commit
-
-
-
+- Added minimal Kernel.Mod and Modules.Mod to satisfy dependencies
+- Corrected syntax issues
+  removed incompatible syntax like '-' proc name prefix or marker characters (range ASCII 1 .. 10) or '!', or '*' after ARRAY, or typename after END
+  commented out CODE sections
+  removed unused modules with language extensions: Adaptec7/Script, MathH
+- Removed unused modules depending on the compiler: Browser, Builder, Watson0, Watson
+- Removed redundant modules: Empty.CD, Mitsumi.CD, GD54xx.Display, W32.Display, VGA.Display, S3C924.Display, S3Trio.Display,
+  SVGA.Display, Trace.Display, SVGAH.Display, S3C805.Display
+- Syntax git commit
 

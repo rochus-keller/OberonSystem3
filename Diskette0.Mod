@@ -241,12 +241,12 @@ END CycleMedia;
 (* CopyDWord - Copy len dwords from src to dst. *)
 
 PROCEDURE CopyDWord(src, dst, len: LONGINT);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV ESI, src[EBP]
 	MOV EDI, dst[EBP]
 	MOV ECX, len[EBP]
 	CLD
-	REP MOVSD
+	REP MOVSD*)
 END CopyDWord;
 
 (* Do - Perform a floppy operation *)

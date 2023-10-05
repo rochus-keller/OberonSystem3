@@ -191,7 +191,7 @@ TYPE
 		next: Driver;
 		
 		(*debug*: LONGINT;*)
-	END DriverDesc;
+	END;
 	
 (** SCSI Device *)
 	Device* = POINTER TO DeviceDesc;
@@ -203,7 +203,7 @@ TYPE
 		started: BOOLEAN;
 		bs*, cyls*, hds*, spt*: LONGINT;	(**drive geometry*)
 		next*: Device;
-	END DeviceDesc;
+	END;
 
 CONST
 (** SCSI Device class*)

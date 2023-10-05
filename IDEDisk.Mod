@@ -72,31 +72,31 @@ VAR
 
 (* RepInWord - Block port input instruction. *)
 
-PROCEDURE -RepInWord(port, buf, len: LONGINT);
-CODE {SYSTEM.i386}
+PROCEDURE RepInWord(port, buf, len: LONGINT);
+(*CODE {SYSTEM.i386}
 	POP ECX
 	POP EDI
 	POP EDX
 	CLD
-	REP INSW
+	REP INSW*)
 END RepInWord;
 
 (* RepOutWord - Block port output instruction. *)
 
-PROCEDURE -RepOutWord(port, buf, len: LONGINT);
-CODE {SYSTEM.i386}
+PROCEDURE RepOutWord(port, buf, len: LONGINT);
+(*CODE {SYSTEM.i386}
 	POP ECX
 	POP ESI
 	POP EDX
 	CLD
-	REP OUTSW
+	REP OUTSW*)
 END RepOutWord;
 
-PROCEDURE -Error(err: LONGINT);
-CODE {SYSTEM.i386}
+PROCEDURE Error(err: LONGINT);
+(*CODE {SYSTEM.i386}
 	POP EAX	(* for register dump *)
 	PUSH 17	(* Disk error *)
-	INT 3
+	INT 3*)
 END Error;
 
 (* ---- Disk driver (GST506 device-specific part) ---- *)

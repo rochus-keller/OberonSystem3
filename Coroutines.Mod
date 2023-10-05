@@ -46,7 +46,7 @@ END Init;
 (** Start - Transfer control to a coroutine for the first time *)
 
 PROCEDURE Start*(me: Coroutine);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV ECX, cur
 	MOV [ECX], EBP
 	MOV EAX, me[EBP]
@@ -57,18 +57,18 @@ CODE {SYSTEM.i386}
 	MOV cur, EAX
 	CALL DWORD 4[EAX]
 	PUSH 29
-	INT 3
+	INT 3*)
 END Start;
 
 (** Transfer - Transfer control to a coroutine *)
 
 PROCEDURE Transfer*(to: Coroutine);
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV ECX, cur
 	MOV [ECX], EBP
 	MOV ECX, to[EBP]
 	MOV EBP, [ECX]
-	MOV cur, ECX
+	MOV cur, ECX*)
 END Transfer;
 
 BEGIN

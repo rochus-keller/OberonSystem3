@@ -1243,10 +1243,10 @@ to.elems := from.elems
 			| 8596: Texts.Write(P.W, "+")	(*	+	leftrightarrow *)
 			ELSE
 			END;
-						Texts.SetFont (P.W, fnt);
+						Texts.SetFont (P.W, fnt);
 					ELSIF (i >= 8201) & (i <= 8500) THEN	(* Math character *)
 						Texts.SetFont (P.W, ChangeFontFamily(fnt, "Math"));
-		CASE i OF	(*   glyph	TeX name *)
+		CASE i OF	(*   glyph	TeX name *)
 			  8465: Texts.Write(P.W, "A")	(*	A	Im *)
 			| 8476: Texts.Write(P.W, "B")	(*	B	Re *)
 			| 8243: Texts.Write(P.W, "2")	(*	2	(double prime) *)
@@ -1257,10 +1257,10 @@ to.elems := from.elems
 			| 8224: Texts.Write(P.W, "}")	(*	}	dagger *)
 		ELSE
 		END;
-						Texts.SetFont (P.W, fnt);
+						Texts.SetFont (P.W, fnt);
 					ELSIF (i >= 160) & (i <= 250) THEN	(* Math character *)
 						Texts.SetFont (P.W, ChangeFontFamily(fnt, "Math"));
-		CASE i OF	(*   glyph	TeX name *)
+		CASE i OF	(*   glyph	TeX name *)
 			  167: Texts.Write(P.W, "v")	(*	v	S *)
 			| 176: Texts.Write(P.W, "0")	(*	0	deg *)
 			| 177: Texts.Write(P.W, "1")	(*	1	pm *)
@@ -1268,7 +1268,7 @@ to.elems := from.elems
 			| 162: Texts.Write(P.W, "~")	(*	~	cents *)
 		ELSE
 		END;
-						Texts.SetFont (P.W, fnt);
+						Texts.SetFont (P.W, fnt);
 					ELSE
 						Texts.Write(P.W, Strings.ISOToOberon[i])
 					END

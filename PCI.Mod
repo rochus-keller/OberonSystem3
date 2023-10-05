@@ -66,8 +66,8 @@ MODULE PCI;	(** non-portable *)	(* P. Ryser *)
 		pci: BOOLEAN;
 		pciEntry: LONGINT;
 
-	PROCEDURE -BiosServiceDirectory(sadr, sid, fs: LONGINT; VAR badr, len, entry: LONGINT): CHAR;
-	CODE {SYSTEM.i386}
+	PROCEDURE BiosServiceDirectory(sadr, sid, fs: LONGINT; VAR badr, len, entry: LONGINT): CHAR;
+	(*CODE {SYSTEM.i386}
 		DB 55H	(* push ebp *)
 		DB 8BH, 0ECH	(* mov ebp, esp *)
 		DB 66H, 8CH, 0C8H	(* mov ax, cs *)
@@ -84,7 +84,7 @@ MODULE PCI;	(** non-portable *)	(* P. Ryser *)
 		DB 8BH, 75H, 04H	(* mov esi, [ebp+4] *)
 		DB 89H, 16H	(* mov [esi], edx *)
 		DB 5DH	(*  pop ebp *)
-		DB 081H, 0C4H, 018H, 0H, 0H, 0H		(* add esp, 24 *)
+		DB 081H, 0C4H, 018H, 0H, 0H, 0H		(* add esp, 24 *)*)
 	END BiosServiceDirectory;
 
 	PROCEDURE FindBios32Service*(serviceId, serviceFkt: LONGINT; VAR serviceAdr, serviceLen, entryOffset: LONGINT): LONGINT;
@@ -133,8 +133,8 @@ MODULE PCI;	(** non-portable *)	(* P. Ryser *)
 		END
 	END DetectBios32;
 
-		PROCEDURE -pcicall(entry:LONGINT; VAR eax,ebx,ecx,edx,esi,edi:LONGINT; VAR eflags: SET);
-		CODE {SYSTEM.i386}
+		PROCEDURE pcicall(entry:LONGINT; VAR eax,ebx,ecx,edx,esi,edi:LONGINT; VAR eflags: SET);
+		(*CODE {SYSTEM.i386}
 			DB 55H				 (* push ebp *)
 			DB 8BH, 0ECH				 (* mov ebp, esp *)
 			DB 8CH, 0C8H				 (* mov eax, cs *)
@@ -171,7 +171,7 @@ MODULE PCI;	(** non-portable *)	(* P. Ryser *)
 			DB 8BH, 45H, 04H			(* mov eax, [ebp+4] *)
 			DB 89H, 18H				 (* mov [eax], ebx *)
 			DB 5DH				 (* pop ebp *)
-			DB 081H, 0C4H, 020H, 0H, 0H, 0H				 (* add esp, 32 *)
+			DB 081H, 0C4H, 020H, 0H, 0H, 0H				 (* add esp, 32 *)*)
 		END pcicall;
 
 	PROCEDURE OutRegs(eax, ebx, ecx, edx, esi, edi: LONGINT; eflags: SET);

@@ -381,7 +381,7 @@ Example
 
 *)
 
-System.Free SetGadgets ~
+System.Free SetGadgets ~
 
 Gadgets.Insert ^ ~
 	Panel	TextField	Slider	SetGadgets.NewFrame

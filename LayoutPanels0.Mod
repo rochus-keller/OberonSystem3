@@ -650,7 +650,7 @@ MODULE LayoutPanels0;	(** portable *)
 									END;
 									
 									IF (M.u = 0) OR (M.v = 1 - obj.H) OR (M.u + M.w = obj.W) OR (M.v + M.h - 1 = 0) THEN
-										Display3.Rect (mask, Display3.green, Display.solid, x, y, obj.W, obj.H, 1, Display.replace);
+										Display3.Rect (mask, Display3.green, Display.solid, x, y, obj.W, obj.H, 1, Display.replace);
 									END;
 
 									IF Gadgets.selected IN obj.state THEN
@@ -786,7 +786,7 @@ MODULE LayoutPanels0;	(** portable *)
 									END;
 									
 									IF (M.u = 0) OR (M.v = 1 - obj.H) OR (M.u + M.w = obj.W) OR (M.v + M.h  - 1 = 0) THEN
-										Display3.Rect(mask, Display3.blue, Display.solid, x, y, obj.W, obj.H, 1, Display.replace);
+										Display3.Rect(mask, Display3.blue, Display.solid, x, y, obj.W, obj.H, 1, Display.replace);
 									END;
 									
 									IF Gadgets.selected IN obj.state THEN

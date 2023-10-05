@@ -82,7 +82,7 @@ VAR
 	numused: LONGINT;	(* number of used Sectors *)
 	nummax: LONGINT;	(* total number of Sectors *)
 	nummaxdisk: LONGINT;	(* total number of Sectors on real disk *)
-	map: ARRAY * OF LONGINT;
+	map: ARRAY OF LONGINT;
 	init, trapped: BOOLEAN;
 
 		(* partition *)
@@ -97,16 +97,16 @@ VAR
 	writein: BOOLEAN;	(* all writes only go to the cache, not the disk *)
 	readin: BOOLEAN;	(* all reads only from the cache, not the disk (primed cache) *)
 	
-PROCEDURE -Halt(n: LONGINT);
-CODE {SYSTEM.i386}
-	INT 3
+PROCEDURE Halt(n: LONGINT);
+(*CODE {SYSTEM.i386}
+	INT 3*)
 END Halt;
 
-PROCEDURE -Error(err: LONGINT);
-CODE {SYSTEM.i386}
+PROCEDURE Error(err: LONGINT);
+(*CODE {SYSTEM.i386}
 	POP EAX	(* for register dump *)
 	PUSH 17	(* Disk error *)
-	INT 3
+	INT 3*)
 END Error;
 
 (* ---- Read partition table ---- *)
@@ -690,24 +690,24 @@ BEGIN
 	END
 END InitCache;
 
-PROCEDURE -CopySector(srcAdr, dstAdr: LONGINT);
+PROCEDURE CopySector(srcAdr, dstAdr: LONGINT);
 CONST SS4 = SectorSize DIV 4;
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	CLD
 	POP EDI
 	POP ESI
 	MOV ECX, SS4
-	REP MOVSD
+	REP MOVSD*)
 END CopySector;
 
-PROCEDURE -ClearSector(dstAdr: LONGINT);
+PROCEDURE ClearSector(dstAdr: LONGINT);
 CONST SS4 = SectorSize DIV 4;
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	CLD
 	XOR EAX, EAX
 	POP EDI
 	MOV ECX, SS4
-	REP STOSD
+	REP STOSD*)
 END ClearSector;
 
 (** GetSector - Read a 2k Sector from disk *)

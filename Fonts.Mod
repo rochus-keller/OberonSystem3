@@ -72,7 +72,7 @@ of characters, each character being a pattern and and metric data.
 	END ReadInt;
 
 	PROCEDURE *GetCharObj (L: Objects.Library; ref: INTEGER; VAR obj: Objects.Object);
-	CODE {SYSTEM.i386}
+	(*CODE {SYSTEM.i386}
 		MOV EAX, L[EBP]
 		MOV EAX, 4[EAX]	; Objects.LibDesc ind
 		MOVSX EBX, ref[EBP]
@@ -90,7 +90,7 @@ of characters, each character being a pattern and and metric data.
 		MOV 32[ECX], DX
 		MOV 36[ECX], EAX
 		MOV EAX, obj[EBP]
-		MOV [EAX], ECX
+		MOV [EAX], ECX*)
 	END GetCharObj;
 
 (*

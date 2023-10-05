@@ -24,9 +24,9 @@ VAR
 	drives: SHORTINT;	(* amount of drives found on inquiry *)
 	tgt: ARRAY SCSI.Targets OF SHORTINT;	(* available disks *)
 
-PROCEDURE -CoreHalt(n: LONGINT);
-CODE {SYSTEM.i386}
-	INT 3
+PROCEDURE CoreHalt(n: LONGINT);
+(*CODE {SYSTEM.i386}
+	INT 3*)
 END CoreHalt;
 
 (* ---- Disk driver ---- *)

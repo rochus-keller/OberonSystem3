@@ -57,7 +57,7 @@ VAR
 	first: BOOLEAN;
 
 PROCEDURE InBoundaries(x, y, w, h: INTEGER): BOOLEAN;
-CODE {SYSTEM.i386}
+(*CODE {SYSTEM.i386}
 	MOV AX, x[EBP]
 	MOV BX, y[EBP]
 	CMP AX, 0
@@ -74,7 +74,7 @@ CODE {SYSTEM.i386}
 false:
 	XOR EAX, EAX
 	LEAVE 
-	RET 16
+	RET 16*)
 END InBoundaries;
 	
 (** Get the color index of the bitmap pixel at X, Y. *)

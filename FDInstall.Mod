@@ -34,14 +34,14 @@ VAR
 	compressPos: LONGINT;
 	compressSec: INTEGER;
 
-PROCEDURE -Equal4(adr0, adr1, len: LONGINT): BOOLEAN;
-CODE {SYSTEM.i386}
+PROCEDURE Equal4(adr0, adr1, len: LONGINT): BOOLEAN;
+(*CODE {SYSTEM.i386}
 	POP ECX
 	POP EDI
 	POP ESI
 	CLD
 	REPE CMPSD
-	SETE AL
+	SETE AL*)
 END Equal4;
 
 PROCEDURE PutSectors(start, num: INTEGER;  VAR buf: ARRAY OF SYSTEM.BYTE; ofs: LONGINT);

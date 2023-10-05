@@ -187,10 +187,10 @@ MODULE ASPI;	(** non-portable *)	(* Contributed by P. Ryser to the System 3 proj
 		
 		disconnected: LONGINT;
 
-	PROCEDURE -rdtsc;	(* pentium only *)
-	CODE {SYSTEM.Pentium, SYSTEM.Privileged}
+	PROCEDURE rdtsc;	(* pentium only *)
+	(*CODE {SYSTEM.Pentium, SYSTEM.Privileged}
 		;DB 0FH, 31H
-		RDTSC
+		RDTSC*)
 	END rdtsc;
 	
 	PROCEDURE GetTime(VAR time: Time);

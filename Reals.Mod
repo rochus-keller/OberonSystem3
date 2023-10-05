@@ -177,11 +177,11 @@ BEGIN
 END NaNL;
 
 PROCEDURE fcr(): SET;
-CODE {SYSTEM.i386, SYSTEM.FPU}
+(*CODE {SYSTEM.i386, SYSTEM.FPU}
 	PUSH 0
 	FSTCW [ESP]
 	FWAIT
-	POP EAX
+	POP EAX*)
 END fcr;
 
 (** Return state of the floating-point control register. *)
@@ -195,8 +195,8 @@ BEGIN
 END FCR;
 
 PROCEDURE setfcr(s: SET);
-CODE {SYSTEM.i386, SYSTEM.FPU}
-	FLDCW s[EBP]
+(*CODE {SYSTEM.i386, SYSTEM.FPU}
+	FLDCW s[EBP]*)
 END setfcr;
 
 (** Set state of floating-point control register.  Traps reset this to the default & ENTIER resets the rounding mode. *)
