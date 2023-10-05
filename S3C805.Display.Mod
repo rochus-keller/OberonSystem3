@@ -323,7 +323,7 @@ lab1:
 				SYSTEM.PORTOUT(cmdReg, 239BH);
 				SYSTEM.GET(p, bit32);
 				bit32 := SYSTEM.ROT(bit32, 16);
-				SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, bit32));
+				SYSTEM.PORTOUT(pixTrans, ORD( bit32));
 				INC(p, stride); DEC(ly); DEC(h)
 			END;
 			DEC(width, 32); INC(pat, 4); INC(x)
@@ -356,7 +356,7 @@ lab1:
 				SYSTEM.PORTOUT(curX, SHORT(x));
 				SYSTEM.PORTOUT(curY, SHORT(y));
 				SYSTEM.PORTOUT(cmdReg, 239BH);
-				SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, bit24));
+				SYSTEM.PORTOUT(pixTrans, ORD( bit24));
 				DEC(y);
 			END
 		ELSE
@@ -366,7 +366,7 @@ lab1:
 				SYSTEM.PORTOUT(curX, SHORT(x));
 				SYSTEM.PORTOUT(curY, SHORT(y));
 				SYSTEM.PORTOUT(cmdReg, 239BH);
-				SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, bit32));
+				SYSTEM.PORTOUT(pixTrans, ORD( bit32));
 				DEC(y);
 			END
 		END;

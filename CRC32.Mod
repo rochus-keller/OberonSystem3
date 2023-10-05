@@ -29,14 +29,14 @@ MODULE CRC32; (* ejz   *)
 		WHILE len >= 8 DO
 			j := 0;
 			WHILE j < 8 DO
-				crc := crcTable[SYSTEM.VAL(LONGINT, (crc / SYSTEM.VAL(SET, buf[i])) * {0 .. 7})] / SYSTEM.LSH(crc, -8);
+				crc := crcTable[ORD( (crc / BITS( buf[i])) * {0 .. 7})] / SYSTEM.LSH(crc, -8);
 				INC(i); INC(j)
 			END;
 			DEC(len, 8)
 		END;
 		IF len > 0 THEN
 			REPEAT
-				crc := crcTable[SYSTEM.VAL(LONGINT, (crc / SYSTEM.VAL(SET, buf[i])) * {0 .. 7})] / SYSTEM.LSH(crc, -8);
+				crc := crcTable[ORD( (crc / BITS( buf[i])) * {0 .. 7})] / SYSTEM.LSH(crc, -8);
 				INC(i); DEC(len)
 			UNTIL len <= 0
 		END;
@@ -57,9 +57,9 @@ MODULE CRC32; (* ejz   *)
 		END;
 		n := 0;
 		WHILE n < 256 DO
-			c := SYSTEM.VAL(SET, n); k := 0;
+			c := BITS( n); k := 0;
 			WHILE k < 8 DO
-				IF 0 IN SYSTEM.VAL(SET, c) THEN
+				IF 0 IN c THEN
 					c := poly / SYSTEM.LSH(c, -1)
 				ELSE
 					c := SYSTEM.LSH(c, -1)

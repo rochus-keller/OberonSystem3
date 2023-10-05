@@ -98,14 +98,14 @@ VAR
 		IF pushF THEN
 			IF opTsi = 0 THEN opTsi := 1 END;
 			opTs[opTsi-1].adr := adr; 
-			opTs[opTsi-1].fgrL := S.VAL(LONGINT,FGR[sp]);
-			opTs[opTsi-1].fgrH := S.VAL(LONGINT,FGR[sp+1]);
+			opTs[opTsi-1].fgrL := ORD(FGR[sp]);
+			opTs[opTsi-1].fgrH := ORD(FGR[sp+1]);
 			pushF := FALSE;
 		ELSE	
 			opTs[opTsi].op1 := 0X; opTs[opTsi].op2 := 0X; 
 			opTs[opTsi].adr := adr; opTs[opTsi].sp := 0;
-			opTs[opTsi].fgrL := S.VAL(LONGINT,FGR[sp]);
-			opTs[opTsi].fgrH := S.VAL(LONGINT,FGR[sp+1]);
+			opTs[opTsi].fgrL := ORD(FGR[sp]);
+			opTs[opTsi].fgrH := ORD(FGR[sp+1]);
 			INC(opTsI);
 		END;
 	END ParsPush;
@@ -190,18 +190,18 @@ end:	MOV R3, EDX*)
 	PROCEDURE ADDD*(d, s, t: LONGINT);	(* FPR[d] := FPR[s]+FPR[t] *)	(* denormalized allowed as input, Round = RN *)
 		VAR m1l, m2l, m1h, m2h, e1, e2, ed: LONGINT; s1, s2: SET; Error: ARRAY 32 OF CHAR;
 	BEGIN
-		m1h := S.VAL(LONGINT, FGR[s+1]); m2h := S.VAL(LONGINT, FGR[t+1]);
-		e1 := S.LSH(S.LSH(m1h, 1), -eshiftD-1); s1 := S.VAL(SET, m1h)*sign; m1h := S.VAL(LONGINT, S.VAL(SET, m1h)*mantD);
-		e2 := S.LSH(S.LSH(m2h, 1), -eshiftD-1); s2 := S.VAL(SET, m2h)*sign; m2h := S.VAL(LONGINT, S.VAL(SET, m2h)*mantD);
+		m1h := ORD( FGR[s+1]); m2h := ORD( FGR[t+1]);
+		e1 := S.LSH(S.LSH(m1h, 1), -eshiftD-1); s1 := BITS( m1h)*sign; m1h := ORD( BITS( m1h)*mantD);
+		e2 := S.LSH(S.LSH(m2h, 1), -eshiftD-1); s2 := BITS( m2h)*sign; m2h := ORD( BITS( m2h)*mantD);
 		IF e1 = 0 THEN e1 := 1 ELSE INC(m1h, normD) END;
 		IF e2 = 0 THEN e2 := 1 ELSE INC(m2h, normD) END;
 		(* IF (e1 = maxexpD + 1) OR (e2 = maxexpD + 1) THEN HALT(NaNTrap) END; *)
 		IF e1 < e2 THEN
-			m1l := S.VAL(LONGINT, FGR[t]); m2l := S.VAL(LONGINT, FGR[s]);
+			m1l := ORD( FGR[t]); m2l := ORD( FGR[s]);
 			ed := e2; e2 := e1; e1 := ed;
 			ed := m2h; m2h := m1h; m1h := ed;
-			ed := S.VAL(LONGINT, s2); s2 := s1; s1 := S.VAL(SET, ed)
-		ELSE m1l := S.VAL(LONGINT, FGR[s]); m2l := S.VAL(LONGINT, FGR[t])
+			ed := ORD( s2); s2 := s1; s1 := BITS( ed)
+		ELSE m1l := ORD( FGR[s]); m2l := ORD( FGR[t])
 		END;
 		(* e1 is exponent of result *)
 		ed := e1- e2;
@@ -209,12 +209,12 @@ end:	MOV R3, EDX*)
 		m1h := S.LSH(m1h, 3) + S.LSH(m1l, -29); m1l := S.LSH(m1l, 3);
 		IF ed < 3 THEN	(* sticky = 0, shift left by 3-ed, ed < 3 *)
 			m2h := S.LSH(m2h, 3-ed) + S.LSH(m2l, -29-ed); m2l := S.LSH(m2l, 3-ed);
-		ELSIF (ed > 34) & (m2l = 0) & (S.VAL(SET, m2h)*{0..ed-35} = {}) OR
-				(ed <= 34) & (S.VAL(SET, m2l)*{0..ed-3} = {}) THEN	(* sticky = 0, shift right by ed-3, ed >= 3 *)
+		ELSIF (ed > 34) & (m2l = 0) & (BITS( m2h)*{0..ed-35} = {}) OR
+				(ed <= 34) & (BITS( m2l)*{0..ed-3} = {}) THEN	(* sticky = 0, shift right by ed-3, ed >= 3 *)
 			m2l := SLRVD(m2l, m2h, ed-3); m2h := R3
 		ELSE	(* sticky = 1, shift right by ed-3, ed >= 3 *)
 			m2l := SLRVD(m2l, m2h, ed-3); m2h := R3;
-			INCL(S.VAL(SET, m2l), 0)
+			INCL(BITS( m2l), 0)
 		END;
 		IF s1 # plus THEN m1h := -m1h;
 			IF m1l # 0 THEN DEC(m1h) END;
@@ -246,8 +246,8 @@ end:	MOV R3, EDX*)
 		ELSE m1l := S.LSH(m1l, -3) + S.LSH(m1h, 29); m1h := S.LSH(m1h, -3)
 		END;
 		IF e1 > maxexpD THEN Error := "FLOATING POINT OVERFLOW"; HALT(ovflTrap)
-		ELSIF e1 <= 0 THEN (* denormalized FGR[d] := s1 + S.VAL(SET, m1) => +0 *) FGR[d] := {}; FGR[d+1] := {}
-		ELSE FGR[d+1] := s1 + S.VAL(SET, S.LSH(e1, eshiftD)) + (S.VAL(SET, m1h) - normDbit); FGR[d] := S.VAL(SET, m1l)
+		ELSIF e1 <= 0 THEN (* denormalized FGR[d] := s1 + BITS( m1) => +0 *) FGR[d] := {}; FGR[d+1] := {}
+		ELSE FGR[d+1] := s1 + BITS( S.LSH(e1, eshiftD)) + (BITS( m1h) - normDbit); FGR[d] := BITS( m1l)
 		END
 	END ADDD;
 
@@ -255,18 +255,18 @@ end:	MOV R3, EDX*)
 	(* identical to ADDD except in the second line *)
 		VAR m1l, m2l, m1h, m2h, e1, e2, ed: LONGINT; s1, s2: SET; Error: ARRAY 32 OF CHAR;
 	BEGIN
-		m1h := S.VAL(LONGINT, FGR[s+1]); m2h := S.VAL(LONGINT, FGR[t+1] / sign);
-		e1 := S.LSH(S.LSH(m1h, 1), -eshiftD-1); s1 := S.VAL(SET, m1h)*sign; m1h := S.VAL(LONGINT, S.VAL(SET, m1h)*mantD);
-		e2 := S.LSH(S.LSH(m2h, 1), -eshiftD-1); s2 := S.VAL(SET, m2h)*sign; m2h := S.VAL(LONGINT, S.VAL(SET, m2h)*mantD);
+		m1h := ORD( FGR[s+1]); m2h := ORD( FGR[t+1] / sign);
+		e1 := S.LSH(S.LSH(m1h, 1), -eshiftD-1); s1 := BITS( m1h)*sign; m1h := ORD( BITS( m1h)*mantD);
+		e2 := S.LSH(S.LSH(m2h, 1), -eshiftD-1); s2 := BITS( m2h)*sign; m2h := ORD( BITS( m2h)*mantD);
 		IF e1 = 0 THEN e1 := 1 ELSE INC(m1h, normD) END;
 		IF e2 = 0 THEN e2 := 1 ELSE INC(m2h, normD) END;
 		(* IF (e1 = maxexpD + 1) OR (e2 = maxexpD + 1) THEN HALT(NaNTrap) END; *)
 		IF e1 < e2 THEN
-			m1l := S.VAL(LONGINT, FGR[t]); m2l := S.VAL(LONGINT, FGR[s]);
+			m1l := ORD( FGR[t]); m2l := ORD( FGR[s]);
 			ed := e2; e2 := e1; e1 := ed;
 			ed := m2h; m2h := m1h; m1h := ed;
-			ed := S.VAL(LONGINT, s2); s2 := s1; s1 := S.VAL(SET, ed)
-		ELSE m1l := S.VAL(LONGINT, FGR[s]); m2l := S.VAL(LONGINT, FGR[t])
+			ed := ORD( s2); s2 := s1; s1 := BITS( ed)
+		ELSE m1l := ORD( FGR[s]); m2l := ORD( FGR[t])
 		END;
 		(* e1 is exponent of result *)
 		ed := e1- e2;
@@ -274,12 +274,12 @@ end:	MOV R3, EDX*)
 		m1h := S.LSH(m1h, 3) + S.LSH(m1l, -29); m1l := S.LSH(m1l, 3);
 		IF ed < 3 THEN	(* sticky = 0, shift left by 3-ed, ed < 3 *)
 			m2h := S.LSH(m2h, 3-ed) + S.LSH(m2l, -29-ed); m2l := S.LSH(m2l, 3-ed);
-		ELSIF (ed > 34) & (m2l = 0) & (S.VAL(SET, m2h)*{0..ed-35} = {}) OR
-				(ed <= 34) & (S.VAL(SET, m2l)*{0..ed-3} = {}) THEN	(* sticky = 0, shift right by ed-3, ed >= 3 *)
+		ELSIF (ed > 34) & (m2l = 0) & (BITS( m2h)*{0..ed-35} = {}) OR
+				(ed <= 34) & (BITS( m2l)*{0..ed-3} = {}) THEN	(* sticky = 0, shift right by ed-3, ed >= 3 *)
 			m2l := SLRVD(m2l, m2h, ed-3); m2h := R3
 		ELSE	(* sticky = 1, shift right by ed-3, ed >= 3 *)
 			m2l := SLRVD(m2l, m2h, ed-3); m2h := R3;
-			INCL(S.VAL(SET, m2l), 0)
+			INCL(BITS( m2l), 0)
 		END;
 		IF s1 # plus THEN m1h := -m1h;
 			IF m1l # 0 THEN DEC(m1h) END;
@@ -311,38 +311,38 @@ end:	MOV R3, EDX*)
 		ELSE m1l := S.LSH(m1l, -3) + S.LSH(m1h, 29); m1h := S.LSH(m1h, -3)
 		END;
 		IF e1 > maxexpD THEN Error := "FLOATING POINT OVERFLOW"; HALT(ovflTrap)
-		ELSIF e1 <= 0 THEN (* denormalized FGR[d] := s1 + S.VAL(SET, m1) => +0 *) FGR[d] := {}; FGR[d+1] := {}
-		ELSE FGR[d+1] := s1 + S.VAL(SET, S.LSH(e1, eshiftD)) + (S.VAL(SET, m1h) - normDbit); FGR[d] := S.VAL(SET, m1l)
+		ELSIF e1 <= 0 THEN (* denormalized FGR[d] := s1 + BITS( m1) => +0 *) FGR[d] := {}; FGR[d+1] := {}
+		ELSE FGR[d+1] := s1 + BITS( S.LSH(e1, eshiftD)) + (BITS( m1h) - normDbit); FGR[d] := BITS( m1l)
 		END
 	END SUBD;
 
 	PROCEDURE MULD*(d, s, t: LONGINT);	(* FPR[d] := FPR[s]*FPR[t], Round = RN *)
 		VAR m1l, m2l, m1h, m2h, e1, e2: LONGINT; s1, s2: SET; ah, bl, bh, cl, ch, dl, c0, c1: LONGINT; Error: ARRAY 32 OF CHAR;
 	BEGIN
-		m1l := S.VAL(LONGINT, FGR[s]); m1h := S.VAL(LONGINT, FGR[s+1]);
-		m2l := S.VAL(LONGINT, FGR[t]); m2h := S.VAL(LONGINT, FGR[t+1]);
+		m1l := ORD( FGR[s]); m1h := ORD( FGR[s+1]);
+		m2l := ORD( FGR[t]); m2h := ORD( FGR[t+1]);
 		IF (m1l = 0) & (m1h = 0) OR (m2l = 0) & (m2h = 0) THEN FGR[d] := {}; FGR[d+1] := {}; RETURN END;
-		e1 := S.LSH(S.LSH(m1h, 1), -eshiftD-1); s1 := S.VAL(SET, m1h)*sign;
-		m1h := S.VAL(LONGINT, S.VAL(SET, m1h)*mantD) + normD;
-		e2 := S.LSH(S.LSH(m2h, 1), -eshiftD-1); s2 := S.VAL(SET, m2h)*sign;
-		m2h := S.VAL(LONGINT, S.VAL(SET, m2h)*mantD) + normD;
+		e1 := S.LSH(S.LSH(m1h, 1), -eshiftD-1); s1 := BITS( m1h)*sign;
+		m1h := ORD( BITS( m1h)*mantD) + normD;
+		e2 := S.LSH(S.LSH(m2h, 1), -eshiftD-1); s2 := BITS( m2h)*sign;
+		m2h := ORD( BITS( m2h)*mantD) + normD;
 		(* IF (e1 = maxexpD + 1) OR (e2 = maxexpD + 1) THEN HALT(NaNTrap) END; *)
 		(* IF (e1 = 0) OR (e2 = 0) THEN HALT(DenormTrap) END; *)
 		e1 := e1 + e2 - biasD; s1 := s1/s2;
 		m1h := S.LSH(m1h, 8) + S.LSH(m1l, -24); m1l := S.LSH(m1l, 8);
 		m2h := S.LSH(m2h, 7) + S.LSH(m2l, -25); m2l := S.LSH(m2l, 7);
-		MULTU(m2l, m1l); s2 (*sticky*) := S.VAL(SET, low); ah := hi;
+		MULTU(m2l, m1l); s2 (*sticky*) := BITS( low); ah := hi;
 		MULTU(m2l, m1h); bl := low; bh := hi;
 		MULTU(m2h, m1l); cl := low; ch := hi;
 		MULTU(m2h, m1h); dl := low; m1h := hi;
-		c0 := Carry(ah, bl); m2h := ah + bl; s2 := s2 + S.VAL(SET, m2h);
-		c1 := Carry(m2h, cl); m2h := m2h + cl; s2 := s2 + S.VAL(SET, m2h);
+		c0 := Carry(ah, bl); m2h := ah + bl; s2 := s2 + BITS( m2h);
+		c1 := Carry(m2h, cl); m2h := m2h + cl; s2 := s2 + BITS( m2h);
 		m1l := c0 + c1 + bh;
 		c0 := Carry(m1l, ch); m1l := m1l + ch;
 		c1 := Carry(m1l, dl); m1l := m1l + dl;
 		m1h := m1h + c0 + c1;
 		IF m1h >= ASH(normD, 4) THEN m1l := S.LSH(m1l, -1) + S.LSH(m1h, 31); m1h := S.LSH(m1h, -1); INC(e1) END;
-		IF s2 # {} THEN (* sticky *) INCL(S.VAL(SET, m1l), 0) END;
+		IF s2 # {} THEN (* sticky *) INCL(BITS( m1l), 0) END;
 		IF m1l MOD 16 IN {5..7, 12..15} THEN
 			m1l := S.LSH(m1l, -3) + S.LSH(m1h, 29); m1h := S.LSH(m1h, -3);
 			IF m1l = -1 THEN (* carry *) m1l := 0; INC(m1h);
@@ -352,22 +352,22 @@ end:	MOV R3, EDX*)
 		ELSE m1l := S.LSH(m1l, -3) + S.LSH(m1h, 29); m1h := S.LSH(m1h, -3)
 		END;
 		IF e1 > maxexpD THEN Error := "FLOATING POINT OVERFLOW"; HALT(ovflTrap)
-		ELSIF e1 <= 0 THEN (* denormalized FGR[d] := s1 + S.VAL(SET, m1) => +0 *) FGR[d] := {}; FGR[d+1] := {}
-		ELSE FGR[d+1] := s1 + S.VAL(SET, S.LSH(e1, eshiftD)) + (S.VAL(SET, m1h) - normDbit); FGR[d] := S.VAL(SET, m1l)
+		ELSIF e1 <= 0 THEN (* denormalized FGR[d] := s1 + BITS( m1) => +0 *) FGR[d] := {}; FGR[d+1] := {}
+		ELSE FGR[d+1] := s1 + BITS( S.LSH(e1, eshiftD)) + (BITS( m1h) - normDbit); FGR[d] := BITS( m1l)
 		END
 	END MULD;
 
 	PROCEDURE DIVD*(d, s, t: LONGINT);	(* FPR[d] := FPR[s]/FPR[t], Round = RN *)
 		VAR m1l, m2l, m1h, m2h, q, ql, qh, rl, rh, e1, e2: LONGINT; s1, s2: SET; Error: ARRAY 32 OF CHAR;
 	BEGIN
-		m1l := S.VAL(LONGINT, FGR[s]); m1h := S.VAL(LONGINT, FGR[s+1]);
-		m2l := S.VAL(LONGINT, FGR[t]); m2h := S.VAL(LONGINT, FGR[t+1]);
+		m1l := ORD( FGR[s]); m1h := ORD( FGR[s+1]);
+		m2l := ORD( FGR[t]); m2h := ORD( FGR[t+1]);
 		IF (m2l = 0) & (m2h = 0) THEN Error := "FLOATING POINT DIVIDE BY ZERO"; HALT(zeroDivTrap) END;
 		IF (m1l = 0) & (m1h = 0) THEN FGR[d] := {}; FGR[d+1] := {}; RETURN END;
-		e1 := S.LSH(S.LSH(m1h, 1), -eshiftD-1); s1 := S.VAL(SET, m1h)*sign;
-		m1h := S.VAL(LONGINT, S.VAL(SET, m1h)*mantD) + normD;
-		e2 := S.LSH(S.LSH(m2h, 1), -eshiftD-1); s2 := S.VAL(SET, m2h)*sign;
-		m2h := S.VAL(LONGINT, S.VAL(SET, m2h)*mantD) + normD;
+		e1 := S.LSH(S.LSH(m1h, 1), -eshiftD-1); s1 := BITS( m1h)*sign;
+		m1h := ORD( BITS( m1h)*mantD) + normD;
+		e2 := S.LSH(S.LSH(m2h, 1), -eshiftD-1); s2 := BITS( m2h)*sign;
+		m2h := ORD( BITS( m2h)*mantD) + normD;
 		(* IF (e1 = maxexpD + 1) OR (e2 = maxexpD + 1) THEN HALT(NaNTrap) END; *)
 		(* IF (e1 = 0) OR (e2 = 0) THEN HALT(DenormTrap) END; *)
 		e1 := e1 - e2 + biasD; s1 := s1/s2;
@@ -385,7 +385,7 @@ end:	MOV R3, EDX*)
 		WHILE (qh < ASH(normD, 3)) & (e1 > 0) DO
 			qh := S.LSH(qh, 1) + S.LSH(ql, -31); ql := S.LSH(ql, 1); DEC(e1)
 		END;
-		IF (rl # 0) OR (rh # 0) THEN (* sticky *) INCL(S.VAL(SET, ql), 0) END;
+		IF (rl # 0) OR (rh # 0) THEN (* sticky *) INCL(BITS( ql), 0) END;
 		IF ql MOD 16 IN {5..7, 12..15} THEN
 			ql := S.LSH(ql, -3) + S.LSH(qh, 29); qh := S.LSH(qh, -3);
 			IF ql = -1 THEN (* carry *) ql := 0; INC(qh);
@@ -395,8 +395,8 @@ end:	MOV R3, EDX*)
 		ELSE ql := S.LSH(ql, -3) + S.LSH(qh, 29); qh := S.LSH(qh, -3)
 		END;
 		IF e1 > maxexpD THEN Error := "FLOATING POINT OVERFLOW"; HALT(ovflTrap)
-		ELSIF e1 <= 0 THEN (* denormalized FGR[d] := s1 + S.VAL(SET, q) => +0 *) FGR[d] := {}; FGR[d+1] := {}
-		ELSE FGR[d+1] := s1 + S.VAL(SET, S.LSH(e1, eshiftD)) + (S.VAL(SET, qh) - normDbit); FGR[d] := S.VAL(SET, ql)
+		ELSIF e1 <= 0 THEN (* denormalized FGR[d] := s1 + BITS( q) => +0 *) FGR[d] := {}; FGR[d+1] := {}
+		ELSE FGR[d+1] := s1 + BITS( S.LSH(e1, eshiftD)) + (BITS( qh) - normDbit); FGR[d] := BITS( ql)
 		END
 	END DIVD;
 
@@ -414,17 +414,17 @@ end:	MOV R3, EDX*)
 	BEGIN
 		s1 := FGR[s+1]; s2 := FGR[t+1];
 		IF s1*s2*sign = plus THEN
-			IF s1 # s2 THEN less := S.VAL(LONGINT, s1) < S.VAL(LONGINT, s2)
+			IF s1 # s2 THEN less := ORD( s1) < ORD( s2)
 			ELSE s1 := FGR[s]; s2 := FGR[t];
-				IF (s1/s2)*sign = plus THEN less := S.VAL(LONGINT, s1) < S.VAL(LONGINT, s2)
-				ELSE (* bit 31 is different *) less := S.VAL(LONGINT, s2) < S.VAL(LONGINT, s1)
+				IF (s1/s2)*sign = plus THEN less := ORD( s1) < ORD( s2)
+				ELSE (* bit 31 is different *) less := ORD( s2) < ORD( s1)
 				END
 			END
 		ELSE (* both negative *)
-			IF s1 # s2 THEN less := S.VAL(LONGINT, s2) < S.VAL(LONGINT, s1)
+			IF s1 # s2 THEN less := ORD( s2) < ORD( s1)
 			ELSE s1 := FGR[s]; s2 := FGR[t];
-				IF (s1/s2)*sign = plus THEN less := S.VAL(LONGINT, s2) < S.VAL(LONGINT, s1)
-				ELSE (* bit 31 is different *) less := S.VAL(LONGINT, s1) < S.VAL(LONGINT, s2)
+				IF (s1/s2)*sign = plus THEN less := ORD( s2) < ORD( s1)
+				ELSE (* bit 31 is different *) less := ORD( s1) < ORD( s2)
 				END
 			END
 		END
@@ -433,34 +433,34 @@ end:	MOV R3, EDX*)
 	PROCEDURE CVTDW*(d, s: LONGINT);	(* FPR[d] := LONGFLOAT(FGR[s] *)	(* always exact *)
 		VAR m, e: LONGINT; sgn: SET;
 	BEGIN
-		m := S.VAL(LONGINT, FGR[s]); sgn := plus;
+		m := ORD( FGR[s]); sgn := plus;
 		IF m = 0 THEN FGR[d] := {}; FGR[d+1] := {}; RETURN END;
 		IF m < 0 THEN sgn := minus;
 			IF m # MIN(LONGINT) THEN m := -m END
 		END;
 		e := biasD + 31;
 		WHILE m > 0 DO m := S.LSH(m, 1); DEC(e) END;
-		FGR[d] := S.VAL(SET, S.LSH(m, 21));
-		FGR[d+1] := sgn + S.VAL(SET, S.LSH(e, eshiftD)) + (S.VAL(SET, S.LSH(m, -11))*mantD)
+		FGR[d] := BITS( S.LSH(m, 21));
+		FGR[d+1] := sgn + BITS( S.LSH(e, eshiftD)) + (BITS( S.LSH(m, -11))*mantD)
 	END CVTDW;
 
 	PROCEDURE CVTSD*(d, s: LONGINT);	(* FGR[d] := SHORT(FPR[s]) *)	(* Round = RN *)
 		VAR ml, mh, sgn: SET; e: LONGINT; Error: ARRAY 32 OF CHAR;
 	BEGIN
 		ml := FGR[s]; mh := FGR[s+1]; sgn := mh*sign;
-		e := S.VAL(LONGINT, mh*expD) + ASH(biasS-biasD, eshiftD);
+		e := ORD( mh*expD) + ASH(biasS-biasD, eshiftD);
 		(* round to nearest: *)
 		IF ml*{28..31} = {28..31} THEN (* carry to mh *)
 			IF mh*mantD = mantD THEN (* carry to norm bit *)
 				INC(e, ASH(1, eshiftD)); mh := {}; ml := S.LSH(ml, -1)*{0..26}
-			ELSE ml := ml - {28..31}; INC(S.VAL(LONGINT, mh), 1)
+			ELSE ml := ml - {28..31}; INC(ORD( mh), 1)
 			END
-		ELSE INC(S.VAL(LONGINT, ml), ASH(1, 28))
+		ELSE INC(ORD( ml), ASH(1, 28))
 		END;
 		IF ml*{0..28} = {} THEN EXCL(ml, 29) END;
 		IF e > ASH(maxexpS, eshiftD) THEN Error := "FLOATING POINT OVERFLOW"; HALT(ovflTrap) END;
 		IF e <= 0 THEN FGR[d] := {}
-		ELSE FGR[d] := sgn + S.VAL(SET, S.LSH(e, 3)) + S.LSH(mh, 3)*mantS + S.LSH(ml, -29)
+		ELSE FGR[d] := sgn + BITS( S.LSH(e, 3)) + S.LSH(mh, 3)*mantS + S.LSH(ml, -29)
 		END
 	END CVTSD;
 
@@ -470,7 +470,7 @@ end:	MOV R3, EDX*)
 		m := FGR[s];
 		IF m = {} THEN FGR[d] := {}; FGR[d+1] := {}; RETURN END;
 		FGR[d] := S.LSH(m, 29);
-		FGR[d+1] := m*sign + S.VAL(SET, S.VAL(LONGINT, S.LSH(m*expS, -3)) 
+		FGR[d+1] := m*sign + BITS( ORD( S.LSH(m*expS, -3)) 
 						+ ASH(biasD-biasS, eshiftD)) + S.LSH(m, -3)*mantD;
 	END CVTDS;
 
@@ -479,7 +479,7 @@ end:	MOV R3, EDX*)
 	BEGIN
 		ml := FGR[s]; mh := FGR[s+1];
 		IF (ml = {}) & (mh = {}) THEN FGR[d] := {}; RETURN END;
-		e := S.LSH(S.VAL(LONGINT, mh*expD), -eshiftD) - (biasD + 20);
+		e := S.LSH(ORD( mh*expD), -eshiftD) - (biasD + 20);
 		IF mh*sign = plus THEN
 			IF e > 0 THEN
 				IF e > 10 THEN Error := "FLOATING POINT OVERFLOW"; HALT(ovflTrap) END;
@@ -490,13 +490,13 @@ end:	MOV R3, EDX*)
 			END
 		ELSE
 			IF e > 0 THEN
-				help2 := S.VAL(LONGINT, S.LSH(ml, e-32)*{0..e-1});
-				FGR[d] := S.VAL(SET, -(S.LSH(S.VAL(LONGINT, mh*mantD) + normD, e) + help2));
+				help2 := ORD( S.LSH(ml, e-32)*{0..e-1});
+				FGR[d] := BITS( -(S.LSH(ORD( mh*mantD) + normD, e) + help2));
 				IF (e > 10) & (FGR[d] # {31}) THEN Error := "FLOATING POINT OVERFLOW"; HALT(ovflTrap) END;
 			ELSIF e < -20 THEN FGR[d] := (* -1 *) {0..31}
 			ELSIF (e # 0) & (mh*{0..-e-1} # {}) OR (ml # {}) THEN
-				FGR[d] := S.VAL(SET, -(S.LSH(S.VAL(LONGINT, mh*mantD) + normD, e) + 1))
-			ELSE FGR[d] := S.VAL(SET, -S.LSH(S.VAL(LONGINT, mh*mantD) + normD, e))
+				FGR[d] := BITS( -(S.LSH(ORD( mh*mantD) + normD, e) + 1))
+			ELSE FGR[d] := BITS( -S.LSH(ORD( mh*mantD) + normD, e))
 			END
 		END
 	END CVTWD;

@@ -153,21 +153,21 @@ VAR b: SET;  p: LONGINT;
 BEGIN
 	curBank := bank;
 	SYSTEM.PORTOUT(3C4H, 4X);
-	SYSTEM.PORTIN(3C5H, SYSTEM.VAL(CHAR, b));
+	SYSTEM.PORTIN(3C5H, ( b));
 	IF ~(3 IN b) THEN bank := bank*4 END;
 	
-	SYSTEM.PORTIN(3CCH, SYSTEM.VAL(CHAR, b));
+	SYSTEM.PORTIN(3CCH, ( b));
 	IF 0 IN b THEN p := 3D4H ELSE p := 3B4H END;
 	
 	SYSTEM.PORTOUT(p, SYSTEM.VAL(INTEGER, 4838H));
 	SYSTEM.PORTOUT(p, SYSTEM.VAL(INTEGER, 0A539H));
 
-	SYSTEM.PORTIN(3CCH, SYSTEM.VAL(CHAR, b));
+	SYSTEM.PORTIN(3CCH, ( b));
 	IF 0 IN b THEN p := 3D4H ELSE p := 3B4H END;
 
 	SYSTEM.PORTOUT(p, 6AX);
-	SYSTEM.PORTIN(p+1, SYSTEM.VAL(CHAR, b));
-	b := SYSTEM.LSH((b * {6,7}) + SYSTEM.VAL(SET, bank), 8) + SYSTEM.VAL(SET, 6AH);
+	SYSTEM.PORTIN(p+1, ( b));
+	b := SYSTEM.LSH((b * {6,7}) + BITS( bank), 8) + BITS( 6AH);
 	SYSTEM.PORTOUT(p, SYSTEM.VAL(INTEGER, b))
 END SwitchS3Aurora64V;
 
@@ -186,13 +186,13 @@ VAR s: SET;
 BEGIN
 	curBank := bank;
 	SYSTEM.PORTOUT(3D4H, 35X);
-	SYSTEM.PORTIN(3D5H, SYSTEM.VAL(CHAR, s));
+	SYSTEM.PORTIN(3D5H, ( s));
 	SYSTEM.PORTOUT(3D4H, SYSTEM.VAL(INTEGER, SYSTEM.LSH(s * {4..7} + 
-		SYSTEM.VAL(SET, bank MOD 16), 8) + SYSTEM.VAL(SET, 35H)));
+		BITS( bank MOD 16), 8) + BITS( 35H)));
 	SYSTEM.PORTOUT(3D4H, 51X);
-	SYSTEM.PORTIN(3D5H, SYSTEM.VAL(CHAR, s));
+	SYSTEM.PORTIN(3D5H, ( s));
 	SYSTEM.PORTOUT(3D4H, SYSTEM.VAL(INTEGER, SYSTEM.LSH(s * {0..1, 4..7} + 
-		SYSTEM.VAL(SET, ASH(bank DIV 16, 2)), 8) + SYSTEM.VAL(SET, 51H)))
+		BITS( ASH(bank DIV 16, 2)), 8) + BITS( 51H)))
 END SwitchS3801;
 
 (* SwitchFireGL - Diamond FireGL (512k only). *)
@@ -203,8 +203,8 @@ BEGIN
 	curBank := bank;
 	SYSTEM.PORTIN(3CEH, save);
 	SYSTEM.PORTOUT(3CEH, 9X);
-	SYSTEM.PORTIN(3CFH, SYSTEM.VAL(CHAR, s));
-	SYSTEM.PORTOUT(3CFH, SYSTEM.VAL(CHAR, s - {0..2} + SYSTEM.VAL(SET, bank) * {0..2}));
+	SYSTEM.PORTIN(3CFH, ( s));
+	SYSTEM.PORTOUT(3CFH, ( s - {0..2} + BITS( bank) * {0..2}));
 	SYSTEM.PORTOUT(3CEH, save)
 END SwitchFireGL;
 
@@ -231,13 +231,13 @@ PROCEDURE SwitchMach32(bank: LONGINT);
 VAR s: SET;
 BEGIN
 	curBank := bank;
-	s := SYSTEM.VAL(SET, (bank MOD 16) * 22H);
+	s := BITS( (bank MOD 16) * 22H);
 	SYSTEM.PORTOUT(1CEH, 0B2X);
-	SYSTEM.PORTOUT(1CFH, SYSTEM.VAL(CHAR, SYSTEM.LSH(s, -8) + (s * {0..7})));
+	SYSTEM.PORTOUT(1CFH, ( SYSTEM.LSH(s, -8) + (s * {0..7})));
 	SYSTEM.PORTOUT(1CEH, 0AEX);
-	SYSTEM.PORTIN(1CFH, SYSTEM.VAL(CHAR, s));
+	SYSTEM.PORTIN(1CFH, ( s));
 	SYSTEM.PORTOUT(1CEH, 0AEX);
-	SYSTEM.PORTOUT(1CFH, SYSTEM.VAL(CHAR, (s * {4..7}) + SYSTEM.VAL(SET, ASH(bank, -4)*5)))
+	SYSTEM.PORTOUT(1CFH, ( (s * {4..7}) + BITS( ASH(bank, -4)*5)))
 END SwitchMach32;
 
 (* SwitchTrident9xxx - Switch to Trident 9xxx family - 9000C and higher 
@@ -567,7 +567,7 @@ BEGIN
 				(*PDR:*)
 				IF mode = invert THEN
 					SYSTEM.GET(dst, SYSTEM.VAL(INTEGER, s));
-					SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, SYSTEM.VAL(SET, cols) / s))
+					SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, BITS( cols) / s))
 				ELSE	(* paint & replace *)
 					SYSTEM.PUT(dst, SHORT(cols))
 				END
@@ -680,7 +680,7 @@ BEGIN
 			IF ODD(ASH(ORD(ch), -i)) THEN	(* pixel on *)
 				IF mode = invert THEN
 					SYSTEM.GET(dst, SYSTEM.VAL(INTEGER, s));
-					SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, SYSTEM.VAL(SET, cols) / s))
+					SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, BITS( cols) / s))
 				ELSE	(* paint & replace *)
 					SYSTEM.PUT(dst, SHORT(cols))
 				END
@@ -791,26 +791,26 @@ BEGIN
 	(*PDR:*)
 	IF (dst MOD 4 # 0) & (w # 0) THEN
 		SYSTEM.GET(dst, SYSTEM.VAL(INTEGER, t[0]));
-		SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, t[0] / SYSTEM.VAL(SET, cols)));
+		SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, t[0] / BITS( cols)));
 		INC(dst, 2); DEC(w)
 	END;
 	WHILE w >= 8 DO (* unrolled loop *)
 		SYSTEM.GET(dst, t[0]);  SYSTEM.GET(dst+4, t[1]);
 		SYSTEM.GET(dst+8, t[2]);  SYSTEM.GET(dst+12, t[3]);
-		SYSTEM.PUT(dst, t[0] / SYSTEM.VAL(SET, cols));
-		SYSTEM.PUT(dst+4, t[1] / SYSTEM.VAL(SET, cols));
-		SYSTEM.PUT(dst+8, t[2] / SYSTEM.VAL(SET, cols));
-		SYSTEM.PUT(dst+12, t[3] / SYSTEM.VAL(SET, cols));
+		SYSTEM.PUT(dst, t[0] / BITS( cols));
+		SYSTEM.PUT(dst+4, t[1] / BITS( cols));
+		SYSTEM.PUT(dst+8, t[2] / BITS( cols));
+		SYSTEM.PUT(dst+12, t[3] / BITS( cols));
 		INC(dst, 16);  DEC(w, 8)
 	END;
 	WHILE w >= 2 DO
 		SYSTEM.GET(dst, t[0]);
-		SYSTEM.PUT(dst, t[0] / SYSTEM.VAL(SET, cols));
+		SYSTEM.PUT(dst, t[0] / BITS( cols));
 		INC(dst, 4); DEC(w, 2)
 	END;
 	IF w # 0 THEN 
 		SYSTEM.GET(dst, SYSTEM.VAL(INTEGER, t[0]));
-		SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, t[0] / SYSTEM.VAL(SET, cols)))
+		SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, t[0] / BITS( cols)))
 	END
 END ReplConst2;
 
@@ -880,7 +880,7 @@ BEGIN
 		INC(dst, base);
 		IF mode = invert THEN
 			SYSTEM.GET(dst, SYSTEM.VAL(INTEGER, s));
-			SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, SYSTEM.VAL(SET, cols) / s))
+			SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, BITS( cols) / s))
 		ELSE
 			SYSTEM.PUT(dst, SHORT(cols))
 		END
@@ -1125,19 +1125,19 @@ BEGIN
 	IF (dst MOD 4 # 0) & (w # 0) THEN
 		SYSTEM.GET(src, ch);
 		SYSTEM.GET(dst, SYSTEM.VAL(INTEGER, s));
-		SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, s / SYSTEM.VAL(SET, colmap[ORD(ch)])));
+		SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, s / BITS( colmap[ORD(ch)])));
 		INC(dst, 2); INC(src); DEC(w)
 	END;
 	WHILE w >= 2 DO
 		SYSTEM.GET(src, ch); cols := colmap[ORD(ch)];
 		SYSTEM.GET(src+1, ch); cols := cols + ASH(colmap[ORD(ch)], 16);
-		SYSTEM.GET(dst, s); SYSTEM.PUT(dst, s / SYSTEM.VAL(SET, cols));
+		SYSTEM.GET(dst, s); SYSTEM.PUT(dst, s / BITS( cols));
 		INC(dst, 4); INC(src, 2); DEC(w, 2)
 	END;
 	IF w # 0 THEN
 		SYSTEM.GET(src, ch);
 		SYSTEM.GET(dst, SYSTEM.VAL(INTEGER, s));
-		SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, s / SYSTEM.VAL(SET, colmap[ORD(ch)])))
+		SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, s / BITS( colmap[ORD(ch)])))
 	END
 END DisplayBlock2;
 

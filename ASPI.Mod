@@ -426,15 +426,15 @@ MODULE ASPI;	(** non-portable *)	(* Contributed by P. Ryser to the System 3 proj
 	BEGIN
 		IF 0 IN istats THEN
 			Read8(Dev, DSTAT, ch);
-			dstats := SYSTEM.VAL(SET, ch);
+			dstats := BITS( ch);
 			IF intdebug THEN Kernel.WriteString("DSTAT: "); LogHex(ORD(ch)); Kernel.WriteLn END;
 		END;
 		IF 1 IN istats THEN
 			(* Wait(2); *) Read8(Dev, SIST0, ch);
-			sist0s := SYSTEM.VAL(SET, ch);
+			sist0s := BITS( ch);
 			IF intdebug THEN Kernel.WriteString("SIST0: "); LogHex(ORD(ch)); Kernel.WriteLn; END;
 			(* Wait(2); *) Read8(Dev, SIST1, ch);
-			sist1s := SYSTEM.VAL(SET, ch);
+			sist1s := BITS( ch);
 			IF intdebug THEN Kernel.WriteString("SIST1: "); LogHex(ORD(ch)); Kernel.WriteLn END;
 		END
 	END ReadIntRegs;
@@ -458,7 +458,7 @@ MODULE ASPI;	(** non-portable *)	(* Contributed by P. Ryser to the System 3 proj
 	VAR targ: LONGINT; srb: ExecIOCmdSRB; val: CHAR; vals: SET;
 	BEGIN
 		Read8(Dev, ISTAT, val);
-		vals := SYSTEM.VAL(SET, val); EXCL(vals, 5); val := SYSTEM.VAL(CHAR, vals);
+		vals := BITS( val); EXCL(vals, 5); val := ( vals);
 		Write8(Dev, ISTAT, val);		(* ClearSIGP *)
 		IF Dev.targetReady # {} THEN
 			REPEAT
@@ -528,11 +528,11 @@ MODULE ASPI;	(** non-portable *)	(* Contributed by P. Ryser to the System 3 proj
 	VAR sbcl: CHAR; sbcls, sstat0s: SET; val: CHAR; dfifo: LONGINT;
 	BEGIN
 		Read8(Dev, SBCL, sbcl);
-		sbcls := SYSTEM.VAL(SET, sbcl);
+		sbcls := BITS( sbcl);
 		Read32(Dev, DBC, Dev.dbc); Dev.dbc := Dev.dbc MOD 1000000H;
 		Read32(Dev, DNAD, Dev.dnad);
 		Read8(Dev, DFIFO, val); Dev.dfifo := ORD(val);
-		Read8(Dev, SSTAT0, val); Dev.sstat0 := ORD(val);	sstat0s := SYSTEM.VAL(SET, Dev.sstat0);
+		Read8(Dev, SSTAT0, val); Dev.sstat0 := ORD(val);	sstat0s := BITS( Dev.sstat0);
 		Read8(Dev, SSTAT1, val); Dev.sstat1 := ORD(val);
 		Read8(Dev, SSTAT2, val); Dev.sstat2 := ORD(val);
 		Read8(Dev, CTEST2, val); Dev.ctest2 := ORD(val);
@@ -594,10 +594,10 @@ MODULE ASPI;	(** non-portable *)	(* Contributed by P. Ryser to the System 3 proj
 			IF ~(7 IN dstats) THEN
 				IF intdebug OR fifodebug THEN Kernel.WriteString("DMA FIFO not empty"); Kernel.WriteLn; END;
 				Write8(Dev, CTEST3, 4X);
-				REPEAT Read8(Dev, CTEST3, ch) UNTIL ~(2 IN SYSTEM.VAL(SET, ch))
+				REPEAT Read8(Dev, CTEST3, ch) UNTIL ~(2 IN BITS( ch))
 			END;
 			Write8(Dev, STEST3, 2X);
-			REPEAT Read8(Dev, STEST3, ch) UNTIL ~(1 IN SYSTEM.VAL(SET, ch))
+			REPEAT Read8(Dev, STEST3, ch) UNTIL ~(1 IN BITS( ch))
 		ELSE
 			abnormFinished(Dev, DidSCSIInterrupt, nextdsp)	(* did not handle interrupt condition *)
 		END;
@@ -715,7 +715,7 @@ MODULE ASPI;	(** non-portable *)	(* Contributed by P. Ryser to the System 3 proj
 			REPEAT
 				nextdsp := -1;
 				Read8(Dev, ISTAT, istat);
-				istats := SYSTEM.VAL(SET, istat);
+				istats := BITS( istat);
 				IF intdebug THEN LogInt(nr); Kernel.WriteString(" ISTAT: "); LogHex(ORD(istat)); Kernel.WriteLn; END;
 				IF 2 IN istats THEN (* INTFLY *)
 					IF intdebug THEN
@@ -796,7 +796,7 @@ MODULE ASPI;	(** non-portable *)	(* Contributed by P. Ryser to the System 3 proj
 			Devs[dev].target[targ].first := srb; Devs[dev].target[targ].last := srb;
 			INCL(Devs[dev].targetReady, targ);
 			Read8(Devs[dev], ISTAT, val);
-			vals := SYSTEM.VAL(SET, val); INCL(vals, 5); val := SYSTEM.VAL(CHAR, vals);
+			vals := BITS( val); INCL(vals, 5); val := ( vals);
 			Write8(Devs[dev], ISTAT, val)		(* SetSIGP *)
 		ELSE
 			Devs[dev].target[targ].last.next := srb; Devs[dev].target[targ].last := srb

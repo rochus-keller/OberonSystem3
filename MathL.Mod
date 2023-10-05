@@ -160,13 +160,13 @@ BEGIN
 		RETURN Sqrt(x)
 	ELSE
 		S.GET(S.ADR(x)+H, h); S.PUT(S.ADR(x)+H, h - {20..30} + {21..29}); a := x; 	(* expo(a) = 1022 *)
-		e := S.LSH(S.VAL(LONGINT, h), -20) MOD 2048 - 1022;
+		e := S.LSH(ORD( h), -20) MOD 2048 - 1022;
 		s := p10*(a + c11);  (*c11 = 1/sqrt(2)*)
 		s := s + a/s;
 		s := 0.25*s + a/s;
 		s := 0.5*(s + a/s);
 		IF ODD(e) THEN INC(e); s := c11*s END ;
-		x := s; S.GET(S.ADR(x)+H, h); S.PUT(S.ADR(x)+H, S.VAL(LONGINT, h) + S.LSH(e DIV 2, 20));
+		x := s; S.GET(S.ADR(x)+H, h); S.PUT(S.ADR(x)+H, ORD( h) + S.LSH(e DIV 2, 20));
 		RETURN x
 	END
 END sqrt;
@@ -179,7 +179,7 @@ BEGIN
 		RETURN Ln(x)
 	ELSE
 		S.GET(S.ADR(x)+H, h); S.PUT(S.ADR(x)+H, h - {20..30} + {21..29}); a := x; 	(* expo(a) = 1022 *)
-		e := S.LSH(S.VAL(LONGINT, h), -20) MOD 2048 - 1022;
+		e := S.LSH(ORD( h), -20) MOD 2048 - 1022;
 		IF a < c11 THEN a := 2*a; DEC(e) END ;
 		a := (a-1)/(a+1);
 		aa := a*a;
@@ -205,7 +205,7 @@ BEGIN
 			p := ((p22*yy + p21)*yy + p20)*y;
 			p := p/((yy + q21)*yy + q20 - p) + 0.5;
 			IF y < 0 THEN p := 2*p END ;
-			x := p; S.GET(S.ADR(x)+H, h); S.PUT(S.ADR(x)+H, S.VAL(LONGINT, h) + S.LSH(n, 20));
+			x := p; S.GET(S.ADR(x)+H, h); S.PUT(S.ADR(x)+H, ORD( h) + S.LSH(n, 20));
 			RETURN x
 		END
 	END

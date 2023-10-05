@@ -30,7 +30,7 @@ VAR
 	FCSTable: ARRAY 256 OF INTEGER;
 		
 PROCEDURE XOR(a, b:INTEGER): INTEGER;
-BEGIN RETURN SYSTEM.VAL(INTEGER, (SYSTEM.VAL(SET, LONG(a)) / SYSTEM.VAL(SET, LONG(b))))
+BEGIN RETURN SYSTEM.VAL(INTEGER, (BITS( LONG(a)) / BITS( LONG(b))))
 END XOR;
 
 (*es*) (* aktiviert *)
@@ -40,7 +40,7 @@ BEGIN
 	code := InitialFCS;
 	FOR i := pos TO pos+len-1 DO
 		code := XOR(SYSTEM.LSH(code, - 8), FCSTable[SYSTEM.VAL(INTEGER, 
-			SYSTEM.VAL(SET, LONG(XOR(code, SYSTEM.VAL(SHORTINT, a[i])))) * {0..7})])
+			BITS( LONG(XOR(code, SYSTEM.VAL(SHORTINT, a[i])))) * {0..7})])
 	END;
 	RETURN code
 END FCS;
@@ -127,11 +127,11 @@ BEGIN
 END GetLong;
 		
 PROCEDURE GetSet* (VAR p: ARRAY OF CHAR; pos: INTEGER): SET;
-BEGIN RETURN SYSTEM.VAL(SET, GetLong(p, pos))
+BEGIN RETURN BITS( GetLong(p, pos))
 END GetSet;
 	
 PROCEDURE PutSet* (x: SET; VAR p: ARRAY OF CHAR; pos: INTEGER);
-BEGIN PutLong(SYSTEM.VAL(LONGINT, x), p, pos)
+BEGIN PutLong(ORD( x), p, pos)
 END PutSet;
 
 PROCEDURE GetIP* (VAR p: ARRAY OF CHAR; pos: INTEGER; 
@@ -144,7 +144,7 @@ PROCEDURE PutIP* (VAR x: (*es*)NetIP.Adr(*PT.IPAdr*); VAR p: ARRAY OF CHAR; pos:
 VAR i: INTEGER;
 BEGIN
 	FOR i := 0 TO (*es*)NetIP.AdrLen(*PT.IPAdrLen*) - 1 DO 
-		p[pos + i] := SYSTEM.VAL(CHAR,x[i])(*x[i]*) 
+		p[pos + i] := (x[i])(*x[i]*) 
 	END
 END PutIP;
 	
@@ -153,7 +153,7 @@ PROCEDURE EqualIP* (VAR p: ARRAY OF CHAR; pos: INTEGER;
 VAR i: INTEGER;
 BEGIN i := 0;
 	WHILE (i # (*es*)NetIP.AdrLen(*PT.IPAdrLen*)) 
-				& ((*es*)SYSTEM.VAL(CHAR,x[i])(*x[i]*) = p[pos + i]) DO 
+				& ((*es*)(x[i])(*x[i]*) = p[pos + i]) DO 
 		INC(i) 
 	END;
 	RETURN i = (*es*)NetIP.AdrLen(*PT.IPAdrLen*)
@@ -181,7 +181,7 @@ BEGIN
 	END;
 	(*
 	FOR i := 0 TO len BY 4 DO
-		Debug.Hex(SYSTEM.VAL(LONGINT, p[pos + i])); Debug.String(" ");
+		Debug.Hex(ORD( p[pos + i])); Debug.String(" ");
 		IF i MOD 16 = 0 THEN Debug.Ln END
 	END;
 	*)

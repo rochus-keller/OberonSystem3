@@ -188,7 +188,7 @@ MODULE Display;
 	PROCEDURE SetMode*(x: LONGINT; s: SET);
 	BEGIN
 		Kernel.WriteString("SetMode(");  Kernel.WriteInt(x, 1);  Kernel.WriteChar(",");
-		Kernel.WriteHex(SYSTEM.VAL(LONGINT, s), 8);  Kernel.WriteString(") ")
+		Kernel.WriteHex(ORD( s), 8);  Kernel.WriteString(") ")
 	END SetMode;
 	
 	PROCEDURE CopyPattern*(col: Color; pat: Pattern; x, y, mode: LONGINT);

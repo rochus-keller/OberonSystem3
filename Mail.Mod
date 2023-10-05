@@ -860,14 +860,14 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			pos := msgs[no].pos+pos;
 			Files.Set(R, msgsF, pos);
 			IF Read IN msgs[no].flags THEN
-				Files.Write(R, "R")
+				Files.WriteChar(R, "R")
 			ELSE
-				Files.Write(R, "0")
+				Files.WriteChar(R, "0")
 			END;
 			IF Deleted IN msgs[no].flags THEN
-				Files.Write(R, "D")
+				Files.WriteChar(R, "D")
 			ELSE
-				Files.Write(R, "0")
+				Files.WriteChar(R, "0")
 			END;
 			v := 0;
 			FOR i := MAX(SET) TO MIN(SET) BY -1 DO

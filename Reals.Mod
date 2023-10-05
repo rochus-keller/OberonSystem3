@@ -58,7 +58,7 @@ VAR
 (** Returns the shifted binary exponent (0 <= e < 256). *)
 PROCEDURE Expo* (x: REAL): LONGINT;
 BEGIN
-	RETURN ASH(SYSTEM.VAL(LONGINT, x), -23) MOD 256
+	RETURN ASH(ORD( x), -23) MOD 256
 END Expo;
 
 (** Returns the shifted binary exponent (0 <= e < 2048). *)
@@ -126,8 +126,8 @@ END Ten;
 (** Returns the NaN code (0 <= c < 8399608) or -1 if not NaN/Infinite. *)
 PROCEDURE NaNCode* (x: REAL): LONGINT;
 BEGIN
-	IF ASH(SYSTEM.VAL(LONGINT, x), -23) MOD 256 = 255 THEN	(* Infinite or NaN *)
-		RETURN SYSTEM.VAL(LONGINT, x) MOD 800000H	(* lowest 23 bits *)
+	IF ASH(ORD( x), -23) MOD 256 = 255 THEN	(* Infinite or NaN *)
+		RETURN ORD( x) MOD 800000H	(* lowest 23 bits *)
 	ELSE
 		RETURN -1
 	END
@@ -147,7 +147,7 @@ END NaNCodeL;
 (** Returns TRUE iff x is NaN/Infinite. *)
 PROCEDURE IsNaN* (x: REAL): BOOLEAN;
 BEGIN
-	RETURN ASH(SYSTEM.VAL(LONGINT, x), -23) MOD 256 = 255
+	RETURN ASH(ORD( x), -23) MOD 256 = 255
 END IsNaN;
 
 (** Returns TRUE iff x is NaN/Infinite. *)

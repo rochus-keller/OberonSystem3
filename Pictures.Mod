@@ -118,8 +118,8 @@ PROCEDURE CopyPattern* (P:Picture;col:INTEGER;pat:LONGINT;X,Y,mode: INTEGER);
 VAR w, h: INTEGER;
 BEGIN
 	IF InBoundaries(X, Y, P.width, P.height) THEN
-		w := 0;  h := 0;  SYSTEM.GET(pat, SYSTEM.VAL(CHAR, w));
-		SYSTEM.GET(pat+1, SYSTEM.VAL(CHAR, h));
+		w := 0;  h := 0;  SYSTEM.GET(pat, ( w));
+		SYSTEM.GET(pat+1, ( h));
 		IF InBoundaries(X+w-1, Y+h-1, P.width, P.height) THEN
 			Bitmaps.CopyPattern(P.bitmap,col,pat,X, Y, mode)
 		END
@@ -240,7 +240,7 @@ BEGIN
 	IF addr = 0 THEN 
 		H := P.wth* P.height +10; 
 		SYSTEM.NEW(P.refr, H); 
-		P.address := SYSTEM.VAL(LONGINT,P.refr)
+		P.address := ORD(P.refr)
 	ELSE P.address := addr END;
 	NEW(P.bitmap); 
 	Bitmaps.Define(P.bitmap,P.width,P.height,8,P.address); 
@@ -380,7 +380,7 @@ BEGIN
 		P.wth := P.width; 
 		size := P.wth * P.height;
 		SYSTEM.NEW(P.refr, size+10); 
-		P.address := SYSTEM.VAL(LONGINT,P.refr); 
+		P.address := ORD(P.refr); 
 		NEW(P.bitmap); 
 		Bitmaps.Define(P.bitmap,P.width,P.height,P.depth,P.address); 
 		LoadRLE(P,R,P.depth = 1)

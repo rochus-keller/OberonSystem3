@@ -108,13 +108,13 @@ PROCEDURE WaitFin(d: Controller): BOOLEAN;
 VAR x: SET;  p, t: LONGINT;
 BEGIN
 	p := d.port+7;  t := Kernel.GetTimer();
-	SYSTEM.PORTIN(p, SYSTEM.VAL(CHAR, x));
-	wstate0 := SYSTEM.VAL(LONGINT, x * {0..7});
+	SYSTEM.PORTIN(p, ( x));
+	wstate0 := ORD( x * {0..7});
 	REPEAT
 		IF ~(7 IN x) THEN RETURN TRUE END;
-		SYSTEM.PORTIN(p, SYSTEM.VAL(CHAR, x))
+		SYSTEM.PORTIN(p, ( x))
 	UNTIL Kernel.GetTimer() - t > 15000*Kernel.TimeUnit DIV 1000;	(* 15s, was 250ms *)
-	wstate1 := SYSTEM.VAL(LONGINT, x * {0..7});
+	wstate1 := ORD( x * {0..7});
 	RETURN FALSE
 END WaitFin;
 
@@ -125,13 +125,13 @@ PROCEDURE WaitDrq(d: Controller): BOOLEAN;
 VAR x: SET;  p, t: LONGINT;
 BEGIN
 	p := d.port+7;  t := Kernel.GetTimer();
-	SYSTEM.PORTIN(p, SYSTEM.VAL(CHAR, x));
-	wstate0 := SYSTEM.VAL(LONGINT, x * {0..7});
+	SYSTEM.PORTIN(p, ( x));
+	wstate0 := ORD( x * {0..7});
 	REPEAT
 		IF 3 IN x THEN RETURN TRUE END;
-		SYSTEM.PORTIN(p, SYSTEM.VAL(CHAR, x))
+		SYSTEM.PORTIN(p, ( x))
 	UNTIL Kernel.GetTimer() - t > 250*Kernel.TimeUnit DIV 1000;	(* 250ms *)
-	wstate1 := SYSTEM.VAL(LONGINT, x * {0..7});
+	wstate1 := ORD( x * {0..7});
 	RETURN FALSE
 END WaitDrq;
 
@@ -146,7 +146,7 @@ BEGIN
 		IF ~WaitFin(d) THEN RETURN 6010 END;
 		p := d.port+6;
 		SYSTEM.PORTOUT(p, CHR(0A0H+(drive*10H)+head));
-		INC(p);  SYSTEM.PORTIN(p, SYSTEM.VAL(CHAR, x));
+		INC(p);  SYSTEM.PORTIN(p, ( x));
 		IF (7 IN x) OR (x * {4,5,6} = {4,6}) THEN
 			RETURN 0	(* busy OR (~writeerror & ready & seek) *)
 		END
@@ -288,7 +288,7 @@ END Start;
 PROCEDURE GetResult(d: Controller): LONGINT;
 VAR x: SET;  p, i: LONGINT;
 BEGIN
-	p := d.port+7;  SYSTEM.PORTIN(p, SYSTEM.VAL(CHAR, x));
+	p := d.port+7;  SYSTEM.PORTIN(p, ( x));
 	IF ~(7 IN x) THEN	(* ~busy *)
 		IF 5 IN x THEN RETURN 6014 (* write fault *)
 		ELSIF ~(6 IN x) THEN RETURN 6015 (* not ready *)
@@ -298,7 +298,7 @@ BEGIN
 		END
 	END;
 	IF 0 IN x THEN	(* error *)
-		p := d.port+1;  SYSTEM.PORTIN(p, SYSTEM.VAL(CHAR, x));
+		p := d.port+1;  SYSTEM.PORTIN(p, ( x));
 		FOR i := 0 TO 7 DO
 			IF i IN x THEN RETURN 6024-i END	(* 6017-6024 *)
 		END;
@@ -507,7 +507,7 @@ PROCEDURE GetPar(p: LONGINT;  ofs: LONGINT): LONGINT;
 VAR x: LONGINT;
 BEGIN
 	x := 0;
-	SYSTEM.GET(p+12+ofs, SYSTEM.VAL(CHAR, x));
+	SYSTEM.GET(p+12+ofs, ( x));
 	RETURN x
 END GetPar;
 

@@ -63,7 +63,7 @@ VAR adr, size: LONGINT;
 BEGIN 
 	size := B.size;  adr := B.address;
 	WHILE size >= 4 DO
-		SYSTEM.PUT(adr, SYSTEM.VAL(LONGINT, 0));
+		SYSTEM.PUT(adr, ORD( 0));
 		INC(adr, 4);  DEC(size, 4)
 	END;
 	WHILE size > 0 DO SYSTEM.PUT(adr, 0X);  INC(adr);  DEC(size) END
@@ -76,8 +76,8 @@ BEGIN
 	INC(adr, B.address);
 	IF mode = Display.invert THEN
 		SYSTEM.GET(adr, ch);
-		SYSTEM.PUT(adr, CHR(SYSTEM.VAL(LONGINT, 
-				SYSTEM.VAL(SET, LONG(ORD(ch))) / SYSTEM.VAL(SET, LONG(col)))))
+		SYSTEM.PUT(adr, CHR(ORD( 
+				BITS( LONG(ORD(ch))) / BITS( LONG(col)))))
 	ELSE
 		SYSTEM.PUT(adr, CHR(col))
 	END
@@ -143,8 +143,8 @@ BEGIN
 			IF m > ofs+w THEN m := ofs+w END;
 			REPEAT	(* loop over bits *)
 				IF ODD(ASH(ORD(ch), -i)) THEN	(* pixel on *)
-					SYSTEM.GET(dst, SYSTEM.VAL(CHAR, s)); 
-					SYSTEM.PUT(dst, SYSTEM.VAL(CHAR, SYSTEM.VAL(SET, col) / s))
+					SYSTEM.GET(dst, ( s)); 
+					SYSTEM.PUT(dst, ( BITS( col) / s))
 				END;	
 				INC(dst);  INC(i)
 			UNTIL i = m;
@@ -227,8 +227,8 @@ BEGIN
 	IF mode = Display.invert THEN
 		WHILE H > 0 DO w := W; addr0 := addr;
 			WHILE w # 0 DO
-				SYSTEM.GET(addr0, SYSTEM.VAL(CHAR,s));
-				SYSTEM.PUT(addr0, CHR(SYSTEM.VAL(LONGINT, s/SYSTEM.VAL(SET, col))));
+				SYSTEM.GET(addr0, (s));
+				SYSTEM.PUT(addr0, CHR(ORD( s/BITS( col))));
 				DEC(w); INC(addr0)
 			END;
 			INC(addr, B.wth); DEC(H)
@@ -255,8 +255,8 @@ BEGIN
 			IF m > ofs+w THEN m := ofs+w END;	(* max w times *)
 			REPEAT	(* loop over bits *)
 				IF ODD(ASH(ORD(ch), -i)) THEN	(* pixel on *)
-					SYSTEM.GET(dst, SYSTEM.VAL(CHAR, s));
-					SYSTEM.PUT(dst, SYSTEM.VAL(CHAR, SYSTEM.VAL(SET, col) / s))
+					SYSTEM.GET(dst, ( s));
+					SYSTEM.PUT(dst, ( BITS( col) / s))
 				END;
 				INC(dst);  INC(i)
 			UNTIL i = m;
@@ -326,7 +326,7 @@ END ReplPattern;
 
 PROCEDURE DisplayBlock*(B: Bitmap; SX, SY, W, H, DX, DY, mode: INTEGER);
 BEGIN 
-	Display.DisplayBlock(SYSTEM.VAL(LONGINT, B), SX, SY, W, H, DX, DY, mode);
+	Display.DisplayBlock(ORD( B), SX, SY, W, H, DX, DY, mode);
 END DisplayBlock;
 
 PROCEDURE GetPix*(VAR addr: LONGINT; VAR buf: BYTE; depth: INTEGER);

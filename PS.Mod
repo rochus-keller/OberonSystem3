@@ -74,7 +74,7 @@ CONST
 
 		PROCEDURE Int(n: INTEGER);
 		VAR d: ARRAY 8 OF CHAR; i: INTEGER;
-		BEGIN Files.Write(R, " ");
+		BEGIN Files.WriteChar(R, " ");
 			i := 0;
 			REPEAT
 				d[i] := CHR(n MOD 10+30H); n := n DIV 10; INC(i)
@@ -107,8 +107,8 @@ CONST
 		BEGIN
 			xi := SHORT(ENTIER(x));
 			IF x = xi THEN Int(xi); RETURN END;
-			IF x < 0 THEN Files.Write(R, "-"); x := -x; xi := -xi END;
-			Int(xi); Files.Write(R, "."); x := x-xi;
+			IF x < 0 THEN Files.WriteChar(R, "-"); x := -x; xi := -xi END;
+			Int(xi); Files.WriteChar(R, "."); x := x-xi;
 			n := SHORT(ENTIER(x*1000));
 			i := 0;
 			REPEAT

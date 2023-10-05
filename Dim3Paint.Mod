@@ -1009,7 +1009,7 @@ BEGIN
 	WHILE entry # NIL DO
 		u := entry.u; v := entry.v; us := entry.uStep; vs := entry.vStep;
 		IF entry.texture # oldText THEN
-			baseAdr := SYSTEM.VAL(LONGINT, entry.texture);
+			baseAdr := ORD( entry.texture);
 			SYSTEM.GET(baseAdr, width); baseAdr := baseAdr + 2;
 			SYSTEM.GET(baseAdr, height); baseAdr := baseAdr + 2;
 			SYSTEM.GET(baseAdr, bg); baseAdr := baseAdr + 1;
@@ -1066,7 +1066,7 @@ VAR
 BEGIN
 	Dim3Base.SetPicture(P); DEC(n);
 	
-	baseAdr := SYSTEM.VAL(LONGINT, texture);
+	baseAdr := ORD( texture);
 	SYSTEM.GET(baseAdr, width); INC(baseAdr, 2); w2 := width - 1;
 	SYSTEM.GET(baseAdr, height); h2 := height - 1; 
 		
@@ -1247,7 +1247,7 @@ VAR
 BEGIN
 	Dim3Base.SetPicture(P); DEC(n);
 	
-	baseAdr := SYSTEM.VAL(LONGINT, texture);
+	baseAdr := ORD( texture);
 	SYSTEM.GET(baseAdr, width); INC(baseAdr, 2); width2 := width - 1;
 	SYSTEM.GET(baseAdr, height);INC(baseAdr, 3); height2 := height - 1;
 	
@@ -1477,7 +1477,7 @@ BEGIN
 		y[h] := ph * (cheat + y[h]);
 	END;
 	
-	adr := SYSTEM.VAL(LONGINT, texture[0]);
+	adr := ORD( texture[0]);
 	SYSTEM.GET(adr, width); SYSTEM.GET(adr + 2, height);
 	width2 := LONG(width) * LONG(width); height2 := LONG(height) * LONG(height); 
 	
@@ -1528,7 +1528,7 @@ BEGIN
 	
 	(* calc and shade first mipmap *)
 	w2 := SHORT(ASH(w, -delay)); h2 := SHORT(ASH(h, -delay));
-	SYSTEM.NEW(texture[0], LONG(w2)*LONG(h2) + 5); adr := SYSTEM.VAL(LONGINT, texture[0]);
+	SYSTEM.NEW(texture[0], LONG(w2)*LONG(h2) + 5); adr := ORD( texture[0]);
 	SYSTEM.PUT(adr, w2); adr := adr + 2;
 	SYSTEM.PUT(adr, h2); adr := adr + 2;
 	SYSTEM.PUT(adr, bgColor); adr := adr + 1;
@@ -1563,11 +1563,11 @@ BEGIN
 	(* calc the rest of the mipmaps *)
 	FOR i := 1 TO maxlevel - 1 DO
 		w2 := SHORT(ASH(w2, -1)); h2 := SHORT(ASH(h2, -1));
-		SYSTEM.NEW(texture[i], LONG(w2)*LONG(h2) + 5); adr := SYSTEM.VAL(LONGINT, texture[i]);
+		SYSTEM.NEW(texture[i], LONG(w2)*LONG(h2) + 5); adr := ORD( texture[i]);
 		SYSTEM.PUT(adr, w2); adr := adr + 2;
 		SYSTEM.PUT(adr, h2); adr := adr + 2;
 		SYSTEM.PUT(adr, bgColor); adr := adr + 1;
-		baseAdr := SYSTEM.VAL(LONGINT, texture[i - 1]);
+		baseAdr := ORD( texture[i - 1]);
 		SYSTEM.GET(baseAdr, wAlt); baseAdr := baseAdr + 5;
 		FOR n := 0 TO h2 - 1 DO
 			textAdr := baseAdr + LONG(n) * LONG(wAlt) * 2;

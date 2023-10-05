@@ -264,11 +264,11 @@ BEGIN
 	pat := pat+2+len*(maxh-1);
 	outlen := (maxw-minw+7) DIV 8;
 	FOR k := minh TO maxh-1 DO
-		i := minw;	a := 0;	SYSTEM.GET(pat + i DIV 8, SYSTEM.VAL(CHAR, a));
+		i := minw;	a := 0;	SYSTEM.GET(pat + i DIV 8, ( a));
 		IF i MOD 8 # 0 THEN FOR j := 1 TO i MOD 8 DO a := a DIV 2 END END;
 		j := 0;	b := 0;
 		REPEAT	b := b*2 + a MOD 2;	a := a DIV 2;
-			INC (i);	IF i MOD 8 = 0 THEN SYSTEM.GET(pat + i DIV 8, SYSTEM.VAL(CHAR, a)) END;
+			INC (i);	IF i MOD 8 = 0 THEN SYSTEM.GET(pat + i DIV 8, ( a)) END;
 			IF j MOD 8 = 7 THEN SYSTEM.PUT(dest + j DIV 8, CHR(b)); b := 0 END;	INC (j)
 		UNTIL j = outlen*8;
 		SYSTEM.PUT(dest + j DIV 8, CHR(b));

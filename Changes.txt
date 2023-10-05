@@ -33,5 +33,6 @@ Modification steps:
 - Stubbed for later implementation: Input, V24, NetSystem, CD, Centronics, Sound, Files, FileDir
 - Minimal implementation of Kernel and Modules; fixes
 - Validator 1 git commit
-- Replaces SYSTEM.HALT by HALT; SYSTEM.BYTE by BYTE; 
+- Replaces SYSTEM.HALT by HALT; SYSTEM.BYTE by BYTE; "SYSTEM.VAL(SET," by "BITS("; "SYSTEM.VAL(LONGINT," by "ORD("; SYSTEM.VAL(CHAR, by "(";
+  "SYSTEM.VAL(SHORTINT," by "("; "SYSTEM.VAL(INTEGER," by "("
 

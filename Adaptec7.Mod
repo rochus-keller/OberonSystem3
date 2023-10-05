@@ -370,7 +370,7 @@ CONST
 	MaxScb = 255;	(*DON'T FORGET TO CHANGE THE SCB MASK IN THE SEQUENCER CODE IF THIS IS MODIFIED!*)
 	MaxTargets = 16;
 	
-	ScbNull = 0FFX;  ScbNullSet = {0..15} (*=SYSTEM.VAL(SET, ScbNull)*);
+	ScbNull = 0FFX;  ScbNullSet = {0..15} (*=BITS( ScbNull)*);
 	
 TYPE
 		(*helper structures*)
@@ -594,7 +594,7 @@ PROCEDURE DumpByte(d: Host; name: ARRAY OF CHAR; byte: LONGINT);
 CONST
 	num = ORD("0");  char = ORD("A")-10;
 BEGIN
-	byte := SYSTEM.VAL(LONGINT, d.Get1(d, byte) * {0..7});
+	byte := ORD( d.Get1(d, byte) * {0..7});
 	Texts.WriteString(W, name);
 	IF (byte DIV 16) < 10 THEN  Texts.Write(W, CHR(byte DIV 16+num)) ELSE Texts.Write(W, CHR(byte DIV 16+char)) END;
 	IF (byte MOD 16) < 10 THEN  Texts.Write(W, CHR(byte MOD 16+num)) ELSE Texts.Write(W, CHR(byte MOD 16 +char)) END;
@@ -746,32 +746,32 @@ END SetEntry;
 PROCEDURE PortPut(d: Host;  off: LONGINT; val: SET);
 BEGIN
 	IF ~DebugNoWrites THEN
-		SYSTEM.PORTOUT(d.iobase+off, SYSTEM.VAL(CHAR, val))
+		SYSTEM.PORTOUT(d.iobase+off, ( val))
 	END
 END PortPut;
 
 PROCEDURE MemoryPut(d: Host;  off: LONGINT; val: SET);
 BEGIN
 	IF ~DebugNoWrites THEN
-		SYSTEM.PUT(d.membase+off, SYSTEM.VAL(CHAR, val))
+		SYSTEM.PUT(d.membase+off, ( val))
 	END
 END MemoryPut;
 
 PROCEDURE PortGet(d: Host; off: LONGINT): SET;
 VAR	val: SET;
-BEGIN	SYSTEM.PORTIN(d.iobase+off, SYSTEM.VAL(CHAR, val));  RETURN val
+BEGIN	SYSTEM.PORTIN(d.iobase+off, ( val));  RETURN val
 END PortGet;
 
 PROCEDURE MemoryGet(d: Host; off: LONGINT): SET;
 VAR	val: SET;
-BEGIN	SYSTEM.GET(d.membase+off, SYSTEM.VAL(CHAR, val));  RETURN val
+BEGIN	SYSTEM.GET(d.membase+off, ( val));  RETURN val
 END MemoryGet;
 
 
 PROCEDURE Put4(d: Host; off, val: LONGINT);
 VAR  s: SET;
 BEGIN
-	s := SYSTEM.VAL(SET, val);
+	s := BITS( val);
 	d.Put1(d, off, s);
 	d.Put1(d, off+1, SYSTEM.LSH(s, -8));
 	d.Put1(d, off+2, SYSTEM.LSH(s, -16));
@@ -791,7 +791,7 @@ END Delay;
 PROCEDURE Merge(d: Host; low, high: LONGINT): SET;
 BEGIN	RETURN
 	d.Get1(d, low) +
-	SYSTEM.VAL(SET, SYSTEM.ROT(SYSTEM.VAL(LONGINT,d.Get1(d, high)),8))
+	BITS( SYSTEM.ROT(ORD(d.Get1(d, high)),8))
 END Merge;
 
 PROCEDURE -CAND(VAR a: CHAR; b: CHAR);
@@ -849,22 +849,22 @@ BEGIN
 	IF TransCur IN type THEN
 		rate := d.Get1(d, TARGSCSIRATE + target) * {WIDEXFER};
 		IF FeatUltra2 IN d.features THEN
-			IF index # -1 THEN  rate := rate + SYSTEM.VAL(SET,SyncRate[index].rate[RateUltra2]) * {0..7}  END;
+			IF index # -1 THEN  rate := rate + BITS(SyncRate[index].rate[RateUltra2]) * {0..7}  END;
 			IF TransActive IN type THEN
 				d.Put1(d, SCSIRATE, rate);
-				d.Put1(d, SCSIOFFSET, SYSTEM.VAL(SET, offset))
+				d.Put1(d, SCSIOFFSET, BITS( offset))
 			END;
 			d.Put1(d, TARGSCSIRATE+target, rate);
-			d.Put1(d, TARGOFFSET+target, SYSTEM.VAL(SET, offset))
+			d.Put1(d, TARGOFFSET+target, BITS( offset))
 		ELSE
 			EXCL(d.ultra, target);
 			IF  index >= 5 THEN	(* in the normal range *)
-				rate := rate + SYSTEM.VAL(SET, SyncRate[index].rate[Rate]) * {0..7};
+				rate := rate + BITS( SyncRate[index].rate[Rate]) * {0..7};
 			ELSIF index # -1 THEN	(* in the ultra range *)
 				INCL(d.ultra, target);
-				rate := rate + SYSTEM.VAL(SET, SyncRate[index].rate[RateUltra]) * {0..7};
+				rate := rate + BITS( SyncRate[index].rate[RateUltra]) * {0..7};
 			END;
-			rate := rate + SYSTEM.VAL(SET, offset) * {0..3};
+			rate := rate + BITS( offset) * {0..3};
 			IF TransActive IN type THEN
 				d.Put1(d, SCSIRATE, rate);
 				IF target IN d.ultra THEN
@@ -1002,10 +1002,10 @@ Kernel.WriteString(" -> in @ "); Kernel.WriteInt(d.inNext, 3); Kernel.WriteLn;
 	IF sent > 0 THEN
 		IF DebugSCB THEN  Kernel.WriteString("INPOS =  "); Kernel.WriteInt(d.inNext, 3); Kernel.WriteLn  END;
 		IF FeatQueueRegs IN d.features THEN
-			d.Put1(d, HNSCBQOFF, SYSTEM.VAL(SET, d.inNext))
+			d.Put1(d, HNSCBQOFF, BITS( d.inNext))
 		ELSE
 			Pause(d);
-			d.Put1(d, KERNELQINPOS, SYSTEM.VAL(SET, d.inNext));
+			d.Put1(d, KERNELQINPOS, BITS( d.inNext));
 			Unpause(d)
 		END
 	END
@@ -1020,7 +1020,7 @@ BEGIN
 	d.Put1(d, SEQCTL, {PERRORDIS,LOADRAM,FAILDIS,FASTMODE});
 	d.Put1(d, SEQADDR0, {}); d.Put1(d, SEQADDR1, {});
 	FOR i := 0 TO 31 DO
-		data[i] := SYSTEM.VAL(CHAR, d.Get1(d, SEQRAM));
+		data[i] := ( d.Get1(d, SEQRAM));
 		IF i MOD 4 = 3 THEN SYSTEM.GET(SYSTEM.ADR(data[i - 3]), j); Script.OutInstr(W, j) END;
 	END;
 	d.Put1(d, SEQCTL, {FASTMODE,SEQRESET});
@@ -1140,7 +1140,7 @@ VAR	BiosRun, Present: BOOLEAN; config: SeepromConfig;
 			d.Put1(d, SEECTL,  {SEEMS, SEECS, SEECK});
 			REPEAT  UNTIL  SEERDY IN d.Get1(d, SEECTL);
 		END;
-		x := SYSTEM.VAL(LONGINT, s)
+		x := ORD( s)
 	END ReceiveBits;
 
 	PROCEDURE ReadSeeprom(VAR a: SeepromConfig; len, chip: LONGINT): BOOLEAN;
@@ -1223,7 +1223,7 @@ BEGIN
 	(* Card Configuration Disconnect, Ultra, Wide, Sync *)
 	IF Present THEN		(* Config from EEPROM *)
 		FOR i := 0 TO MaxTargets-1 DO
-			s := SYSTEM.VAL(SET, config.Flags[i]);
+			s := BITS( config.Flags[i]);
 			IF CFDISC IN s THEN
 				INCL(d.disconnect, i)
 			END;
@@ -1267,7 +1267,7 @@ BEGIN
 			d.dev[i].goalOffset := MaxOffsetUltra2;
 			d.dev[i].curOffset := SYSTEM.VAL(SHORTINT, d.Get1(d, TARGOFFSET+i));		(*from Scratch RAM*)
 			IF i IN d.ultra THEN  INC(SRamRate, 18H)  ELSE INC(SRamRate, 10H) END
-		ELSIF CFWIDEB IN SYSTEM.VAL(SET, config.Flags[i]) THEN
+		ELSIF CFWIDEB IN BITS( config.Flags[i]) THEN
 			d.dev[i].goalOffset := MaxOffset16Bit
 		ELSE
 			d.dev[i].goalOffset := MaxOffset8Bit
@@ -1275,11 +1275,11 @@ BEGIN
 			(*period*)
 		IF (i IN Sync) THEN
 			d.dev[i].goalPeriod := FindPeriod(FeatUltra2 IN d.features, i IN d.ultra, SRamRate);
-			d.dev[i].curPeriod := FindPeriod(FeatUltra2 IN d.features, i IN d.ultra, SYSTEM.VAL(LONGINT, d.Get1(d, TARGSCSIRATE+i)));
+			d.dev[i].curPeriod := FindPeriod(FeatUltra2 IN d.features, i IN d.ultra, ORD( d.Get1(d, TARGSCSIRATE+i)));
 			INCL(d.needSyncTrasm, i)
 		END;
 		
-		IF (FeatWide IN d.features) & (CFWIDEB IN SYSTEM.VAL(SET, config.Flags[i]))  THEN
+		IF (FeatWide IN d.features) & (CFWIDEB IN BITS( config.Flags[i]))  THEN
 		    INCL(d.goalWidth, i); INCL(d.needWidthTrasm, i)
 		END;
 		IF WIDEXFER IN d.Get1(d, TARGSCSIRATE+i)  THEN  INCL(d.curWidth, i)  END;
@@ -1307,13 +1307,13 @@ BEGIN
 				END
 			END;
 		END;
-		ScsiConf := SYSTEM.VAL(SET, d.scsiId);
+		ScsiConf := BITS( d.scsiId);
 		IF (CFSPARITY IN config.Control) THEN  INCL(ScsiConf, ENSPCHK)  END;
 	ELSE
 		ScsiConf := {ENSPCHK, RESETSCSI}
 	END;
 	IF d IS PCIHost THEN
-		d.Put1(d, SCSICONF, ScsiConf);  d.Put1(d, SCSICONF+1, SYSTEM.VAL(SET, d.scsiId))
+		d.Put1(d, SCSICONF, ScsiConf);  d.Put1(d, SCSICONF+1, BITS( d.scsiId))
 	END
 END LoadSeeprom;
 
@@ -1482,7 +1482,7 @@ VAR	res, dw: LONGINT;
 BEGIN
 	res := PCI.ReadConfigByte(d.busNo, d.devNo, d.slot, 7H, dw);
 	res := PCI.WriteConfigByte(d.busNo, d.devNo, d.slot, 7H, dw);
-	IF {DPR, RMA, RTA} * SYSTEM.VAL(SET, dw) # {} THEN
+	IF {DPR, RMA, RTA} * BITS( dw) # {} THEN
 		d.Put1(d, CLRINT, {CLRPARERR})
 	END;
 END ClearPCIInt;
@@ -1492,7 +1492,7 @@ VAR  res, dw: LONGINT;
 BEGIN
 	res := PCI.ReadConfigByte(d.busNo, d.devNo, d.slot, PCI.DevReg+3, dw);
 	res := PCI.WriteConfigByte(d.busNo, d.devNo, d.slot, PCI.DevReg+3, dw);
-	IF {0, 5, 4} * SYSTEM.VAL(SET, dw) # {} THEN
+	IF {0, 5, 4} * BITS( dw) # {} THEN
 		d.Put1(d, CLRINT, {CLRPARERR})
 	END;
 END PCIInt;
@@ -1516,12 +1516,12 @@ BEGIN
 		IF index >= d.allocated THEN
 			Kernel.WriteString("CMDCMPLT with invalid SCB index ");
 			Kernel.WriteInt(index, 0); Kernel.WriteLn
-		ELSIF (scb.cmd.ptrToCmd = SYSTEM.VAL(LONGINT, NIL)) THEN
+		ELSIF (scb.cmd.ptrToCmd = ORD( NIL)) THEN
 			Kernel.WriteString("CMDCMPLT without command for SCB index "); Kernel.WriteInt(index, 0); Kernel.WriteLn;
 		ELSIF ~(ScbActive IN scb.flags) THEN
 			Kernel.WriteString("CMDCMPLT with inactive scb for SCB index "); Kernel.WriteInt(index, 0); Kernel.WriteLn;
 		ELSIF (ScbQueuedAbort IN scb.flags) & (d.Get1(d, LASTPHASE) * PHASEMASK = PhaseBusFree) & 
-				(SYSTEM.VAL(CHAR, d.Get1(d, SCBTAG)) = d.hwscb[index].tag) THEN
+				(( d.Get1(d, SCBTAG)) = d.hwscb[index].tag) THEN
 			Pause(d); Unpause(d);
 		ELSE
 			IF (ScbQueuedAbort IN scb.flags) THEN
@@ -1560,7 +1560,7 @@ BEGIN
 	errno := d.Get1(d, ERROR);
 	IF PCIERRSTAT IN errno THEN  PCIInt(d(PCIHost))  END;
 	IF {SQPARERR, ILLOPCODE, ILLSADDR} * errno # {} THEN
-		addr := SYSTEM.VAL(LONGINT, SYSTEM.LSH(d.Get1(d, SEQADDR1),8)*{8..15} + d.Get1(d, SEQADDR0)*{0..7});
+		addr := ORD( SYSTEM.LSH(d.Get1(d, SEQADDR1),8)*{8..15} + d.Get1(d, SEQADDR0)*{0..7});
 		SYSTEM.STI(); HALT(99)
 	END;
 	IF ILLHADDR IN errno THEN
@@ -1575,11 +1575,11 @@ PROCEDURE SequencerAwaitingMsg(d: Host; device: LONGINT);
 	(* The SCB has MK_MESSAGE set => sequencer interrupt and wait for the message from the driver *)
 VAR index: LONGINT; msg: CHAR; scb: ScbData; Ultra2: BOOLEAN;
 BEGIN
-	index := ORD(SYSTEM.VAL(CHAR, d.Get1(d, SEQADDR0)));
-	index := index + 100*(ORD(SYSTEM.VAL(CHAR, d.Get1(d, SEQADDR1)))MOD 2);
+	index := ORD(( d.Get1(d, SEQADDR0)));
+	index := index + 100*(ORD(( d.Get1(d, SEQADDR1)))MOD 2);
 	IF DebugTraceInts THEN  Kernel.WriteString("SequencerAwaitingMsg"); (*Kernel.WriteInt(index, 4);*) Kernel.WriteLn  END;
-	index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
-	msg := SYSTEM.VAL(CHAR, d.Get1(d, MSGOUT));
+	index := ORD( d.Get1(d, SCBTAG));
+	msg := ( d.Get1(d, MSGOUT));
 	scb := d.scb[index];
 	d.msg.index := 0; d.msg.len := 0;
 	IF ~(ScbDeviceReset IN scb.flags) & (msg = SCSI.MsgIdentifyFlag) & 
@@ -1697,7 +1697,7 @@ IF DebugMsg THEN WriteDevice(d, index); Kernel.WriteString(" + sync + width (Par
 					END;
 IF DebugMsg THEN WriteDevice(d, index); Kernel.WriteString(" resend sync message"); Kernel.WriteLn  END;
 					scb.flags := scb.flags - ScbMsgMask + {ScbMsgSync};
-					d.Put1(d, MSGOUT, SYSTEM.VAL(SET, HostMsg));
+					d.Put1(d, MSGOUT, BITS( HostMsg));
 					d.Put1(d, SCSISIG, d.Get1(d, SCSISIG) + {ATN});
 				END;
 				done := TRUE
@@ -1741,7 +1741,7 @@ IF DebugMsg THEN WriteDevice(d, index); Kernel.WriteString(" - width (ParseMsg)"
 					END;
 					EXCL(d.widthPending, index);
 					EXCL(d.needWidthTrasm, index);
-					d.Put1(d, MSGOUT, SYSTEM.VAL(SET, HostMsg));
+					d.Put1(d, MSGOUT, BITS( HostMsg));
 					d.Put1(d, SCSISIG, d.Get1(d, SCSISIG) + {ATN})
 				END;
 				SetWidth(d, target, chan, lun, width, {TransActive, TransCur});
@@ -1754,7 +1754,7 @@ IF DebugMsg THEN WriteDevice(d, index); Kernel.WriteString(" - width (ParseMsg)"
 						IF d.dev[index].goalPeriod = 0 THEN
 							INCL(d.syncPending, index);
 							INCL(scb.flags, ScbMsgSync);
-							d.Put1(d, MSGOUT, SYSTEM.VAL(SET, HostMsg));
+							d.Put1(d, MSGOUT, BITS( HostMsg));
 							d.Put1(d, SCSISIG, d.Get1(d, SCSISIG) + {ATN})
 						END
 					END
@@ -1768,7 +1768,7 @@ IF DebugMsg THEN WriteDevice(d, index); Kernel.WriteString(" - width (ParseMsg)"
 		END
 	END;
 	IF reject THEN
-		d.Put1(d, MSGOUT, SYSTEM.VAL(SET, SCSI.MsgMessageReject));
+		d.Put1(d, MSGOUT, BITS( SCSI.MsgMessageReject));
 		d.Put1(d, SCSISIG, d.Get1(d, SCSISIG) + {ATN})
 	END;
 	RETURN done OR reject
@@ -1785,7 +1785,7 @@ BEGIN
 		phasemis := (d.Get1(d, SCSISIG) * PHASEMASK) # PhaseMsgOut;
 		IF done THEN
 			(*IF DebugMsg THEN DumpChar(d.msg.buf[d.msg.index]) END;*)
-			d.Put1(d, SINDEX, SYSTEM.VAL(SET, d.msg.buf[d.msg.index]));
+			d.Put1(d, SINDEX, BITS( d.msg.buf[d.msg.index]));
 			d.Put1(d, RETURN1, {})
 		ELSIF phasemis THEN
 			IF DebugMsg THEN WriteDevice(d, target); Kernel.WriteString(" msg -> PHASE MISMATCH"); Kernel.WriteLn END;
@@ -1793,18 +1793,18 @@ BEGIN
 		ELSE
 			(*IF DebugMsg THEN DumpChar(d.msg.buf[d.msg.index]); Kernel.WriteChar("-") END;*)
 			d.Put1(d, CLRSINT1, {CLRREQINIT}); d.Put1(d, CLRINT, {CLRSCSIINT});
-			d.Put1(d, SCSIDATL, SYSTEM.VAL(SET, d.msg.buf[d.msg.index]));
+			d.Put1(d, SCSIDATL, BITS( d.msg.buf[d.msg.index]));
 			INC(d.msg.index)
 		END
 	ELSIF d.msg.type = MsgTypeInitiatorMsgIn THEN
 		phasemis := (d.Get1(d, SCSISIG) * PHASEMASK) # PhaseMsgIn; done := FALSE;
 		IF ~phasemis THEN
 			INC(d.msg.len);
-			d.msg.buf[d.msg.index] := SYSTEM.VAL(CHAR, d.Get1(d, SCSIBUSL));
+			d.msg.buf[d.msg.index] := ( d.Get1(d, SCSIBUSL));
 			(*IF DebugMsg THEN DumpChar(d.msg.buf[d.msg.index]) END;*)
 			done := ParseMsg(d, scb);
 			d.Put1(d, CLRSINT1, {CLRREQINIT}); d.Put1(d, CLRINT, {CLRSCSIINT});
-			ch := SYSTEM.VAL(CHAR, d.Get1(d, SCSIDATL));
+			ch := ( d.Get1(d, SCSIDATL));
 			INC(d.msg.index)
 		ELSIF DebugMsg THEN WriteDevice(d, target); Kernel.WriteString(" msg <- PHASE MISMATCH"); Kernel.WriteLn 
 		END
@@ -1846,7 +1846,7 @@ PROCEDURE InterruptSequencer(d: Host; intStatS: SET);	(* handle_seqint *)
 VAR t, i, device, target, channel, lun, index, sindex, cur, last, intstat: LONGINT; (*cmd: SCSI.Command;*)
 	scb, lastScb: ScbData; active, prev, next: SET; msg, ch: CHAR; Ultra2: BOOLEAN;
 BEGIN
-	t := SYSTEM.VAL(LONGINT, d.Get1(d, SAVEDTCL));
+	t := ORD( d.Get1(d, SAVEDTCL));
 	target := SYSTEM.LSH(t, -4) MOD 16; device := target;
 	IF (d.chip = AIC7770) & (SELBUSB IN d.Get1(d, SBLKCTL)) THEN
 		channel := 1; INC(device, 8)
@@ -1855,7 +1855,7 @@ BEGIN
 	END;
 	lun := t MOD 7;
 	d.Put1(d, CLRINT, {CLRSEQINT});
-	intstat := SYSTEM.VAL(LONGINT, intStatS * SEQINTMASK);
+	intstat := ORD( intStatS * SEQINTMASK);
 	
 	CASE intstat OF
 	| NoMatch:
@@ -1880,15 +1880,15 @@ BEGIN
 		RETURN
 	| RejectMsg:
 		IF DebugTraceInts THEN  WriteDriver(d); Kernel.WriteString("  Int Seq / RejectMsg"); Kernel.WriteLn  END;
-		index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
-		msg := SYSTEM.VAL(CHAR, d.Get1(d, LASTMSG));
+		index := ORD( d.Get1(d, SCBTAG));
+		msg := ( d.Get1(d, LASTMSG));
 		IF (msg = SCSI.MsgIdentifyFlag) & (d.scb[index].tagAction # 0X) & (ScbMsgMask * d.scb[index].flags = {}) THEN
 			IF (d.scb[index].tagAction = SCSI.MsgOrderedQTag) & (DeviceTaggedSuccess IN d.dev[device].flags) THEN
 				EXCL(d.orderedQueue, device);
 				d.scb[index].tagAction := SCSI.MsgSimpleQTag;
 				CAND(d.hwscb[index].control, HwScbMsgMask);
 				COR(d.hwscb[index].control, SCSI.MsgSimpleQTag);
-				d.Put1(d, SCBCONTROL, SYSTEM.VAL(SET, d.hwscb[index].control));
+				d.Put1(d, SCBCONTROL, BITS( d.hwscb[index].control));
 				d.Put1(d, SCSISIG, d.Get1(d, SCSISIG) + {ATN})
 			ELSIF (d.scb[index].tagAction = SCSI.MsgSimpleQTag) & ~(DeviceTaggedSuccess IN d.dev[device].flags) THEN
 				EXCL(d.tagged, device);
@@ -1898,7 +1898,7 @@ BEGIN
 				d.scb[index].tagAction := 0X;
 				CCLRBIT(d.hwscb[index].control, HwScbTagEnb);
 				CAND(d.hwscb[index].control, HwScbMsgMask);
-				d.Put1(d, SCBCONTROL, SYSTEM.VAL(SET, d.hwscb[index].control));
+				d.Put1(d, SCBCONTROL, BITS( d.hwscb[index].control));
 				i := 0;
 				WHILE i < 256 DO
 					IF (ScbActive IN d.scb[i].flags) & (i # index) THEN
@@ -1910,7 +1910,7 @@ BEGIN
 					INC(i)
 				END;
 				d.untagged[ORD(d.hwscb[index].targ)] := CHR(index);
-				d.Put1(d, MSGOUT, SYSTEM.VAL(SET, SCSI.MsgIdentifyFlag));
+				d.Put1(d, MSGOUT, BITS( SCSI.MsgIdentifyFlag));
 				d.Put1(d, SCSISIG, d.Get1(d, SCSISIG) + {ATN})
 			END
 		ELSIF ScbMsgWidth IN d.scb[index].flags THEN
@@ -1923,7 +1923,7 @@ BEGIN
 			IF (device IN d.needSyncTrasmCopy) & ~(device IN d.syncPending) THEN
 				INCL(d.syncPending, device);
 				INCL(d.scb[index].flags, ScbMsgSync);
-				d.Put1(d, MSGOUT, SYSTEM.VAL(SET, HostMsg));
+				d.Put1(d, MSGOUT, BITS( HostMsg));
 				d.Put1(d, SCSISIG, d.Get1(d, SCSISIG) + {ATN})
 			END
 *)
@@ -1938,10 +1938,10 @@ IF DebugMsg THEN WriteDevice(d, device); Kernel.WriteString(" - sync (InterruptS
 	| BadStatus:
 		IF DebugTraceInts THEN  WriteDriver(d); Kernel.WriteString("  Int Seq / BadStatus")  END;
 		d.Put1(d, RETURN1, {});
-		index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
+		index := ORD( d.Get1(d, SCBTAG));
 		(*cmd := d.scb[index].cmd;*)
 		IF (ScbActive IN d.scb[index].flags)  & (d.scb[index].cmd.ptrToCmd # 0) THEN
-			d.hwscb[index].status := SYSTEM.VAL(CHAR, d.Get1(d, SCBTARGETSTATUS));
+			d.hwscb[index].status := ( d.Get1(d, SCBTARGETSTATUS));
 			d.scb[index].cmd.status := SYSTEM.VAL(SHORTINT, d.hwscb[index].status);
 			d.scb[index].cmd.result := d.scb[index].cmd.status;
 			CASE d.scb[index].cmd.result OF
@@ -1972,9 +1972,9 @@ IF DebugMsg THEN WriteDevice(d, device); Kernel.WriteString(" - sync (InterruptS
 				active := d.Get1(d, SCBPTR);
 				next := d.Get1(d, WAITINGSCBH);
 				prev := ScbNullSet; sindex := ORD(ScbNull);
-				WHILE SYSTEM.VAL(CHAR, next) # ScbNull DO
+				WHILE ( next) # ScbNull DO
 					d.Put1(d, SCBPTR, next);
-					sindex := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
+					sindex := ORD( d.Get1(d, SCBTAG));
 					IF sindex < d.allocated THEN
 						IF MatchScb(d, sindex, target, channel, lun, ScbNull) THEN
 							IF ScbWaitingQ IN d.scb[sindex].flags THEN
@@ -1993,7 +1993,7 @@ IF DebugMsg THEN WriteDevice(d, device); Kernel.WriteString(" - sync (InterruptS
 							d.Put1(d, SCBCONTROL, {});
 							d.Put1(d, SCBTAG, ScbNullSet);
 							FreeCurScb(d);
-							IF SYSTEM.VAL(CHAR, prev) = ScbNull THEN
+							IF ( prev) = ScbNull THEN
 								d.Put1(d, SCSISEQ, d.Get1(d, SCSISEQ) - {ENSELO});
 								d.Put1(d, CLRSINT1, {CLRSELTIMEO});
 								d.Put1(d, WAITINGSCBH, next)
@@ -2052,7 +2052,7 @@ IF DebugMsg THEN WriteDevice(d, device); Kernel.WriteString(" - sync (InterruptS
 		SequencerAwaitingMsg(d, device);
 	| DataOverrun:
 		IF DebugTraceInts THEN  WriteDriver(d); Kernel.WriteString("  Int Seq / DataOverrun"); Kernel.WriteLn  END;
-		index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
+		index := ORD( d.Get1(d, SCBTAG));
 		scb := d.scb[index];
 		scb.cmd.status := SCSI.Error
 	END;
@@ -2062,8 +2062,8 @@ END InterruptSequencer;
 PROCEDURE InterruptScsi(d: Host);	(* handle_scsiint *)
 VAR	index, target, channel, scbptr, i: LONGINT; status, lastphase: SET; tag, msg: CHAR; scb: ScbData;
 BEGIN
-	index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
-	target := SYSTEM.VAL(LONGINT, SYSTEM.LSH(d.Get1(d, SAVEDTCL), -4) * {0..3});
+	index := ORD( d.Get1(d, SCBTAG));
+	target := ORD( SYSTEM.LSH(d.Get1(d, SAVEDTCL), -4) * {0..3});
 	lastphase := d.Get1(d, LASTPHASE);
 	status := d.Get1(d, SSTAT1);
 	scb := d.scb[index];
@@ -2081,15 +2081,15 @@ BEGIN
 		scb := NIL
 	ELSIF SELTO IN status THEN
 		IF DebugTraceInts THEN  WriteDriver(d); Kernel.WriteString(" scsi-int / Selection Time-out"); Kernel.WriteLn  END;
-		scbptr := SYSTEM.VAL(LONGINT, d.Get1(d, WAITINGSCBH));
+		scbptr := ORD( d.Get1(d, WAITINGSCBH));
 		IF scbptr > d.allocated THEN
 			Kernel.WriteString("Invalid WAITING_SCBH value "); Kernel.WriteInt(scbptr, 1); Kernel.WriteLn;
 			scbptr := d.allocated-1;
 			WHILE (scbptr > 0) & (ScbActive IN d.scb[scbptr].flags) DO  DEC(scbptr)  END;
 			Kernel.WriteString("Trying with "); Kernel.WriteInt(scbptr, 1); Kernel.WriteLn;
 		END;
-		d.Put1(d, SCBPTR, SYSTEM.VAL(SET, scbptr));
-		index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
+		d.Put1(d, SCBPTR, BITS( scbptr));
+		index := ORD( d.Get1(d, SCBTAG));
 		scb := d.scb[index];
 		IF (index >= d.allocated) OR ~(ScbActive IN scb.flags) THEN
 			scb := NIL
@@ -2108,7 +2108,7 @@ BEGIN
 			scb.cmd.status := SCSI.CommandTerminated;
 			scb.cmd.result := SCSI.TimeOut;
 			d.Put1(d, SCBCONTROL, {});
-			d.Put1(d, MSGOUT, SYSTEM.VAL(SET, SCSI.MsgNoop));
+			d.Put1(d, MSGOUT, BITS( SCSI.MsgNoop));
 			d.Put1(d, WAITINGSCBH, d.Get1(d, SCBNEXT));
 			FreeCurScb(d);
 			IF ScbQueuedAbort IN scb.flags THEN
@@ -2130,7 +2130,7 @@ BEGIN
 		IF (d.chip =AIC7770) & (SELBUSB IN d.Get1(d, SBLKCTL)) THEN  channel := 1  END;
 		d.Put1(d, SCSISEQ, d.Get1(d, SCSISEQ) * {ENSELI, ENRSELI, ENAUTOATNP});
 		IF lastphase = PhaseMsgOut THEN
-			msg := SYSTEM.VAL(CHAR, d.Get1(d, SINDEX));
+			msg := ( d.Get1(d, SINDEX));
 			IF msg = SCSI.MsgAbort THEN
 				ResetDevice(d, target, channel, AllLuns, ScbNull);
 				RunDoneQueue(d);
@@ -2156,7 +2156,7 @@ BEGIN
 			scb := NIL
 		END;
 		EXCL(d.flags, FlagHandlingReqInits);
-		d.Put1(d, MSGOUT, SYSTEM.VAL(SET, SCSI.MsgNoop));
+		d.Put1(d, MSGOUT, BITS( SCSI.MsgNoop));
 		d.Put1(d, SIMODE1, d.Get1(d, SIMODE1) - {ENBUSFREE, ENREQINIT});
 		d.Put1(d, CLRSINT1, {CLRBUSFREE});
 		d.Put1(d, CLRINT, {CLRSCSIINT});
@@ -2189,7 +2189,7 @@ BEGIN
 			Kernel.WriteString("Parity Error during unknown phase"); Kernel.WriteLn
 		END;
 		IF msg # SCSI.MsgNoop THEN
-			d.Put1(d, MSGOUT, SYSTEM.VAL(SET, msg));  scb := NIL
+			d.Put1(d, MSGOUT, BITS( msg));  scb := NIL
 		END;
 		d.Put1(d, CLRSINT1, {CLRSCSIPERR});
 		d.Put1(d, CLRINT, {CLRSCSIINT});
@@ -2204,7 +2204,7 @@ BEGIN
 		Unpause(d);
 		scb := NIL;
 	ELSE
-		WriteDriver(d); Kernel.WriteString(" scsi-int / Unknown"); Kernel.WriteHex(SYSTEM.VAL(LONGINT, status),0); Kernel.WriteLn;
+		WriteDriver(d); Kernel.WriteString(" scsi-int / Unknown"); Kernel.WriteHex(ORD( status),0); Kernel.WriteLn;
 (*
 		d.Put1(d, CLRSINT1, status);
 		d.Put1(d, CLRINT, {CLRSCSIINT});
@@ -2245,32 +2245,32 @@ BEGIN
 		d.Put1(d, FREESCBH, {});
 		i := 0; quit := FALSE;
 		WHILE (i < 255) & ~quit DO
-			d.Put1(d, SCBPTR, SYSTEM.VAL(SET, i));
-			d.Put1(d, SCBCONTROL, SYSTEM.VAL(SET, i));
-			IF i # SYSTEM.VAL(LONGINT, d.Get1(d, SCBCONTROL)) THEN
+			d.Put1(d, SCBPTR, BITS( i));
+			d.Put1(d, SCBCONTROL, BITS( i));
+			IF i # ORD( d.Get1(d, SCBCONTROL)) THEN
 				quit := TRUE
 			ELSE
 				d.Put1(d, SCBPTR, {});
 				IF d.Get1(d, SCBCONTROL) # {} THEN
 					quit := TRUE
 				ELSE
-					d.Put1(d, SCBPTR, SYSTEM.VAL(SET, i));
+					d.Put1(d, SCBPTR, BITS( i));
 					d.Put1(d, SCBCONTROL, {});
-					d.Put1(d, SCBNEXT, SYSTEM.VAL(SET, i+1));
-					d.Put1(d, SCBPREV, SYSTEM.VAL(SET, i-1));
-					d.Put1(d, SCBTAG, SYSTEM.VAL(SET, -1));
-					d.Put1(d, SCBBUSYTARGETS, SYSTEM.VAL(SET, -1));
-					d.Put1(d, SCBBUSYTARGETS+1, SYSTEM.VAL(SET, -1));
-					d.Put1(d, SCBBUSYTARGETS+2, SYSTEM.VAL(SET, -1));
-					d.Put1(d, SCBBUSYTARGETS+3, SYSTEM.VAL(SET, -1));
+					d.Put1(d, SCBNEXT, BITS( i+1));
+					d.Put1(d, SCBPREV, BITS( i-1));
+					d.Put1(d, SCBTAG, BITS( -1));
+					d.Put1(d, SCBBUSYTARGETS, BITS( -1));
+					d.Put1(d, SCBBUSYTARGETS+1, BITS( -1));
+					d.Put1(d, SCBBUSYTARGETS+2, BITS( -1));
+					d.Put1(d, SCBBUSYTARGETS+3, BITS( -1));
 					INC(i)
 				END
 			END
 		END;
-		d.Put1(d, SCBPTR, SYSTEM.VAL(SET, i-1));	(*last SCB terminates the list*)
-		d.Put1(d, SCBNEXT, SYSTEM.VAL(SET, -1));
+		d.Put1(d, SCBPTR, BITS( i-1));	(*last SCB terminates the list*)
+		d.Put1(d, SCBNEXT, BITS( -1));
 		
-		d.Put1(d, SCBPTR, SYSTEM.VAL(SET, 0));	(*clear first SCB control byte ????IS THIS REALLY USEFUL????*)
+		d.Put1(d, SCBPTR, BITS( 0));	(*clear first SCB control byte ????IS THIS REALLY USEFUL????*)
 		d.Put1(d, SCBCONTROL, {});
 		d.maxScb := i;
 		IF i = 255 THEN  EXCL(d.flags, FlagPageSCB)  END;
@@ -2312,15 +2312,15 @@ BEGIN
 	prev := d.Get1(d, SCBPREV);
 	IF prev # ScbNullSet THEN
 		d.Put1(d, SCBPTR, prev); d.Put1(d, SCBNEXT, next)
-		;nc := d.hwscb[SYSTEM.VAL(LONGINT, ptr)].next;
-		ASSERT(nc = SYSTEM.VAL(CHAR, next));
+		;nc := d.hwscb[ORD( ptr)].next;
+		ASSERT(nc = ( next));
 	ELSE
 		d.Put1(d, DISCONNECTEDSCBH, next)
 	END;
 	IF next # ScbNullSet THEN
 		d.Put1(d, SCBPTR, next); d.Put1(d, SCBPREV, prev)
-		;pc := d.hwscb[SYSTEM.VAL(LONGINT, ptr)].prev;
-		ASSERT(pc = SYSTEM.VAL(CHAR, prev));
+		;pc := d.hwscb[ORD( ptr)].prev;
+		ASSERT(pc = ( prev));
 	END;
 	RETURN next
 END RemoveScbFromDiscList;
@@ -2407,9 +2407,9 @@ BEGIN
 		d.in[qinpos] := ScbNull; INC(qinpos)
 	END;
 	IF FeatQueueRegs IN d.features THEN
-		d.Put1(d, HNSCBQOFF, SYSTEM.VAL(SET, d.inNext))
+		d.Put1(d, HNSCBQOFF, BITS( d.inNext))
 	ELSE
-		d.Put1(d, KERNELQINPOS, SYSTEM.VAL(SET, d.inNext))
+		d.Put1(d, KERNELQINPOS, BITS( d.inNext))
 	END;
 	(*RETURN found*)
 END SearchQInFifo;
@@ -2424,7 +2424,7 @@ VAR tag: INTEGER;
 BEGIN
 	IF DebugTrace THEN  WriteDriver(d); Kernel.WriteString("  FreeScb"); DumpChar(scb.tag); Kernel.WriteLn  END;
 	scb.flags := {ScbFree};
-	scb.cmd.ptrToCmd := SYSTEM.VAL(LONGINT, NIL);
+	scb.cmd.ptrToCmd := ORD( NIL);
 	scb.tagAction := 0X;
 	tag := ORD(scb.tag);
 	d.hwscb[tag].control := 0X;
@@ -2446,8 +2446,8 @@ BEGIN
 		SYSTEM.GET(scb.cmd.cmd, ch);	(*read command*)
 		IF (ch = SCSI.Inquiry) & (scb.cmd.result = SCSI.OK) THEN
 			SYSTEM.GET(scb.cmd.data+7, ch);
-			wide := SYSTEM.VAL(SET, ch) * {5,6} # {};
-			sync := 4 IN SYSTEM.VAL(SET, ch);
+			wide := BITS( ch) * {5,6} # {};
+			sync := 4 IN BITS( ch);
 			
 			IF wide & (FeatWide IN d.features) THEN
 				INCL(d.needWidthTrasm, index);
@@ -2667,13 +2667,13 @@ BEGIN
 	WHILE (next # ScbNullSet) & (j < d.allocated) DO
 		INC(j);
 		d.Put1(d, SCBPTR, next);
-		index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
+		index := ORD( d.Get1(d, SCBTAG));
 		IF index >= d.allocated THEN
 			Kernel.WriteString("AIC7xxx: Wait List inconsistency!!"); Kernel.WriteLn;
 			next := d.Get1(d, SCBNEXT);
 			FreeCurScb(d)
 		ELSE
-			ASSERT(index = SYSTEM.VAL(LONGINT, next));
+			ASSERT(index = ORD( next));
 			scb := d.scb[index];
 			IF MatchScb(d, ORD(scb.tag), target, channel, lun, tag) THEN
 				next := AbortWaitingScb(d, next, prev);
@@ -2702,7 +2702,7 @@ BEGIN
 		WHILE (next # ScbNullSet) & (j < d.allocated) DO
 			INC(j);
 			d.Put1(d, SCBPTR, next);
-			index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
+			index := ORD( d.Get1(d, SCBTAG));
 			IF index >= d.allocated THEN
 				Kernel.WriteString("AIC7xxx: Disconnected List inconsistency!!"); Kernel.WriteLn;
 				next := RemoveScbFromDiscList(d, next)
@@ -2728,7 +2728,7 @@ BEGIN
 		
 		j := 0;
 		next := d.Get1(d, FREESCBH);
-		IF (SYSTEM.VAL(LONGINT, next) >= d.allocated) & (next # ScbNullSet) THEN
+		IF (ORD( next) >= d.allocated) & (next # ScbNullSet) THEN
 			Kernel.WriteString("AIC7xxx: Bogus Free SCBH!!"); Kernel.WriteLn;
 			initLists := TRUE;
 			next := ScbNullSet
@@ -2736,7 +2736,7 @@ BEGIN
 		WHILE (next # ScbNullSet) & (j < d.allocated) DO
 			INC(j);
 			d.Put1(d, SCBPTR, next);
-			IF SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG)) >= d.allocated THEN
+			IF ORD( d.Get1(d, SCBTAG)) >= d.allocated THEN
 				Kernel.WriteString("AIC7xxx: FREE-SCBH List inconsistency!!"); Kernel.WriteLn;
 				initLists := TRUE;
 				next := ScbNullSet
@@ -2759,14 +2759,14 @@ BEGIN
 	END;
 	
 	FOR j := 0 TO 255 DO	(* linux goes 255..0 here*)
-		d.Put1(d, SCBPTR, SYSTEM.VAL(SET, j));
+		d.Put1(d, SCBPTR, BITS( j));
 		IF initLists THEN
 			d.Put1(d, SCBTAG, ScbNullSet);
 			d.Put1(d, SCBNEXT, ScbNullSet);
 			d.Put1(d, SCBPREV, ScbNullSet);
 			d.Put1(d, SCBCONTROL, {})
 		ELSE
-			index := SYSTEM.VAL(LONGINT, d.Get1(d, SCBTAG));
+			index := ORD( d.Get1(d, SCBTAG));
 			ASSERT(index = j);	(* I'm just wondering.... this could be simplified*)
 			IF index < d.allocated THEN
 				IF MatchScb(d, index, target, channel, lun, tag) THEN
@@ -2951,7 +2951,7 @@ BEGIN
 	(*Set SCSI ID, XCtrl0 XCtrl1, SIMODE1*)
 	IF FeatTwin IN d.features THEN	(*Channel B*)
 		d.Put1(d, SBLKCTL, d.Get1(d, SBLKCTL) + {SELBUSB});
-		d.Put1(d, SCSIID, SYSTEM.VAL(SET, d.scsiIdB));
+		d.Put1(d, SCSIID, BITS( d.scsiIdB));
 		t := d.Get1(d, SCSICONF+1)*{ENSPCHK} + {ENSTIMER, ACTNEGEN};
 		IF  FlagTermEnbB IN d.flags  THEN  INCL(t, STPWEN)  END;
 		d.Put1(d, SXFRCTL0, {DFON, SPIOEN});
@@ -2962,9 +2962,9 @@ BEGIN
 		d.Put1(d, SBLKCTL, d.Get1(d, SBLKCTL) - {SELBUSB});
 	END;
 	IF FeatUltra2 IN d.flags THEN
-		d.Put1(d, SCSIIDULTRA2, SYSTEM.VAL(SET, d.scsiId))
+		d.Put1(d, SCSIIDULTRA2, BITS( d.scsiId))
 	ELSE
-		d.Put1(d, SCSIID, SYSTEM.VAL(SET, d.scsiId))
+		d.Put1(d, SCSIID, BITS( d.scsiId))
 	END;
 	t := d.Get1(d, SCSICONF)*{ENSPCHK} + {ENSTIMER, ACTNEGEN};
 	IF FlagTermEnbSELow IN d.flags THEN  INCL(t, STPWEN)  END;
@@ -2992,8 +2992,8 @@ BEGIN
 	d.Put1(d, WAITINGSCBH, ScbNullSet);
 	d.Put1(d, DISCONNECTEDSCBH, ScbNullSet);
 	
-	d.Put1(d, MSGOUT, SYSTEM.VAL(SET, SCSI.MsgNoop));
-	d.Put1(d, LASTMSG, SYSTEM.VAL(SET, SCSI.MsgNoop));
+	d.Put1(d, MSGOUT, BITS( SCSI.MsgNoop));
+	d.Put1(d, LASTMSG, BITS( SCSI.MsgNoop));
 	
 	Put4(d, TMODECMDADDR, 0);
 	d.Put1(d, TMODECMDADDRNEXT, {});
@@ -3030,7 +3030,7 @@ BEGIN
 	res:=PCI.ReadConfigDword(bus, dev, slot, PCI.Adr0Reg, dw);  d.iobase := dw - 1;
 	res:=PCI.ReadConfigDword(bus, dev, slot, PCI.Adr1Reg, dw);
 	IF dw # 0 THEN
-		dw := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, dw) * {3..31});	(* clear io, 64 bits*)
+		dw := ORD( BITS( dw) * {3..31});	(* clear io, 64 bits*)
 		Kernel.MapPhysical(dw, 4*1024, d.membase);
 (*Kernel.WriteString("Mem: "); Kernel.WriteHex(d.membase, 0); Kernel.WriteLn;*)
 		d.Put1 := MemoryPut;  d.Get1 := MemoryGet
@@ -3039,13 +3039,13 @@ BEGIN
 	END;
 	
 	res:=PCI.ReadConfigWord(bus, dev, slot, PCI.CmdReg, dw);	(*COMMAND*)
-	dw := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, dw) + {8, 6, 4, 2, 1, 0});	(*Serren, Perren, Mwricen, Master, MSpace, ISpace*)
+	dw := ORD( BITS( dw) + {8, 6, 4, 2, 1, 0});	(*Serren, Perren, Mwricen, Master, MSpace, ISpace*)
 	res:=PCI.WriteConfigWord(bus, dev, slot, PCI.CmdReg, dw);
 	
 	res:=PCI.ReadConfigDword(bus, dev, slot, DEVCONFIG, dw);
-	dw := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, dw) + {PCIERRGENDIS} - {BERREN});
+	dw := ORD( BITS( dw) + {PCIERRGENDIS} - {BERREN});
 	IF d.chip = AIC7895 THEN
-		dw := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, dw) + {SCBSIZE32});
+		dw := ORD( BITS( dw) + {SCBSIZE32});
 	END;
 	res:=PCI.WriteConfigDword(bus, dev, slot, DEVCONFIG, dw);
 	
@@ -3147,7 +3147,7 @@ BEGIN
 	
 				IF host.chip IN {AIC7895, AIC7896} THEN
 					res := PCI.ReadConfigDword(bus, slot, dev, DEVCONFIG, dw);
-					conf := SYSTEM.VAL(SET, dw);
+					conf := BITS( dw);
 					IF FeatUltra2 IN host.features THEN
 						s := host.Get1(host, DSCOMMAND0);
 						IF RAMPSMULTRA2 IN s THEN
@@ -3159,7 +3159,7 @@ BEGIN
 						conf := conf + {SCBRAMSEL} - {EXTSCBPEN};
 						INCL(host.flags, FlagExternalSRam)
 					END;
-					res := PCI.WriteConfigDword(bus, slot, dev, DEVCONFIG, SYSTEM.VAL(LONGINT, conf));
+					res := PCI.WriteConfigDword(bus, slot, dev, DEVCONFIG, ORD( conf));
 					IF host.flags * {FlagExternalSRam, FlagChnlB} # {} THEN  host.Put1(host, CCSCBBADDR, {0})  END
 				END;
 				
@@ -3253,11 +3253,11 @@ BEGIN
 		IF (target IN d.needWidthTrasm) THEN
 			IF DebugMsg THEN WriteDevice(d, target); Kernel.WriteString(" schedule width handling"); Kernel.WriteLn  END;
 			INCL(d.widthPending, target); INCL(scb.flags, ScbMsgWidth); scb.tagAction := 0X;
-			d.hwscb[index].control := SYSTEM.VAL(CHAR, SYSTEM.VAL(SET, d.hwscb[index].control) * {HwScbDiscEnable} + {HwScbMessage});
+			d.hwscb[index].control := ( BITS( d.hwscb[index].control) * {HwScbDiscEnable} + {HwScbMessage});
 		ELSIF (target IN d.needSyncTrasm) THEN
 			IF DebugMsg THEN WriteDevice(d, target); Kernel.WriteString(" schedule sync handling"); Kernel.WriteLn  END;
 			INCL(d.syncPending, target); INCL(scb.flags, ScbMsgSync); scb.tagAction := 0X;
-			d.hwscb[index].control := SYSTEM.VAL(CHAR, SYSTEM.VAL(SET, d.hwscb[index].control) * {HwScbDiscEnable} + {HwScbMessage});
+			d.hwscb[index].control := ( BITS( d.hwscb[index].control) * {HwScbDiscEnable} + {HwScbMessage});
 		END
 	END;
 	d.hwscb[index].targ := CHR(SYSTEM.LSH(target MOD 16, 4)+SYSTEM.LSH(c.chan MOD 2, 3)+c.lun MOD 8);
@@ -3345,12 +3345,12 @@ VAR str: ARRAY 32 OF CHAR; i: SET;
 		SyncRate[i].rate[RateUltra2] := r2;  SyncRate[i].period := p;
 	END SetRate;
 BEGIN
-	Kernel.GetConfig("Ada7Debug", str); i := SYSTEM.VAL(SET, StrToInt(str));
+	Kernel.GetConfig("Ada7Debug", str); i := BITS( StrToInt(str));
 	DebugTrace := 0 IN i;  DebugTraceInts := 1 IN i;  DebugMsg := 2 IN i;  DebugSCB := 3 IN i;
 	DebugSequencer := 4 IN i;  DebugReset := 5 IN i;  DebugConfig := 6 IN i;  DebugPeriod := 7 IN i;
 	DebugCmds := 8 IN i;
 	IF i # {} THEN
-		Kernel.WriteString("Adaptec7: Ada7Debug = "); Kernel.WriteHex(SYSTEM.VAL(LONGINT, i),0); Kernel.WriteLn
+		Kernel.WriteString("Adaptec7: Ada7Debug = "); Kernel.WriteHex(ORD( i),0); Kernel.WriteLn
 	END;
 	
 	Kernel.GetConfig("Ada7ResetDelay", str); ResetDelay := StrToInt(str);

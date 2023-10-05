@@ -103,7 +103,7 @@ BEGIN
 	sendhdr.type := SYSTEM.ROT(prno, 8);	(* sendhdr.src remains our address *)
 	p := port+14;
 	LOOP
-		SYSTEM.PORTIN(port+11, SYSTEM.VAL(CHAR, s));
+		SYSTEM.PORTIN(port+11, ( s));
 		IF s * {4,5} # {} THEN	(* underrun or jabber error *)
 			INC(Nresets);  SYSTEM.CLI();
 			SYSTEM.PORTOUT(p, SYSTEM.VAL(INTEGER, 5800H));	(* tx reset *)
@@ -279,7 +279,7 @@ END SetMode;
 PROCEDURE *InterruptHandler;
 VAR p, q, len, size, left, timer: INTEGER;  s: SET;
 BEGIN
-	timer := 0;  SYSTEM.PORTIN(port+10, SYSTEM.VAL(CHAR, timer));
+	timer := 0;  SYSTEM.PORTIN(port+10, ( timer));
 	SYSTEM.STI();  (*INC(inttime1, LONG(timer));*)  INC(Nints);
 	p := port+14;  q := port+8;
 	LOOP
@@ -326,7 +326,7 @@ BEGIN
 		SYSTEM.PORTOUT(p, SYSTEM.VAL(INTEGER, 4000H));	(* discard *)
 		REPEAT SYSTEM.PORTIN(p, SYSTEM.VAL(INTEGER, s)) UNTIL ~(12 IN s)	(* wait for fin *)
 	END;
-	SYSTEM.PORTIN(port+10, SYSTEM.VAL(CHAR, timer));  (*INC(inttime2, LONG(timer))*)
+	SYSTEM.PORTIN(port+10, ( timer));  (*INC(inttime2, LONG(timer))*)
 END InterruptHandler;
 
 (* WriteID - Write the 3c509 ID pattern to the ID port *)
@@ -338,7 +338,7 @@ BEGIN
 	SYSTEM.PORTOUT(id, 0X);	(* reset hardware pattern generator *)
 	s := {0..7};
 	FOR i := 1 TO 255 DO
-		SYSTEM.PORTOUT(id, SYSTEM.VAL(CHAR, s));
+		SYSTEM.PORTOUT(id, ( s));
 		s := SYSTEM.LSH(s, 1);
 		IF 8 IN s THEN s := s / {0..3,6,7} END
 	END
@@ -354,15 +354,15 @@ BEGIN
 	us := us*Rate DIV 1000000;
 	ASSERT(us < 65536);
 	SYSTEM.CLI();
-	SYSTEM.PORTIN(61H, SYSTEM.VAL(CHAR, s));	(* disable timer 2 gate *)
-	SYSTEM.PORTOUT(61H, SYSTEM.VAL(CHAR, s - {0}));
+	SYSTEM.PORTIN(61H, ( s));	(* disable timer 2 gate *)
+	SYSTEM.PORTOUT(61H, ( s - {0}));
 	SYSTEM.PORTOUT(43H, 0B0X);	(* timer 2, mode 0 *)
 	SYSTEM.PORTOUT(42H, CHR(us MOD 100H));
 	SYSTEM.PORTOUT(42H, CHR(us DIV 100H));
-	SYSTEM.PORTIN(61H, SYSTEM.VAL(CHAR, s));	(* enable timer 2 gate *)
-	SYSTEM.PORTOUT(61H, SYSTEM.VAL(CHAR, s + {0}));
+	SYSTEM.PORTIN(61H, ( s));	(* enable timer 2 gate *)
+	SYSTEM.PORTOUT(61H, ( s + {0}));
 	SYSTEM.STI();
-	REPEAT SYSTEM.PORTIN(61H, SYSTEM.VAL(CHAR, s)) UNTIL 5 IN s
+	REPEAT SYSTEM.PORTIN(61H, ( s)) UNTIL 5 IN s
 END Delay;
 
 (* ReadEE - Read EEPROM register *)
@@ -377,7 +377,7 @@ BEGIN
 		SYSTEM.PORTIN(id, b);
 		IF ODD(ORD(b)) THEN INCL(s, i) END
 	END;
-	RETURN SYSTEM.VAL(LONGINT, s)
+	RETURN ORD( s)
 END ReadEE;
 
 (* ReadEE2 - Read EEPROM register (EISA) *)
@@ -419,10 +419,10 @@ BEGIN
 			t := 0;  SYSTEM.PORTIN(p, SYSTEM.VAL(INTEGER, t));
 			IF t = 6D50H THEN
 				INC(p, 2);  SYSTEM.PORTIN(p, SYSTEM.VAL(INTEGER, t));
-				IF SYSTEM.VAL(SET, t) * {0..7,12..15} = {4,6,12,15} THEN	(* found 509 *)
+				IF BITS( t) * {0..7,12..15} = {4,6,12,15} THEN	(* found 509 *)
 					id := slot;  port := SHORT(ASH(slot, 12));
 					INC(p, 4);  SYSTEM.PORTIN(p, SYSTEM.VAL(INTEGER, t));
-					baseT := SYSTEM.VAL(SET, t) * {14,15} # {14,15};
+					baseT := BITS( t) * {14,15} # {14,15};
 					INC(p, 2);  SYSTEM.PORTIN(p, SYSTEM.VAL(INTEGER, t));
 					irq := SHORT(SHORT(ASH(t, -12)));
 					SYSTEM.CLI();  INC(p, 2);
@@ -450,7 +450,7 @@ BEGIN
 			SYSTEM.PUT(SYSTEM.ADR(adr[0]), Swap(ReadEE(id, 10)));
 			SYSTEM.PUT(SYSTEM.ADR(adr[2]), Swap(ReadEE(id, 11)));
 			SYSTEM.PUT(SYSTEM.ADR(adr[4]), Swap(ReadEE(id, 12)));
-			t := ReadEE(id, 8);  baseT := SYSTEM.VAL(SET, t) * {14,15} # {14,15};
+			t := ReadEE(id, 8);  baseT := BITS( t) * {14,15} # {14,15};
 			port := (SHORT(t) MOD 20H)*16 + 200H;
 			irq := SHORT(SHORT(ASH(ReadEE(id, 9), -12)));
 			t := ReadEE(id, 13);	(* software config (ignore) *)

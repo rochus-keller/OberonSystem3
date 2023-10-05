@@ -233,7 +233,7 @@ es*)
 	END CheckPacket;
 	
 	PROCEDURE XOR20(ch:LONGINT):LONGINT;
-	BEGIN RETURN SYSTEM.VAL(LONGINT, (SYSTEM.VAL(SET, ch) / {5} ));
+	BEGIN RETURN ORD( (BITS( ch) / {5} ));
 	END XOR20;
 	
 	(* ReceivePacket - ReiceiveLoop: Task , needs extended Event 

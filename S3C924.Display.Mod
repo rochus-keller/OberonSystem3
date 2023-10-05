@@ -414,9 +414,9 @@ lab8:
 				SYSTEM.PORTOUT(curX, SHORT(x));
 				SYSTEM.PORTOUT(curY, SHORT(y));
 				SYSTEM.PORTOUT(cmdReg, 2313H);
-				SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, bit24*{0..15}));
+				SYSTEM.PORTOUT(pixTrans, ORD( bit24*{0..15}));
 				bit24 := SYSTEM.ROT(bit24, 16);
-				SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, bit24*{0..15}));
+				SYSTEM.PORTOUT(pixTrans, ORD( bit24*{0..15}));
 				DEC(y);
 			END
 		ELSE
@@ -427,9 +427,9 @@ lab8:
 				SYSTEM.PORTOUT(curX, SHORT(x));
 				SYSTEM.PORTOUT(curY, SHORT(y));
 				SYSTEM.PORTOUT(cmdReg, 2313H);
-				SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, bit32*{0..15}));
+				SYSTEM.PORTOUT(pixTrans, ORD( bit32*{0..15}));
 				bit32 := SYSTEM.ROT(bit32, 16);
-				SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, bit32*{0..15}));
+				SYSTEM.PORTOUT(pixTrans, ORD( bit32*{0..15}));
 				DEC(y);
 			END
 		END;
@@ -512,9 +512,9 @@ lab8:
 					SYSTEM.PORTOUT(cmdReg, 2313H);
 					WHILE w > 0 DO
 						WaitFIFO2;
-						SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, bit32)*{0..15}));
+						SYSTEM.PORTOUT(pixTrans, ORD( BITS( bit32)*{0..15}));
 						bit32 := SYSTEM.ROT(bit32, 16);
-						SYSTEM.PORTOUT(pixTrans, SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, bit32)*{0..15}));
+						SYSTEM.PORTOUT(pixTrans, ORD( BITS( bit32)*{0..15}));
 						DEC(w,4)
 					END;
 					DEC(y);

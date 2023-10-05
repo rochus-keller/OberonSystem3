@@ -68,16 +68,16 @@ BEGIN
 	ELSE t := Kernel.GetTimer() + Timeout
 	END;
 	LOOP
-		SYSTEM.PORTIN(base+1, SYSTEM.VAL(CHAR, s));
+		SYSTEM.PORTIN(base+1, ( s));
 		IF ~(2 IN s) THEN EXIT END;	(* status available *)
 		IF Kernel.GetTimer() > t THEN RETURN FALSE END
 	END;
 	SYSTEM.PORTIN(base, ch);
 	IF ch = 0FFX THEN RETURN FALSE END;
-	IF (status = Playing) & ~(1 IN SYSTEM.VAL(SET, ch)) THEN
+	IF (status = Playing) & ~(1 IN BITS( ch)) THEN
 		status := Completed
 	END;
-	IF 5 IN SYSTEM.VAL(SET, ch) THEN
+	IF 5 IN BITS( ch) THEN
 		diskchanged := TRUE;  tocok := FALSE;
 		status := None
 	END;
@@ -91,7 +91,7 @@ VAR i: LONGINT;  s: SET;
 BEGIN
 	i := 0;
 	LOOP
-		SYSTEM.PORTIN(base+1, SYSTEM.VAL(CHAR, s));
+		SYSTEM.PORTIN(base+1, ( s));
 		IF ~(2 IN s) THEN EXIT END;	(* status available *)
 		INC(i);
 		IF i = 200000000 THEN HALT(99) END
@@ -230,7 +230,7 @@ BEGIN
 	SYSTEM.PORTOUT(base, 40X);	(* get status cmd *)
 	i := 0;
 	LOOP
-		SYSTEM.PORTIN(base+1, SYSTEM.VAL(CHAR, s));
+		SYSTEM.PORTIN(base+1, ( s));
 		IF ~(2 IN s) THEN EXIT END;	(* status available *)
 		INC(i);
 		IF i = 2000000 THEN HALT(99) END

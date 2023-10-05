@@ -71,9 +71,9 @@ BEGIN
 	Kernel.WriteLn;  Kernel.WriteString("Diskette: ");  Kernel.WriteString(error);  
 	Kernel.WriteString(". ");  Kernel.WriteString(reason);  Kernel.WriteLn;
 	IF trace THEN
-		FOR i := 0 TO 2 DO Kernel.WriteHex(SYSTEM.VAL(LONGINT, result[i]), 9) END;
+		FOR i := 0 TO 2 DO Kernel.WriteHex(ORD( result[i]), 9) END;
 		Kernel.WriteLn;
-		FOR i := 0 TO 2 DO Kernel.WriteHex(SYSTEM.VAL(LONGINT, errors[i]), 9) END;
+		FOR i := 0 TO 2 DO Kernel.WriteHex(ORD( errors[i]), 9) END;
 		Kernel.WriteLn
 	END;
 	FOR i := 0 TO 6 DO result[i] := {} END;
@@ -106,7 +106,7 @@ BEGIN
 		Read:  mode := 44H	(* IO->memory, no autoinit, increment, single mode *)
 		|Write:  mode := 48H	(* memory->IO, no autoinit, increment, single mode *)
 	END;  (* CASE *)
-	DEC(len);  adr := SYSTEM.VAL(LONGINT, buf);
+	DEC(len);  adr := ORD( buf);
 	CASE chan OF
 		0:  page := 87H
 		|1:  page := 83H
@@ -134,7 +134,7 @@ BEGIN
 	IF state # Reset THEN
 		t := Kernel.GetTimer();
 		REPEAT
-			SYSTEM.PORTIN(3F4H, SYSTEM.VAL(CHAR, s));
+			SYSTEM.PORTIN(3F4H, ( s));
 			IF s * {6,7} = {7} THEN	(* ready for write *)
 				SYSTEM.PORTOUT(3F5H, b);
 				RETURN	(* done *)
@@ -152,12 +152,12 @@ BEGIN
 	IF state # Reset THEN
 		i := 0;  s := {};  t := Kernel.GetTimer();
 		REPEAT
-			SYSTEM.PORTIN(3F4H, SYSTEM.VAL(CHAR, s));
+			SYSTEM.PORTIN(3F4H, ( s));
 			IF s * {4,6,7} = {7} THEN	(* ready for write (end) *)
 				IF trace THEN Kernel.WriteChar("=");  Kernel.WriteInt(i, 1) END;
 				RETURN i
 			ELSIF s * {6,7} = {6,7} THEN	(* ready for read *)
-				SYSTEM.PORTIN(3F5H, SYSTEM.VAL(CHAR, s));  result[i] := s;
+				SYSTEM.PORTIN(3F5H, ( s));  result[i] := s;
 				IF i < 3 THEN errors[i] := errors[i] + result[i] END;
 				INC(i)
 			ELSE (* skip *)
@@ -272,8 +272,8 @@ BEGIN
 			END
 		END;
 			(* select the drive & send power to the motor *)
-		s := {2,3,drive+4} + SYSTEM.VAL(SET, drive);
-		SYSTEM.PORTOUT(3F2H, SYSTEM.VAL(CHAR, s));
+		s := {2,3,drive+4} + BITS( drive);
+		SYSTEM.PORTOUT(3F2H, ( s));
 		IF (op IN {Write, Format}) & ~motor THEN	(* motor was not running, wait for it to spin up *)
 			t := Kernel.GetTimer();  REPEAT UNTIL Kernel.GetTimer() - t > Kernel.TimeUnit DIV 2	(* 0.5s *)
 		END;
@@ -309,7 +309,7 @@ BEGIN
 							SetupDMA(2, Read, dmabuf, num*512);
 							PutByte(0E6X)
 						|Write:
-							CopyDWord(SYSTEM.ADR(buf[0]), SYSTEM.VAL(LONGINT, dmabuf), num*512 DIV 4);
+							CopyDWord(SYSTEM.ADR(buf[0]), ORD( dmabuf), num*512 DIV 4);
 							SetupDMA(2, Write, dmabuf, num*512);
 							PutByte(0C5X)
 						|Format:
@@ -352,18 +352,18 @@ BEGIN
 					END
 				ELSE
 					IF op = Read THEN
-						CopyDWord(SYSTEM.VAL(LONGINT, dmabuf), SYSTEM.ADR(buf[0]), num*512 DIV 4)
+						CopyDWord(ORD( dmabuf), SYSTEM.ADR(buf[0]), num*512 DIV 4)
 					END;
 					EXIT	(* EXIT: operation successful *)
 				END
 
 			|Reset:
 				curtrack := -1;  interrupt := FALSE;  (* reset possible late interrupt *)
-				SYSTEM.PORTIN(3F2H, SYSTEM.VAL(CHAR, s));  EXCL(s, 2);
-				SYSTEM.PORTOUT(3F2H, SYSTEM.VAL(CHAR, s));
+				SYSTEM.PORTIN(3F2H, ( s));  EXCL(s, 2);
+				SYSTEM.PORTOUT(3F2H, ( s));
 				t := Kernel.GetTimer();	(* assume one GetTimer tick > 50us *)
 				REPEAT UNTIL Kernel.GetTimer()-t >= 2;
-				INCL(s, 2);  SYSTEM.PORTOUT(3F2H, SYSTEM.VAL(CHAR, s));
+				INCL(s, 2);  SYSTEM.PORTOUT(3F2H, ( s));
 				state := Recal;  WaitInterrupt;
 				PutByte(8X);	(* sense *)
 				IF GetResults() < 1 THEN Error("Reset failed") END;
@@ -506,7 +506,7 @@ VAR c: CHAR;
 	PROCEDURE Wait;
 	END Wait;
 BEGIN
-	INCL(SYSTEM.VAL(SET, i), 7);  SYSTEM.CLI();
+	INCL(BITS( i), 7);  SYSTEM.CLI();
 	SYSTEM.PORTOUT(70H, i);  Wait;  SYSTEM.PORTIN(71H, c);
 	SYSTEM.PORTOUT(70H, 0X);  SYSTEM.STI();
 	RETURN ORD(c)

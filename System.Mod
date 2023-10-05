@@ -771,7 +771,8 @@ VAR T: Texts.Text;  n: Oberon.Task;  ofs, t: LONGINT;  m: Modules.Module;
 BEGIN
 	n := Oberon.NextTask;  t := Input.Time();
 	REPEAT
-		ofs := SYSTEM.VAL(LONGINT, n.handle);  m := Kernel.GetMod(ofs);
+		ofs := 0; // TODO ORD( n.handle);  
+		m := Kernel.GetMod(ofs);
 		Texts.WriteString(W, m.name);  Texts.WriteString(W, "  PC = ");  
 		Texts.WriteInt(W, ofs-SYSTEM.ADR(m.code[0]), 1);
 		IF n.safe THEN Texts.WriteString(W, "  safe  ")

@@ -39,7 +39,7 @@ VAR
 PROCEDURE CorrectAddr(VAR line: SET);
 VAR i, addr, Max: LONGINT;
 BEGIN
-	addr := SYSTEM.VAL(LONGINT, SYSTEM.LSH(line*{17..26}, -17));
+	addr := ORD( SYSTEM.LSH(line*{17..26}, -17));
 	i := 0; Max := addr;
 	WHILE Patches[i].begin < Max DO
 		IF ~F[Patches[i].f] THEN	(*patch not active*)
@@ -49,7 +49,7 @@ BEGIN
 			INC(i)
 		END
 	END;
-	line := line - {17..26} + SYSTEM.VAL(SET, SYSTEM.LSH(addr, 17));
+	line := line - {17..26} + BITS( SYSTEM.LSH(addr, 17));
 END CorrectAddr;
 
 PROCEDURE LoadPatches;
@@ -252,7 +252,7 @@ BEGIN
 	IF Patches[patch].begin = pc THEN INC(patch) END;
 	SYSTEM.GET(Base+pc*4, line);
 	IF line # {} THEN
-		opcode := SYSTEM.VAL(LONGINT, SYSTEM.LSH(line*{27..30}, -27));
+		opcode := ORD( SYSTEM.LSH(line*{27..30}, -27));
 		IF (8<=opcode) & (opcode<=0FH) THEN	(*patch jump addr*)
 			CorrectAddr(line)
 		END;

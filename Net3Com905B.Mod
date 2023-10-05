@@ -330,7 +330,7 @@ BEGIN
 		val :=  {15};	(* eeprom busy *)
 		WHILE (15 IN val)  DO
 			SYSTEM.PORTIN(BaseAdr+0AH, cmreg); 
-			val :=  SYSTEM.VAL(SET, cmreg);
+			val :=  BITS( cmreg);
 		END;
 		(* lese word0 aus EEprom DataReg *)
 		SYSTEM.PORTIN(BaseAdr+0CH, word[i]);
@@ -338,12 +338,12 @@ BEGIN
 	SwitchToWindow(2);
 	(* schreibe wort 0, wort1, wort2 an die entsprechenden offsets *)
 	(* initialisiere globale Variable sendhdr.src[.] *)
-	sendhdr.src[0] := SYSTEM.VAL(CHAR, word[0] DIV 256);
-	sendhdr.src[1] := SYSTEM.VAL(CHAR, word[0]);
-	sendhdr.src[2] := SYSTEM.VAL(CHAR, word[1] DIV 256);
-	sendhdr.src[3] := SYSTEM.VAL(CHAR, word[1]);		
-	sendhdr.src[4] := SYSTEM.VAL(CHAR, word[2] DIV 256);
-	sendhdr.src[5] := SYSTEM.VAL(CHAR, word[2]);
+	sendhdr.src[0] := ( word[0] DIV 256);
+	sendhdr.src[1] := ( word[0]);
+	sendhdr.src[2] := ( word[1] DIV 256);
+	sendhdr.src[3] := ( word[1]);		
+	sendhdr.src[4] := ( word[2] DIV 256);
+	sendhdr.src[5] := ( word[2]);
 	FOR i := 0 TO 5 DO
 		SYSTEM.PORTOUT(BaseAdr+i, sendhdr.src[i])
 	END;
@@ -383,7 +383,7 @@ BEGIN
 	SwitchToWindow(3);
 	SYSTEM.PORTIN(BaseAdr+MediaOption, mediaOptions);
 	tryPort := tryPort.next;
-	WHILE ~(tryPort=NIL)&~(tryPort.type IN SYSTEM.VAL(SET, mediaOptions)) DO
+	WHILE ~(tryPort=NIL)&~(tryPort.type IN BITS( mediaOptions)) DO
 		tryPort := tryPort.next
 	END;					
 	IF tryPort=NIL THEN link := 10
@@ -448,7 +448,7 @@ BEGIN
 		SYSTEM.PORTIN(BaseAdr+InternalConfig, intConfig);
 		IF 24 IN intConfig THEN (* Autonegotiate; start with 100BaseTx IF available, else go through the medialist*)
 			SYSTEM.PORTIN(BaseAdr+MediaOption, mediaOptions);
-			WHILE ~(tryPort=NIL)&~(tryPort.type IN SYSTEM.VAL(SET, mediaOptions)) DO
+			WHILE ~(tryPort=NIL)&~(tryPort.type IN BITS( mediaOptions)) DO
 				tryPort := tryPort.next
 			END;
 			(* try first this port... *)
@@ -477,10 +477,10 @@ BEGIN
 			val :=  {15};	(* eeprom busy *)
 			WHILE (15 IN val)  DO
 				SYSTEM.PORTIN(BaseAdr+0AH, cmreg); 
-				val :=  SYSTEM.VAL(SET, cmreg);
+				val :=  BITS( cmreg);
 			END;
 			SYSTEM.PORTIN(BaseAdr+0CH, info1);
-			IF 15 IN SYSTEM.VAL(SET, info1) THEN
+			IF 15 IN BITS( info1) THEN
 				SYSTEM.PORTOUT(BaseAdr+MacControl, B5)
 			ELSE
 				SYSTEM.PORTOUT(BaseAdr+MacControl, 0)
@@ -510,7 +510,7 @@ BEGIN
 			(* set Link beat enable *)
 			SwitchToWindow(4);
 			SYSTEM.PORTIN(BaseAdr+MediaStatus, mediaStatus);
-			val := SYSTEM.VAL(SET, mediaStatus) -{3,6,7};
+			val := BITS( mediaStatus) -{3,6,7};
 			val := val + {7}; (* haengt ab vom media type => noch eine tabelle aufbauen!!*)
 			SYSTEM.PORTOUT(BaseAdr+MediaStatus, SYSTEM.VAL(INTEGER, val));			
 			(* clear all statistics by reading *)
@@ -527,11 +527,11 @@ BEGIN
 			SwitchToWindow(7);
 			 (*  Bus Maser Procedures .. *)
 			 SYSTEM.PORTOUT(BaseAdr+CommReg, SYSTEM.VAL(INTEGER, RxThresh)+1500 DIV 4);
-			 SYSTEM.PORTOUT(BaseAdr+DmaCtr, SYSTEM.VAL(LONGINT, 20H)); (* upRxEarlyEnable *)
+			 SYSTEM.PORTOUT(BaseAdr+DmaCtr, ORD( 20H)); (* upRxEarlyEnable *)
 			(* Set the UpListPtr auf die UpListRoot und starte Upload Engine *)
 			SYSTEM.PORTOUT(BaseAdr+UpListPtr, SYSTEM.ADR(UpListRoot^));	 
 			SYSTEM.PORTOUT(BaseAdr+2FH, CHR(1536 DIV 256)); (* for older NICS... *)
-			SYSTEM.PORTOUT(BaseAdr+DownListPtr, SYSTEM.VAL(LONGINT, 0)); 
+			SYSTEM.PORTOUT(BaseAdr+DownListPtr, ORD( 0)); 
 			(* Set Receive filter: individual, broadcast, multicast *)
 			SYSTEM.PORTOUT(BaseAdr+CommReg, SYSTEM.VAL(INTEGER,RxFilterLI+B0+B1+B2)); 	
 			SYSTEM.PORTOUT(BaseAdr+CommReg, SYSTEM.VAL(INTEGER, B15+B13+B11)); (* enable Statistics *)
@@ -554,8 +554,8 @@ BEGIN
 				IF (tryPort.name = "100baseTx") OR (tryPort.name = "10baseT") OR (tryPort.name = "100baseFx") THEN
 					t := Kernel.GetTimer();
 					REPEAT SYSTEM.PORTIN(BaseAdr+MediaStatus, i); 
-					UNTIL (Kernel.GetTimer()-t > 2*Kernel.TimeUnit) OR (11 IN SYSTEM.VAL(SET,i));
-					IF 11 IN SYSTEM.VAL(SET, i) THEN
+					UNTIL (Kernel.GetTimer()-t > 2*Kernel.TimeUnit) OR (11 IN BITS(i));
+					IF 11 IN BITS( i) THEN
 							found := TRUE; link := tryPort.type 
 					ELSE
 						ConfigNextValidMedia(tryPort, link);
@@ -616,7 +616,7 @@ BEGIN
 	SYSTEM.PORTOUT(BaseAdr + CommReg, SYSTEM.VAL(INTEGER,DnStall));
 	REPEAT (*wait for completition of Stall*)
 		SYSTEM.PORTIN(BaseAdr+IntStatus, int)	
-	UNTIL ~(12 IN SYSTEM.VAL(SET, LONG(int)));
+	UNTIL ~(12 IN BITS( LONG(int)));
 	SYSTEM.PORTIN(BaseAdr+DownListPtr, DnListPtr);
 	IF DnListPtr # 0 THEN
 		IF DnListPtr = SYSTEM.ADR(dpd[(curdpd + 1) MOD DPDBuffer]^) THEN	(* buffer is full *)
@@ -624,8 +624,8 @@ BEGIN
 			REPEAT
 				SYSTEM.PORTIN(BaseAdr+DownListPtr, DnListPtr);
 				SYSTEM.PORTIN(BaseAdr+TxStatus, txStatus);
-				WHILE 7 IN SYSTEM.VAL(SET, txStatus) DO
-					IF 3 IN SYSTEM.VAL(SET, txStatus) THEN
+				WHILE 7 IN BITS( txStatus) DO
+					IF 3 IN BITS( txStatus) THEN
 						SYSTEM.PORTOUT(BaseAdr+CommReg, TxEnable)
 					END;
 					SYSTEM.PORTOUT(BaseAdr+TxStatus, txStatus);
@@ -673,7 +673,7 @@ PROCEDURE Receive(dev: NetBase.Device;  VAR prno: INTEGER; VAR src: ARRAY OF BYT
 VAR  prno0, dlen: INTEGER;
 BEGIN
 	IF 15 IN UpListRoot.UpPktStatus THEN																			(* There is a uploadet Packet availible *)
-		dlen := SHORT(SYSTEM.VAL(LONGINT, UpListRoot.UpPktStatus) MOD 2000H);
+		dlen := SHORT(ORD( UpListRoot.UpPktStatus) MOD 2000H);
 		SYSTEM.MOVE(UpListRoot.DataUpFragAddr+6, SYSTEM.ADR(src[0]), 6);					(* source address *)
 		SYSTEM.GET(UpListRoot.DataUpFragAddr+12, prno0); 												(* get protocoll number *)
 		Copy(UpListRoot.DataUpFragAddr+14, SYSTEM.ADR(item.data[0]), dlen  - 14 (*Ethernet Header*) );

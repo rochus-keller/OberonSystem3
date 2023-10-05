@@ -67,11 +67,11 @@ BEGIN
 		INC(index);
 		s1 := SYSTEM.VAL(SHORTINT,a[index]); INC(index);
 		s2 := SYSTEM.VAL(SHORTINT,a[index]); INC(index);
-		n := SYSTEM.VAL(LONGINT,SYSTEM.LSH(SYSTEM.VAL(SET,s1) * {0..7},8))
-				+ SYSTEM.VAL(LONGINT,SYSTEM.VAL(SET,s2) * {0..7});
+		n := ORD(SYSTEM.LSH(BITS(s1) * {0..7},8))
+				+ ORD(BITS(s2) * {0..7});
 	ELSE
 		s1 := SYSTEM.VAL(SHORTINT,a[index]); INC(index);
-		n := SYSTEM.VAL(LONGINT,SYSTEM.VAL(SET,s1) * {0..7});
+		n := ORD(BITS(s1) * {0..7});
 	END
 END Decode;
 
@@ -89,12 +89,12 @@ BEGIN
 	iph := SYSTEM.VAL(NetIP.IPHeader, SYSTEM.ADR(item.data[0]));
 	type := iph.verlen;
 	IF type = 0 THEN dev.err := TRUE; RETURN END;	(* packet error, ignore everything until next packet with C-Bit set *)
-	type := SYSTEM.VAL(SHORTINT,SYSTEM.VAL(SET,type) * {4..7});
+	type := SYSTEM.VAL(SHORTINT,BITS(type) * {4..7});
 	IF SYSTEM.LSH(type, -4) = 4 THEN RETURN 	(* TYPE IP nothing to do*)
-	ELSIF SYSTEM.VAL(SET,type) * {7} = {7} THEN			(* TYPE COMPRESSED TCP *)
+	ELSIF BITS(type) * {7} = {7} THEN			(* TYPE COMPRESSED TCP *)
 		IF item.len < 3 THEN RETURN END;						(* no compressed packet is shorter than 3 Bytes *)
 		(* read change byte *)
-		changes := SYSTEM.VAL(SET,item.data[0]); index := 1;
+		changes := BITS(item.data[0]); index := 1;
 		ind := dev.lastrecv;
 		IF NEWC IN changes THEN
 			(* read slot index, check if index is in range. if we have a good slot index clear the 'discard flag' *)
@@ -113,12 +113,12 @@ BEGIN
 		cstcph := SYSTEM.VAL(NetTCP.Header, SYSTEM.ADR(dev.recvslots[ind].hdr[NetIP.HdrLen(csiph)]));
 		temps1 := SYSTEM.VAL(SHORTINT,item.data[index]); INC(index);
 		temps2 := SYSTEM.VAL(SHORTINT,item.data[index]); INC(index);
-		temp1 :=  SYSTEM.VAL(INTEGER,SYSTEM.LSH(SYSTEM.VAL(SET,temps1) * {0..7},8))
-						+ SYSTEM.VAL(INTEGER,SYSTEM.VAL(SET,temps2) * {0..7});
+		temp1 :=  SYSTEM.VAL(INTEGER,SYSTEM.LSH(BITS(temps1) * {0..7},8))
+						+ SYSTEM.VAL(INTEGER,BITS(temps2) * {0..7});
 		NetBase.HostToNet(temp1); cstcph.chksum := temp1;
 		code := cstcph.code;
-		IF NEWP IN changes THEN INCL(SYSTEM.VAL(SET,code), NetTCP.Psh)
-		ELSE EXCL(SYSTEM.VAL(SET,code), NetTCP.Psh)
+		IF NEWP IN changes THEN INCL(BITS(code), NetTCP.Psh)
+		ELSE EXCL(BITS(code), NetTCP.Psh)
 		END;
 		cstcph.code := code;
 		(* Fix the slot's ack, seq, urg and win fileds based on the changemask *)
@@ -133,9 +133,9 @@ BEGIN
 		ELSE
 			code := cstcph.code;
 			IF NEWU IN changes THEN
-				INCL(SYSTEM.VAL(SET,code), NetTCP.Urg); Decode(item.data,index,templ1);
+				INCL(BITS(code), NetTCP.Urg); Decode(item.data,index,templ1);
 				temp1 := SHORT(templ1); NetBase.HostToNet(temp1); cstcph.up := temp1;
-			ELSE EXCL(SYSTEM.VAL(SET,code), NetTCP.Urg)
+			ELSE EXCL(BITS(code), NetTCP.Urg)
 			END;
 			cstcph.code := code; 
 			IF NEWW IN changes THEN
@@ -169,7 +169,7 @@ BEGIN
 		iph.checksum := 0; iph.checksum := SHORT(NetBase.CheckSum(iph^, NetIP.HdrLen(iph), 0));
 
 	ELSE 													(* TYPE UNCOMPRESSED TCP *)
-		item.data[0] := SYSTEM.VAL(BYTE,SYSTEM.VAL(SET,item.data[0]) * {0..3,6..7});
+		item.data[0] := SYSTEM.VAL(BYTE,BITS(item.data[0]) * {0..3,6..7});
 		(* locate the saved header fo this connection
 			if the slot index is legal, clear the 'discard' flag *)
 		iphlen := NetIP.HdrLen(iph); tcph := SYSTEM.VAL(NetTCP.Header,SYSTEM.ADR(item.data[iphlen]));
@@ -275,7 +275,7 @@ END SendUncompressed;
 
 PROCEDURE Encode (VAR a: ARRAY OF BYTE; VAR index: INTEGER; n: LONGINT);
 BEGIN
-	n := SYSTEM.VAL(LONGINT,SYSTEM.VAL(SET,n) * {0..15});
+	n := ORD(BITS(n) * {0..15});
 	IF (n >= 256) OR (n = 0) THEN
 		a[index] := 0; INC(index);
 		a[index] := SYSTEM.VAL(BYTE,SYSTEM.LSH(n,-8)); INC(index);
@@ -300,10 +300,10 @@ VAR
 BEGIN (* test if TCP packet is compressible -> it's not a fragment and ACK = 1 and the others are 0 *)
 	iph := SYSTEM.VAL(NetIP.IPHeader, SYSTEM.ADR(item.data[item.ofs]));
 	frag := iph.frag;  NetBase.NetToHost(frag);
-	IF (SYSTEM.VAL(SET,frag) * {0..13} # {}) OR (item.len < 40) THEN RETURN(TYPEIP) END;
+	IF (BITS(frag) * {0..13} # {}) OR (item.len < 40) THEN RETURN(TYPEIP) END;
 	iphlen := NetIP.HdrLen(iph); tcph := SYSTEM.VAL(NetTCP.Header,SYSTEM.ADR(item.data[item.ofs+iphlen]));
 	tcphlen := SYSTEM.LSH(tcph.offs,-4);
-	IF SYSTEM.VAL(SET,tcph.code) * {NetTCP.Syn, NetTCP.Fin, NetTCP.Rst, NetTCP.Ack} # {NetTCP.Ack} THEN RETURN(TYPEIP) END;
+	IF BITS(tcph.code) * {NetTCP.Syn, NetTCP.Fin, NetTCP.Rst, NetTCP.Ack} # {NetTCP.Ack} THEN RETURN(TYPEIP) END;
 	(* packet is compressible *)
 	ind := dev.lastxmit;
 	LOOP
@@ -329,7 +329,7 @@ BEGIN (* test if TCP packet is compressible -> it's not a fragment and ACK = 1 a
 	d1 := SYSTEM.VAL(Data, SYSTEM.ADR(iph.verlen) + SIZE(NetIP.IPHeaderDesc));
 	d2 := SYSTEM.VAL(Data, SYSTEM.ADR(csiph.verlen) + SIZE(NetIP.IPHeaderDesc));
 	IF (iph.verlen # csiph.verlen) OR (iph.tos # csiph.tos) OR
-		((SYSTEM.VAL(SET,frag) * {14}) # (SYSTEM.VAL(SET,csfrag) * {14})) OR
+		((BITS(frag) * {14}) # (BITS(csfrag) * {14})) OR
 		(iph.ttl # csiph.ttl) OR (tcphlen # SYSTEM.LSH(cstcph.offs,-4)) OR
 		((iphlen DIV 4 > 5) & ~NetBase.Equal(d1^, d2^, (iphlen DIV 4 - 5) * 4)) OR
 		((tcphlen > 5) & ~NetBase.Equal(tcph.data, cstcph.data, (tcphlen - 5) * 4)) THEN
@@ -338,7 +338,7 @@ BEGIN (* test if TCP packet is compressible -> it's not a fragment and ACK = 1 a
 	changes := {}; index := 0;
 	(* Figure out which of the changing fields changed. The receiver expects changes in the order:
 		urgent, window, ack, seq *)
-	IF SYSTEM.VAL(SET,tcph.code) * {NetTCP.Urg} # {} THEN			(* URG *)
+	IF BITS(tcph.code) * {NetTCP.Urg} # {} THEN			(* URG *)
 		temp1 := tcph.up; NetBase.NetToHost(temp1); Encode(newseq, index, temp1); INCL(changes,NEWU)
 	ELSIF tcph.up # cstcph.up THEN								(* URG not set but urp changed RFC 793 doesn't prohibit this error *)
 		SendUncompressed(dev, ind, item); RETURN(TYPEUNCOMPRESSEDTCP)
@@ -381,7 +381,7 @@ BEGIN (* test if TCP packet is compressible -> it's not a fragment and ACK = 1 a
 	temp1 := iph.id; temp2 := csiph.id; NetBase.NetToHost(temp1); NetBase.NetToHost(temp2); deltaS := temp1 - temp2;
 	IF deltaS # 1 THEN Encode(newseq, index, deltaS); INCL(changes, NEWI) END;
 
-	IF SYSTEM.VAL(SET,tcph.code) * {NetTCP.Psh} # {} THEN INCL(changes, NEWP) END;
+	IF BITS(tcph.code) * {NetTCP.Psh} # {} THEN INCL(changes, NEWP) END;
 
 	(* update the slot with this packet's headers *)
 	temp1 := tcph.chksum; NetBase.NetToHost(temp1); tothlen := iphlen + (tcphlen * 4);
@@ -416,7 +416,7 @@ BEGIN
 		(* compress TCP header *)
 		iph := SYSTEM.VAL(NetIP.IPHeader, SYSTEM.ADR(item.data[item.ofs]));
 		IF dev.compressed & (iph.protocol = NetIP.TCP) THEN type := SLCompress(dev, item);
-			item.data[item.ofs] := SYSTEM.VAL(BYTE,SYSTEM.VAL(SET, item.data[item.ofs]) + SYSTEM.VAL(SET, type));
+			item.data[item.ofs] := SYSTEM.VAL(BYTE,BITS( item.data[item.ofs]) + BITS( type));
 		END;
 		(* send item to V24 *)
 		V24.Send(dev.port,SLIPEND,res); i := 0;

@@ -128,7 +128,7 @@ PROCEDURE ConvUtD(VAR b: Sound.DataBlock);
 BEGIN
 	i:= 0;
 	WHILE i < b.len DO
-		j:= ORD(SYSTEM.VAL(CHAR, b.data[i]));
+		j:= ORD(( b.data[i]));
 		b.data[i]:= SYSTEM.VAL(BYTE, utd[j]);
 		INC(i) END
 END ConvUtD;
@@ -139,7 +139,7 @@ PROCEDURE ConvDtU(VAR b: Sound.DataBlock);
 BEGIN
 	i:= 0;
 	WHILE i < b.len DO
-		j:= ORD(SYSTEM.VAL(CHAR, b.data[i]));
+		j:= ORD(( b.data[i]));
 		b.data[i]:= SYSTEM.VAL(BYTE, dtu[j]);
 		INC(i) END
 END ConvDtU;

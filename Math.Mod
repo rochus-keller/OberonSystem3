@@ -149,12 +149,12 @@ BEGIN
 	ELSIF Kernel.copro THEN
 		RETURN Sqrt(x)
 	ELSE
-		a := S.VAL(REAL, S.VAL(SET, x) - {23..30} + {24..29});	(* expo(a) = 126 *)
-		e := S.LSH(S.VAL(LONGINT, x), -23) MOD 256 - 126;
+		a := S.VAL(REAL, BITS( x) - {23..30} + {24..29});	(* expo(a) = 126 *)
+		e := S.LSH(ORD( x), -23) MOD 256 - 126;
 		s := c11*a + c12 + c13/(c14 + a);
 		s := (s + a/s)*0.5;
 		IF ODD(e) THEN INC(e); s := c15*s END ;
-		RETURN S.VAL(REAL, S.VAL(LONGINT, s) + S.LSH(e DIV 2, 23))
+		RETURN S.VAL(REAL, ORD( s) + S.LSH(e DIV 2, 23))
 	END
 END sqrt;
 
@@ -165,8 +165,8 @@ BEGIN
 	ELSIF Kernel.copro THEN
 		RETURN Ln(x)
 	ELSE
-		a := S.VAL(REAL, S.VAL(SET, x) - {23..30} + {24..29});	(* expo(a) = 126 *)
-		e := S.LSH(S.VAL(LONGINT, x), -23) MOD 256 - 126;
+		a := S.VAL(REAL, BITS( x) - {23..30} + {24..29});	(* expo(a) = 126 *)
+		e := S.LSH(ORD( x), -23) MOD 256 - 126;
 		IF a < c41 THEN a := 2*a; DEC(e) END ;
 		a := (a-1)/(a+1);
 		a := c42*e + a*(c43 + c44/(c45 - a*a));
@@ -189,7 +189,7 @@ BEGIN
 			p := (c22 + c23*yy)*y;
 			p := p/(c24 + yy - p) + 0.5;
 			IF y < 0 THEN p := 2*p END;
-			RETURN S.VAL(REAL, S.VAL(LONGINT, p) + S.LSH(n, 23))
+			RETURN S.VAL(REAL, ORD( p) + S.LSH(n, 23))
 		END
 	END
 END exp;

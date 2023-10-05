@@ -818,9 +818,9 @@ VAR
 	BEGIN
 		IF log.f # NIL THEN
 			Oberon.GetClock (t, d); WriteDate(log.r, t, d);
-			Files.Write(log.r, " "); Files.Write(log.r, " ");
+			Files.WriteChar(log.r, " "); Files.WriteChar(log.r, " ");
 			i := 0; WHILE name[i] # 0X DO Files.Write(log.r, name[i]); INC(i) END;
-			IF typ # "t" THEN Files.Write(log.r, " "); Files.Write(log.r, typ) END;
+			IF typ # "t" THEN Files.WriteChar(log.r, " "); Files.Write(log.r, typ) END;
 			Files.Write(log.r, CR);
 			Files.Close(log.f)	(* to flush buffers *)
 		END	

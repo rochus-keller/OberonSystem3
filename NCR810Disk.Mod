@@ -143,7 +143,7 @@ MODULE NCR810Disk;	(** non-portable *)	(* Contributed by P. Ryser to the System 
 					IF pp.type = 4FX THEN
 						devs[drive].obstart := pp.start; devs[drive].obend := pp.start+pp.num
 					END;
-					cyl := ORD(pp.cyl) + ORD(SYSTEM.VAL(CHAR, SYSTEM.VAL(SET, pp.sector)*{6,7}))*4;
+					cyl := ORD(pp.cyl) + ORD(( BITS( pp.sector)*{6,7}))*4;
 					IF cyl > lcyl THEN lpp := pp; lcyl := cyl END;
 					IF chsdebug THEN
 						Kernel.WriteString("   BootInd:"); LogInt(ORD(pp.bootind)); Kernel.WriteLn;
@@ -162,7 +162,7 @@ MODULE NCR810Disk;	(** non-portable *)	(* Contributed by P. Ryser to the System 
 				INC(p, 16)
 			END;
 			IF lcyl # -1 THEN
-				cyl2 := ORD(lpp.cyl2) + ORD(SYSTEM.VAL(CHAR, SYSTEM.VAL(SET, lpp.sector2)*{6,7}))*4;
+				cyl2 := ORD(lpp.cyl2) + ORD(( BITS( lpp.sector2)*{6,7}))*4;
 				head2 := ORD(lpp.head2);
 				sector2 := ORD(lpp.sector2) MOD 40H;
 				pend := cyl2*(head2 + 1)*sector2+head2*sector2+sector2;

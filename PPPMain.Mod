@@ -265,7 +265,7 @@ END SendPacket;
 			U.me.IpAdr:=U.IPCPfsm.go.OurAddress;
 			U.me.GwAdr:=U.IPCPfsm.ho.HisAddress;
   (*es*)NetIP.routes[0].adr := U.IPCPfsm.go.OurAddress;
-  		  NetSystem.hostIP := SYSTEM.VAL(LONGINT,U.IPCPfsm.go.OurAddress);
+  		  NetSystem.hostIP := ORD(U.IPCPfsm.go.OurAddress);
   		  NetSystem.ToNum(NetSystem.hostIP, NetSystem.hostName);	(* temporary *)
 			NetIP.routes[0].gway := U.IPCPfsm.ho.HisAddress;
 			IF U.me.state = PT.open THEN
@@ -273,8 +273,8 @@ END SendPacket;
 			END;
 			U.me.state := PT.open; (* open device *)
 	 (**)U.me.configurated:=TRUE;
-			Debug.String("OurAddress = "); Debug.Hex(SYSTEM.VAL(LONGINT, U.me.IpAdr)); Debug.Ln;
-			Debug.String("HisAddress = "); Debug.Hex(SYSTEM.VAL(LONGINT, U.me.GwAdr)); Debug.Ln;
+			Debug.String("OurAddress = "); Debug.Hex(ORD( U.me.IpAdr)); Debug.Ln;
+			Debug.String("HisAddress = "); Debug.Hex(ORD( U.me.GwAdr)); Debug.Ln;
 			IF LCP.NegUPap IN U.LCPfsm.ho.O THEN PAP.LowerUp(U.PAPStat) END
 		END;
 		Debug.String("IPCP is finally ready!!"); Debug.Ln; Debug.Ln;
@@ -491,10 +491,10 @@ END SendPacket;
 		IF HDLC.debug THEN Debug.String("MRUAllow") END;
 (*AsyWant*) INCL(wo.O, NegAsyncMap); wo.AsyncMap:={};
 		IF HDLC.debug THEN Debug.String("AsyWant "); 
-		Debug.Hex(SYSTEM.VAL(LONGINT, wo.AsyncMap)); END;
+		Debug.Hex(ORD( wo.AsyncMap)); END;
 (*AsyAllow*) INCL(ao.O, NegAsyncMap); ao.AsyncMap:={0..31};
 		IF HDLC.debug THEN Debug.String("AsyAllow "); 
-		Debug.Hex(SYSTEM.VAL(LONGINT, ao.AsyncMap)); END;
+		Debug.Hex(ORD( ao.AsyncMap)); END;
 (*Silent* INCL(wo.O, Silent); IF HDLC.debug THEN Debug.String("Silent") END; *)
 (*TO*) to:=5; IF HDLC.debug THEN Debug.String("TO "); Debug.Int(to, 5) END;
 (*IP * SetIP(0,0,0,0, ourIP); IF HDLC.debug THEN Debug.String("ourIP ");  END; *)
@@ -519,11 +519,11 @@ END SendPacket;
 				ELSIF Cmp("AsyWant") THEN
 					InName(s); INCL(wo.O, NegAsyncMap); 
 					wo.AsyncMap:=Hex2Set(s);
-					IF HDLC.debug THEN Debug.String("AsyWant "); Debug.Hex(SYSTEM.VAL(LONGINT, wo.AsyncMap)) END
+					IF HDLC.debug THEN Debug.String("AsyWant "); Debug.Hex(ORD( wo.AsyncMap)) END
 				ELSIF Cmp("AsyAllow") THEN
 					InName(s); INCL(ao.O, NegAsyncMap); 
 					ao.AsyncMap:=(*es*){}(*Hex2Set(s)*);
-					IF HDLC.debug THEN Debug.String("AsyAllow "); Debug.Hex(SYSTEM.VAL(LONGINT, ao.AsyncMap)) END
+					IF HDLC.debug THEN Debug.String("AsyAllow "); Debug.Hex(ORD( ao.AsyncMap)) END
 				ELSIF Cmp("MagWant") THEN INCL(wo.O, NegMagicNumber); IF HDLC.debug THEN Debug.String("MagWant") END
 				ELSIF Cmp("MagAllow") THEN INCL(ao.O, NegMagicNumber); IF HDLC.debug THEN Debug.String("MagAllow") END
 				ELSIF Cmp("Silent") THEN INCL(wo.O, Silent); IF HDLC.debug THEN Debug.String("Silent") END
@@ -610,18 +610,18 @@ es*)
 				Texts.WriteString(W, "our Ip-Adr: "); 
 				ip:=g.go.OurAddress;
 				FOR i:=0 TO 2 DO 
-					Texts.WriteInt(W, ORD(SYSTEM.VAL(CHAR, ip[i])),3); 
+					Texts.WriteInt(W, ORD(( ip[i])),3); 
 					Texts.Write(W, "."); 
 				END;
-				Texts.WriteInt(W, ORD(SYSTEM.VAL(CHAR, ip[3])),3); 
+				Texts.WriteInt(W, ORD(( ip[3])),3); 
 				Texts.WriteLn(W);
 				Texts.WriteString(W, "his Ip-Adr: "); 
 				ip:=g.ho.HisAddress;
 				FOR i:=0 TO 2 DO 
-					Texts.WriteInt(W, ORD(SYSTEM.VAL(CHAR, ip[i])),3); 
+					Texts.WriteInt(W, ORD(( ip[i])),3); 
 					Texts.Write(W, "."); 
 				END;
-				Texts.WriteInt(W, ORD(SYSTEM.VAL(CHAR, ip[3])),3); 
+				Texts.WriteInt(W, ORD(( ip[3])),3); 
 				Texts.WriteLn(W);
 	(*			IF (NegVJ IN g.go.O) THEN 
 						Texts.WriteString(W, "He wanted VJ:    MaxSlot: "); 

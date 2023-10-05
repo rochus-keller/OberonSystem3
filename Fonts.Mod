@@ -98,7 +98,7 @@ of characters, each character being a pattern and and metric data.
 	PROCEDURE GetCharObj (L: Objects.Library; ref: INTEGER; VAR obj: Objects.Object);	
 	VAR m: LONGINT; h1: SHORTINT; h2: LONGINT; ch: CHAR;
 	BEGIN
-		SYSTEM.GET(SYSTEM.VAL(LONGINT, L) + 4, m); (* L.ind *)
+		SYSTEM.GET(ORD( L) + 4, m); (* L.ind *)
 		SYSTEM.GET(m + ref * SIZE(LONGINT), h2); (* pat adr*)
 		theChar.pat := h2; 
 		SYSTEM.GET(h2-3, h1); theChar.dx := h1; 
@@ -151,7 +151,7 @@ of characters, each character being a pattern and and metric data.
 				NofBytes := NofBytes + 5 + (box[l].w + 7) DIV 8 * box[l].h; INC(l)
 			END;
 			SYSTEM.NEW(F.ind, NofBytes);
-			RasterBase := SYSTEM.VAL(LONGINT, F.ind);
+			RasterBase := ORD( F.ind);
 			A := RasterBase; a := A + IndexSize;
 			Put1(a, 12); Put1(a, 0); Put1(a, -3); Put1(a, 12); Put1(a, 12); (*null char*)
 			Put2(a, 0FFFH);
@@ -174,7 +174,7 @@ of characters, each character being a pattern and and metric data.
 			WHILE m < 256 DO Put4(A, RasterBase + IndexSize + 3); INC(m) END
 		ELSE (*type := metric*)
 			SYSTEM.NEW(F.ind, IndexSize + 5 + NofBoxes*5);
-			RasterBase := SYSTEM.VAL(LONGINT, F.ind);
+			RasterBase := ORD( F.ind);
 			A := RasterBase; a := A + IndexSize;
 			Put1(a, 12); Put1(a, 0); Put1(a, -3); Put1(a, 12); Put1(a, 12); (*null char*)
 			k := 0; l := 0; m := 0;

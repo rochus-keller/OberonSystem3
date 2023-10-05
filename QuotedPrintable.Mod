@@ -61,7 +61,7 @@ MODULE QuotedPrintable; (* ejz,   *)
 				ELSIF ch1 = Strings.CR THEN
 					ch := ch2
 				ELSE
-					Files.Write(Ri, "="); Files.Write(Ri, ch1);
+					Files.WriteChar(Ri, "="); Files.Write(Ri, ch1);
 					ReadWrite(ch2)
 				END
 			ELSE

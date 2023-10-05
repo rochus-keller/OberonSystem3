@@ -183,7 +183,7 @@ MODULE PCI;	(** non-portable *)	(* P. Ryser *)
 			Kernel.WriteString("   edx: "); Kernel.WriteHex(edx, 8); Kernel.WriteLn;
 			Kernel.WriteString("   esi: "); Kernel.WriteHex(esi, 8); Kernel.WriteLn;
 			Kernel.WriteString("   edi: "); Kernel.WriteHex(edi, 8); Kernel.WriteLn;
-			Kernel.WriteString("   eflags: "); Kernel.WriteHex(SYSTEM.VAL(LONGINT, eflags), 8); Kernel.WriteLn
+			Kernel.WriteString("   eflags: "); Kernel.WriteHex(ORD( eflags), 8); Kernel.WriteLn
 		END
 	END OutRegs;
 
@@ -289,20 +289,20 @@ MODULE PCI;	(** non-portable *)	(* P. Ryser *)
 			res := (eax DIV 100H) MOD 100H;  ASSERT(~((0 IN eflags) & (res=0)));
 			ASSERT(res # BufferTooSmall); (* Increase dbN on Trap *)
 			IF ~(0 IN eflags) & (res = Done)  THEN
-				IrqBitmap := SYSTEM.VAL(SET, ebx);
+				IrqBitmap := BITS( ebx);
 				NEW(rt); rt.next := NIL; last := rt; i := 0;
 				WHILE i < rb.BufferSize DO
 					NEW(last.next); last := last.next; last.next := NIL;
 					last.busNr := ORD(db[i]); INC(i);
 					last.devNr := ORD(db[i]) DIV 8; INC(i);
 					last.linkValIntA := db[i]; INC(i);
-					last.IrqBitmapA := SYSTEM.VAL(SET, ORD(db[i])+ORD(db[i+1])*100H); INC(i, 2);
+					last.IrqBitmapA := BITS( ORD(db[i])+ORD(db[i+1])*100H); INC(i, 2);
 					last.linkValIntB := db[i]; INC(i);
-					last.IrqBitmapB := SYSTEM.VAL(SET, ORD(db[i])+ORD(db[i+1])*100H); INC(i, 2);
+					last.IrqBitmapB := BITS( ORD(db[i])+ORD(db[i+1])*100H); INC(i, 2);
 					last.linkValIntC:= db[i]; INC(i);
-					last.IrqBitmapC := SYSTEM.VAL(SET, ORD(db[i])+ORD(db[i+1])*100H); INC(i, 2);
+					last.IrqBitmapC := BITS( ORD(db[i])+ORD(db[i+1])*100H); INC(i, 2);
 					last.linkValIntD := db[i]; INC(i);
-					last.IrqBitmapD := SYSTEM.VAL(SET, ORD(db[i])+ORD(db[i+1])*100H); INC(i, 2);
+					last.IrqBitmapD := BITS( ORD(db[i])+ORD(db[i+1])*100H); INC(i, 2);
 					last.slotNr := ORD(db[i]); INC(i);
 					INC(i)	(* reserved byte *)
 				END;
@@ -345,7 +345,7 @@ MODULE PCI;	(** non-portable *)	(* P. Ryser *)
 			pcicall(pciEntry, eax, ebx, ecx, edx, esi, edi, eflags);
 			res := (eax DIV 100H) MOD 100H;  ASSERT(~((0 IN eflags) & (res=0))); 
 			IF ~(0 IN eflags) & (res = Done) THEN
-				regVal := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, ecx)*mask)
+				regVal := ORD( BITS( ecx)*mask)
 			END;
 			IF debug THEN
 				Kernel.WriteString("ReadConfig ("); Kernel.WriteInt(fkt, 1); Kernel.WriteString("):"); Kernel.WriteLn;

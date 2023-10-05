@@ -118,7 +118,7 @@ MODULE GfxPS;	(** eos   **)
 	
 	PROCEDURE Blank (VAR r: Files.Rider);
 	BEGIN
-		Files.Write(r, " ")
+		Files.WriteChar(r, " ")
 	END Blank;
 	
 	PROCEDURE Ln (VAR r: Files.Rider);

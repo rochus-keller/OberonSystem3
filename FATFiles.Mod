@@ -308,7 +308,7 @@ VAR
 	b: ARRAY 1000H*3 DIV 2 OF CHAR;  i, j, val: LONGINT;
 	even: BOOLEAN;
 BEGIN
-	b[0] := SYSTEM.VAL(CHAR, d.fat[0]);  b[1] := CHR(ASH(d.fat[0], -8));
+	b[0] := ( d.fat[0]);  b[1] := CHR(ASH(d.fat[0], -8));
 	b[2] := CHR(d.fat[1]);
 	val := 0;  j := 2*3;  even := TRUE;
 	FOR i := 2 TO d.fatsize-1 DO
@@ -528,7 +528,7 @@ END SeparateName;
 PROCEDURE GetDir(VAR dir: ARRAY OF CHAR;  ofs: LONGINT; VAR attr : SET;  VAR time, date, firstcl, len: LONGINT);
 VAR t: LONGINT;
 BEGIN
-	t (*attr*) := ORD(dir[ofs+0BH]); attr := SYSTEM.VAL(SET, t);
+	t (*attr*) := ORD(dir[ofs+0BH]); attr := BITS( t);
 	t := GetUWord(dir, ofs+16H);
 	time := (t MOD 65536)*2;
 	t := GetUWord(dir, ofs+18H);
@@ -556,7 +556,7 @@ BEGIN
 		ELSIF (operation = purge) & delete THEN
 			dir[ofs] := 0E5X (*mark entry as deleted*)
 		END;
-		dir[ofs+0BH] := CHR(SHORT(SHORT(SYSTEM.VAL(LONGINT, attr))));
+		dir[ofs+0BH] := CHR(SHORT(SHORT(ORD( attr))));
 		t :=(time DIV 2)+SYSTEM.LSH(((date MOD 32)+(date DIV 32 MOD 16)*32
 			  + ((date DIV 512) - 80)*512), 16);
 		SYSTEM.PUT(SYSTEM.ADR(dir[ofs+16H]), t);
@@ -1542,7 +1542,7 @@ BEGIN
 			END
 		END ;
 		IF res = 0 THEN
-			r.buf.data[r.bpos] := SYSTEM.VAL(CHAR, x); INC(r.bpos); r.buf.mod := TRUE
+			r.buf.data[r.bpos] := ( x); INC(r.bpos); r.buf.mod := TRUE
 		ELSE
 			r := oldR; r.file.handle := oldH (* restore entry states *)
 		END

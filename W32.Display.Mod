@@ -373,7 +373,7 @@ l7cp:
 		SYSTEM.PUT(Base+YCnt, LONG(0));
 		SYSTEM.PUT(Base, lasty);
 		SYSTEM.PUT(Base+RoutCtrl, 1X);
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, doublefill));
+		SYSTEM.PUT(MMU, BITS( doublefill));
 				
 		Wait;
 		IF mode = invert THEN SYSTEM.PUT(Base+FgRop, 05AX); SYSTEM.PUT(Base+BgRop, 0AAX)
@@ -409,7 +409,7 @@ l7cp:
 		SYSTEM.PUT(Base+YCnt, LONG(0));
 		SYSTEM.PUT(Base, lasty);
 		SYSTEM.PUT(Base+RoutCtrl, 1X);
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, doublefill));
+		SYSTEM.PUT(MMU, BITS( doublefill));
 				
 		Wait;
 		IF mode = invert THEN SYSTEM.PUT(Base+FgRop, 066X) ELSE SYSTEM.PUT(Base+FgRop, 0CCX) END;
@@ -448,14 +448,14 @@ l7cp:
 		SYSTEM.PUT(Base+YCnt, LONG(0));
 		SYSTEM.PUT(Base, lasty);
 		SYSTEM.PUT(Base+RoutCtrl, 1X);
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, SYSTEM.VAL(SET, doublefill))); 
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, SYSTEM.VAL(SET, doublefill))); 
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, SYSTEM.VAL(SET, doublefill))); 
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, SYSTEM.VAL(SET, doublefill)));
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, SYSTEM.VAL(SET, doublefill))); 
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, SYSTEM.VAL(SET, doublefill))); 
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, SYSTEM.VAL(SET, doublefill))); 
-		SYSTEM.PUT(MMU, SYSTEM.VAL(SET, SYSTEM.VAL(SET, doublefill)));
+		SYSTEM.PUT(MMU, BITS( BITS( doublefill))); 
+		SYSTEM.PUT(MMU, BITS( BITS( doublefill))); 
+		SYSTEM.PUT(MMU, BITS( BITS( doublefill))); 
+		SYSTEM.PUT(MMU, BITS( BITS( doublefill)));
+		SYSTEM.PUT(MMU, BITS( BITS( doublefill))); 
+		SYSTEM.PUT(MMU, BITS( BITS( doublefill))); 
+		SYSTEM.PUT(MMU, BITS( BITS( doublefill))); 
+		SYSTEM.PUT(MMU, BITS( BITS( doublefill)));
 		mod := (w DIV 8)*origh;
 		Wait;
 		SYSTEM.PUT(Base+SrcWrap, 5X);

@@ -168,7 +168,7 @@ PROCEDURE IllegalClass (adr: Adr): BOOLEAN;
 VAR set: SET; num: SHORTINT;
 BEGIN
 	num := SYSTEM.VAL(SHORTINT, adr[0]);
-	set := SYSTEM.VAL(SET, LONG(LONG(num)));
+	set := BITS( LONG(LONG(num)));
 	RETURN (set * {4..7} = {5..7}) OR (set * {4..7} = {4..7})
 END IllegalClass;
 
@@ -177,7 +177,7 @@ VAR
 	set: SET;
 	num: SHORTINT;
 BEGIN num := SYSTEM.VAL(SHORTINT, adr[0]);
-	set := SYSTEM.VAL(SET, LONG(LONG(num))); RETURN set * {7} = {}
+	set := BITS( LONG(LONG(num))); RETURN set * {7} = {}
 END ClassA;
 
 PROCEDURE ClassB (adr: Adr): BOOLEAN;
@@ -185,7 +185,7 @@ VAR
 	set: SET;
 	num: SHORTINT;
 BEGIN num := SYSTEM.VAL(SHORTINT, adr[0]);
-	set := SYSTEM.VAL(SET, LONG(LONG(num))); RETURN set * {6,7} = {7}
+	set := BITS( LONG(LONG(num))); RETURN set * {6,7} = {7}
 END ClassB;
 
 PROCEDURE ClassC (adr: Adr): BOOLEAN;
@@ -193,14 +193,14 @@ VAR
 	set: SET;
 	num: SHORTINT;
 BEGIN num := SYSTEM.VAL(SHORTINT, adr[0]);
-	set := SYSTEM.VAL(SET, LONG(LONG(num))); RETURN set * {5..7} = {6,7}
+	set := BITS( LONG(LONG(num))); RETURN set * {5..7} = {6,7}
 END ClassC;
 
 PROCEDURE IsBroadcast* (adr: Adr): BOOLEAN;
 VAR dstmask, hostmask: SET;
 BEGIN
-	dstmask := SYSTEM.VAL(SET, adr);
-	IF (dstmask # SYSTEM.VAL(SET, IPall)) & (dstmask # SYSTEM.VAL(SET, IPany)) THEN
+	dstmask := BITS( adr);
+	IF (dstmask # BITS( IPall)) & (dstmask # BITS( IPany)) THEN
 		IF dstmask * submask = submask THEN hostmask := dstmask * (-submask);
 			RETURN (hostmask = {}) OR (hostmask = -submask)
 		ELSIF dstmask * netmask = netmask THEN hostmask := dstmask * (-netmask);
@@ -219,8 +219,8 @@ END HdrLen;
 PROCEDURE VerLen* (hdr: IPHeader);
 VAR
 	set: SET;
-BEGIN set := SYSTEM.VAL(SET, ASH(ipver, 4)) + {0, 2};
-	hdr.verlen := SHORT(SHORT(SYSTEM.VAL(LONGINT, set)))
+BEGIN set := BITS( ASH(ipver, 4)) + {0, 2};
+	hdr.verlen := SHORT(SHORT(ORD( set)))
 END VerLen;
 
 PROCEDURE NewEntry (VAR entry: Entry);
@@ -307,8 +307,8 @@ END ArpSend;
 PROCEDURE NetMatch* (route: Route; adr: Adr): BOOLEAN;
 VAR
 	srcmask, dstmask: SET;
-BEGIN  srcmask := SYSTEM.VAL(SET, route.adr) * SYSTEM.VAL(SET, route.subnet);
-	dstmask := SYSTEM.VAL(SET, adr) * SYSTEM.VAL(SET, route.subnet);
+BEGIN  srcmask := BITS( route.adr) * BITS( route.subnet);
+	dstmask := BITS( adr) * BITS( route.subnet);
 	RETURN srcmask = dstmask
 END NetMatch;
 
@@ -475,7 +475,7 @@ BEGIN INC(NreceivedIcmp);
 	checksum := icmphdr.checksum; icmphdr.checksum := 0;
 	IF SHORT(ICMPCheckSum(icmphdr, hdr.len - HdrLen(hdr))) = checksum THEN
 		IF icmphdr.type = echorequest THEN INC(echoreqs);
-			echo := SYSTEM.VAL(EchoMsg, SYSTEM.VAL(LONGINT, icmphdr) + SIZE(ICMPHeaderDesc));
+			echo := SYSTEM.VAL(EchoMsg, ORD( icmphdr) + SIZE(ICMPHeaderDesc));
 			NetBase.NetToHost(echo.id); NetBase.NetToHost(echo.seq);		
 			ICMPSend(hdr.src, echoreply, 0, echo.id, echo.seq, echo.optdata)
 		ELSIF icmphdr.type = maskreply THEN i := 0;
@@ -623,7 +623,7 @@ BEGIN
 	ELSIF ClassC(route.adr) THEN netmask := {0..23}
 	ELSE netmask := {0..31}
 	END;
-	submask := SYSTEM.VAL(SET, route.subnet)
+	submask := BITS( route.subnet)
 END SetDirectedCast;
 
 PROCEDURE InstallRoute*(route: Route);

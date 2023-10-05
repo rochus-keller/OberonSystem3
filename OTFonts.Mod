@@ -50,7 +50,7 @@ MODULE OTFonts;	(** eos   **)
 			n := h; a := adr;
 			WHILE n > 0 DO
 				SYSTEM.GET(a, byte);
-				SYSTEM.PUT(a, SYSTEM.VAL(CHAR, SYSTEM.VAL(SET, byte) + mask));
+				SYSTEM.PUT(a, ( BITS(ORD(byte)) + mask));
 				DEC(n); INC(a, data.bpr)
 			END;
 			IF x0 < x1 THEN
@@ -68,7 +68,7 @@ MODULE OTFonts;	(** eos   **)
 					n := h; a := adr;
 					WHILE n > 0 DO
 						SYSTEM.GET(a, byte);
-						SYSTEM.PUT(a, SYSTEM.VAL(CHAR, SYSTEM.VAL(SET, byte) + mask));
+						SYSTEM.PUT(a, ( BITS(ORD(byte)) + mask));
 						DEC(n); INC(a, data.bpr)
 					END
 				END

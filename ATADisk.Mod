@@ -123,14 +123,14 @@ VAR t: Kernel.MilliTimer;  s: SET;  ch: CHAR;
 BEGIN
 	Kernel.SetTimer(t, ms);
 	REPEAT
-		SYSTEM.PORTIN(port+7, ch);  s := SYSTEM.VAL(SET, LONG(ORD(ch)))
+		SYSTEM.PORTIN(port+7, ch);  s := BITS( LONG(ORD(ch)))
 	UNTIL (s * mask = expect) OR (s * bad # {}) OR Kernel.Expired(t);
 	IF TraceStatus & ((s * bad # {}) OR (s * mask # expect)) THEN
 		WriteStatus("Status", port);
-		Kernel.WriteHex(SYSTEM.VAL(LONGINT, s), -3);
-		Kernel.WriteHex(SYSTEM.VAL(LONGINT, mask), -3);
-		Kernel.WriteHex(SYSTEM.VAL(LONGINT, expect), -3);
-		Kernel.WriteHex(SYSTEM.VAL(LONGINT, bad), -3);
+		Kernel.WriteHex(ORD( s), -3);
+		Kernel.WriteHex(ORD( mask), -3);
+		Kernel.WriteHex(ORD( expect), -3);
+		Kernel.WriteHex(ORD( bad), -3);
 		Kernel.WriteChar(" ");  Kernel.WriteInt(ms, 1);
 		Kernel.WriteLn
 	END;
@@ -144,13 +144,13 @@ VAR t: Kernel.MilliTimer;  s: SET;  ch: CHAR;
 BEGIN
 	Kernel.SetTimer(t, ms);
 	REPEAT
-		SYSTEM.PORTIN(port2, ch);  s := SYSTEM.VAL(SET, LONG(ORD(ch)));
+		SYSTEM.PORTIN(port2, ch);  s := BITS( LONG(ORD(ch)));
 	UNTIL (s * mask = expect) OR (s * bad # {}) OR Kernel.Expired(t);
 	IF TraceStatus & ((s * bad # {}) OR (s * mask # expect)) THEN
-		Kernel.WriteString("ATADisk: s");  Kernel.WriteHex(SYSTEM.VAL(LONGINT, s), -3);
-		Kernel.WriteString(", mask");  Kernel.WriteHex(SYSTEM.VAL(LONGINT, mask), -3);
-		Kernel.WriteString(", exp");  Kernel.WriteHex(SYSTEM.VAL(LONGINT, expect), -3);
-		Kernel.WriteString(", bad");  Kernel.WriteHex(SYSTEM.VAL(LONGINT, bad), -3);
+		Kernel.WriteString("ATADisk: s");  Kernel.WriteHex(ORD( s), -3);
+		Kernel.WriteString(", mask");  Kernel.WriteHex(ORD( mask), -3);
+		Kernel.WriteString(", exp");  Kernel.WriteHex(ORD( expect), -3);
+		Kernel.WriteString(", bad");  Kernel.WriteHex(ORD( bad), -3);
 		Kernel.WriteString(", time ");  Kernel.WriteInt(ms, 1);
 		Kernel.WriteLn
 	END;
@@ -273,7 +273,7 @@ BEGIN
 	Command(d, 20X, lba, num);	(* read sectors *)
 	REPEAT
 		IF WaitInterrupt(c, IOTimeout) THEN
-			SYSTEM.PORTIN(port+7, x);  s := SYSTEM.VAL(SET, LONG(ORD(x)));
+			SYSTEM.PORTIN(port+7, x);  s := BITS( LONG(ORD(x)));
 			IF ~(ERR IN s) THEN
 				RepInWord(port, bufAdr, BS DIV 2);
 				INC(bufAdr, BS);  DEC(num)
@@ -285,7 +285,7 @@ BEGIN
 		END
 	UNTIL (num = 0) OR (res # 0);
 	SYSTEM.PORTIN(port2, x);	(* according to spec *)
-	SYSTEM.PORTIN(port+7, x);  s := SYSTEM.VAL(SET, LONG(ORD(x)));
+	SYSTEM.PORTIN(port+7, x);  s := BITS( LONG(ORD(x)));
 	IF (res = 0) & (ERR IN s) THEN res := 21 END;
 	IF TraceStatus & (res # 0) THEN WriteStatus("ReadPIO", port);  Kernel.WriteLn END;
 	RETURN res
@@ -304,7 +304,7 @@ BEGIN
 			RepOutWord(port, bufAdr, BS DIV 2);
 			INC(bufAdr, BS);  DEC(num);
 			IF WaitInterrupt(c, IOTimeout) THEN
-				SYSTEM.PORTIN(port+7, x);  s := SYSTEM.VAL(SET, LONG(ORD(x)));
+				SYSTEM.PORTIN(port+7, x);  s := BITS( LONG(ORD(x)));
 				IF ERR IN s THEN res := 24 END
 			ELSE
 				res := 23
@@ -337,33 +337,33 @@ BEGIN
 		c.prdt.prd[i].adr := bufAdr;  c.prdt.prd[i].count := left;
 		INC(bufAdr, left);  DEC(size, left);  INC(i)
 	UNTIL size = 0;
-	INCL(SYSTEM.VAL(SET, c.prdt.prd[i-1].count), 31);	(* end marker *)
+	INCL(BITS( c.prdt.prd[i-1].count), 31);	(* end marker *)
 		(* init dma *)
 	SYSTEM.PORTOUT(bmbase+4, SYSTEM.ADR(c.prdt.prd[0]));
 	IF read THEN s := {3} ELSE s := {} END;
-	SYSTEM.PORTOUT(bmbase, SYSTEM.VAL(CHAR, s));	(* set direction *)
+	SYSTEM.PORTOUT(bmbase, ( s));	(* set direction *)
 	SYSTEM.PORTIN(bmbase+2, x);
-	s := SYSTEM.VAL(SET, LONG(ORD(x)));
-	SYSTEM.PORTOUT(bmbase+2, CHR(SYSTEM.VAL(LONGINT, s + {1,2})));	(* clear error, interrupt by writing *)
+	s := BITS( LONG(ORD(x)));
+	SYSTEM.PORTOUT(bmbase+2, CHR(ORD( s + {1,2})));	(* clear error, interrupt by writing *)
 		(* init transfer *)
 	StartInterrupt(c);
 	IF read THEN x := 0C8X ELSE x := 0CAX END;	(* read dma or write dma *)
 	Command(d, x, lba, num);
 	SYSTEM.PORTIN(bmbase, x);
-	s := SYSTEM.VAL(SET, LONG(ORD(x)));
-	SYSTEM.PORTOUT(bmbase, CHR(SYSTEM.VAL(LONGINT, s + {0})));	(* start bm *)
+	s := BITS( LONG(ORD(x)));
+	SYSTEM.PORTOUT(bmbase, CHR(ORD( s + {0})));	(* start bm *)
 	IF WaitInterrupt(c, IOTimeout) THEN
 		SYSTEM.PORTIN(bmbase+2, x);	(* check dma status *)
-		s := SYSTEM.VAL(SET, LONG(ORD(x)));
+		s := BITS( LONG(ORD(x)));
 		IF 1 IN s THEN res := 8 END
 	ELSE
 		res := 7
 	END;
 	SYSTEM.PORTIN(bmbase, x);
-	s := SYSTEM.VAL(SET, LONG(ORD(x)));
-	SYSTEM.PORTOUT(bmbase, CHR(SYSTEM.VAL(LONGINT, s - {0})));	(* stop bm *)
+	s := BITS( LONG(ORD(x)));
+	SYSTEM.PORTOUT(bmbase, CHR(ORD( s - {0})));	(* stop bm *)
 	SYSTEM.PORTIN(port+7, x);	(* clear interrupt *)
-	s := SYSTEM.VAL(SET, LONG(ORD(x)));
+	s := BITS( LONG(ORD(x)));
 	IF (res = 0) & (ERR IN s) THEN res := 9 END;
 	RETURN res
 END TransferDMA;
@@ -511,8 +511,8 @@ BEGIN
 	IF WaitStatus(port, {BSY}, {}, {}, IdentifyTimeout) THEN
 		INCL(id.type, AtapiBit);
 		RepInWord(port, SYSTEM.ADR(buf[0]), BS DIV 2);
-		IF 7 IN SYSTEM.VAL(SET, LONG(buf[0])) THEN INCL(id.type, RemovableBit) END;
-		IF 8 IN SYSTEM.VAL(SET, LONG(buf[49])) THEN INCL(id.type, DMABit) END;
+		IF 7 IN BITS( LONG(buf[0])) THEN INCL(id.type, RemovableBit) END;
+		IF 8 IN BITS( LONG(buf[49])) THEN INCL(id.type, DMABit) END;
 		GetATAString(buf, 27, 46, id.model);
 		IF (buf[80] # -1) & (buf[81] # -1) THEN
 			id.ver := ASH(LONG(buf[80]) MOD 10000H, 16) + LONG(buf[81]) MOD 10000H
@@ -538,7 +538,7 @@ BEGIN
 	IF size >= MinLBA THEN INCL(id.type, LBABit) END;
 	size1 := chs.cyls * chs.hds * chs.spt;
 	IF size < size1 THEN size := size1 END;
-	IF SYSTEM.VAL(SET, LONG(buf[0])) * {6,7} = {7} THEN INCL(id.type, RemovableBit) END;
+	IF BITS( LONG(buf[0])) * {6,7} = {7} THEN INCL(id.type, RemovableBit) END;
 	INCL(id.type, DMABit);	(* DMA support mandatory in ATA/ATAPI-4 *)
 	GetATAString(buf, 27, 46, id.model);
 	IF (buf[80] # -1) & (buf[81] # -1) THEN
@@ -733,14 +733,14 @@ VAR bus, dev, fkt, i, bmbase, iobase: LONGINT;  s: SET;  str: ARRAY 8 OF CHAR;
 	PROCEDURE ReadDWord(adr: LONGINT;  VAR s: SET);
 	VAR res: LONGINT;
 	BEGIN
-		res := PCI.ReadConfigDword(bus, dev, fkt, adr, SYSTEM.VAL(LONGINT, s));
+		res := PCI.ReadConfigDword(bus, dev, fkt, adr, ORD( s));
 		IF res # PCI.Done THEN s := {} END
 	END ReadDWord;
 
 	PROCEDURE WriteByte(adr: LONGINT;  s: SET);
 	VAR res: LONGINT;
 	BEGIN
-		res := PCI.WriteConfigByte(bus, dev, fkt, adr, SYSTEM.VAL(LONGINT, s));
+		res := PCI.WriteConfigByte(bus, dev, fkt, adr, ORD( s));
 		(* ignore res *)
 	END WriteByte;
 
@@ -757,7 +757,7 @@ BEGIN
 				END;
 				IF s * {0,2} = {0,2} THEN	(* ports & BM enabled *)
 					ReadDWord(20H, s);	(* BMIBA *)
-					bmbase := SYSTEM.VAL(LONGINT, s * {4..15});
+					bmbase := ORD( s * {4..15});
 					IF bmbase # 0 THEN
 						ReadDWord(40H, s);	(* IDETIM *)
 						FOR i := 0 TO 1 DO	(* primary and secondary controller *)

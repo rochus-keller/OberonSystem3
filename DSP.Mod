@@ -150,17 +150,17 @@ VAR
 (** MixWrite : writes data to Mixer-chip *)
 PROCEDURE MixWrite*(reg: INTEGER; data: SET);
 BEGIN
-	SYSTEM.PORTOUT(mixregport, SYSTEM.VAL(CHAR, reg));
-	SYSTEM.PORTOUT(mixdatport, SYSTEM.VAL(CHAR, data))
+	SYSTEM.PORTOUT(mixregport, ( reg));
+	SYSTEM.PORTOUT(mixdatport, ( data))
 END MixWrite;
 
 (** MixRead : reads data from Mixer-chip *)
 PROCEDURE MixRead*(reg: INTEGER): SET;
 	VAR data : SET;
 BEGIN
-	SYSTEM.PORTOUT(mixregport, SYSTEM.VAL(CHAR, reg));
+	SYSTEM.PORTOUT(mixregport, ( reg));
 	data:= {};
-	SYSTEM.PORTIN(mixdatport, SYSTEM.VAL(CHAR, data));
+	SYSTEM.PORTIN(mixdatport, ( data));
 	RETURN data
 END MixRead;
 
@@ -178,7 +178,7 @@ BEGIN
 	res:= Done;
 	CASE Ch OF
 		MASTER, MIDI, CD, VOICE:
-			MixWrite(M2VT[Ch], MixRead(M2VT[Ch])*{7,6,5,4,0} + SYSTEM.VAL(SET,val*2))
+			MixWrite(M2VT[Ch], MixRead(M2VT[Ch])*{7,6,5,4,0} + BITS(val*2))
 	ELSE res:= Failed
 	END	
 END SetVolume2;
@@ -189,7 +189,7 @@ BEGIN
 	res:= Done;
 	CASE Ch OF
 		MASTER, MIDI, CD, VOICE:
-			val:= SYSTEM.VAL(LONGINT, MixRead(M2VT[Ch])) DIV 2
+			val:= ORD( MixRead(M2VT[Ch])) DIV 2
 	ELSE res:= Failed
 	END
 END GetVolume2;
@@ -255,13 +255,13 @@ END GetLowPass3;
 because only one source can be set to ON at a time *)
 PROCEDURE SetSource3*(SubCh: LONGINT);
 BEGIN
-	MixWrite(0CH, MixRead(0CH)*{7,6,5,4,3,0} + SYSTEM.VAL(SET, SubCh*2))
+	MixWrite(0CH, MixRead(0CH)*{7,6,5,4,3,0} + BITS( SubCh*2))
 END SetSource3;
 
 (** GetSource3 : gets sample-source which is ON *)
 PROCEDURE GetSource3*(VAR SubCh: LONGINT);
 BEGIN
-	SubCh:= SYSTEM.VAL(LONGINT, MixRead(M3ADCSTATE)*{2,1}) DIV 2
+	SubCh:= ORD( MixRead(M3ADCSTATE)*{2,1}) DIV 2
 END GetSource3;
 
 (** PrepareForStereo3 : prepare Mixer for stereo playing/recording *)
@@ -291,8 +291,8 @@ BEGIN
 	res:= Done;
 	CASE Ch OF
 		MASTER, MIDI, CD, VOICE, LINE:
-			MixWrite( M3VT[Ch], SYSTEM.VAL(SET, left*32)+SYSTEM.VAL(SET, right*2))
-		|MIC: MixWrite(M3VT[Ch], MixRead(M3VT[Ch])*{7,6,5,4,3}+SYSTEM.VAL(SET, left*2))
+			MixWrite( M3VT[Ch], BITS( left*32)+BITS( right*2))
+		|MIC: MixWrite(M3VT[Ch], MixRead(M3VT[Ch])*{7,6,5,4,3}+BITS( left*2))
 	ELSE
 		res:= Failed
 	END
@@ -306,9 +306,9 @@ BEGIN
 	tmp:= MixRead(M3VT[Ch]);
 	CASE Ch OF
 		MASTER, MIDI, CD, VOICE, LINE:
-			left:= SYSTEM.VAL(LONGINT, tmp*{7,6,5,4}) DIV 32;
-			right:=SYSTEM.VAL(LONGINT, tmp*{3,2,1,0}) DIV 2
-		|MIC: left:= SYSTEM.VAL(LONGINT, tmp*{2,1,0}) DIV 2; right:= 0
+			left:= ORD( tmp*{7,6,5,4}) DIV 32;
+			right:=ORD( tmp*{3,2,1,0}) DIV 2
+		|MIC: left:= ORD( tmp*{2,1,0}) DIV 2; right:= 0
 	ELSE
 		res:= Failed
 	END
@@ -388,10 +388,10 @@ BEGIN
 	res:= Done;
 	CASE Ch OF
 		MASTER, MIDI, CD, VOICE, LINE:
-			MixWrite(M4VT[Ch], SYSTEM.VAL(SET, left*8) + MixRead(M4VT[Ch])*{2,1,0} );
-			MixWrite(M4VT[Ch]+1, SYSTEM.VAL(SET, right*8) + MixRead(M4VT[Ch]+1)*{2,1,0})
-		|MIC: MixWrite(M4VT[Ch], SYSTEM.VAL(SET, left*8) + MixRead(M4VT[Ch])*{2,1,0})
-		|PCSPEAKER: MixWrite(M4VT[Ch], SYSTEM.VAL(SET, left*64) + MixRead(M4VT[Ch])*{5,4,3,2,1,0})
+			MixWrite(M4VT[Ch], BITS( left*8) + MixRead(M4VT[Ch])*{2,1,0} );
+			MixWrite(M4VT[Ch]+1, BITS( right*8) + MixRead(M4VT[Ch]+1)*{2,1,0})
+		|MIC: MixWrite(M4VT[Ch], BITS( left*8) + MixRead(M4VT[Ch])*{2,1,0})
+		|PCSPEAKER: MixWrite(M4VT[Ch], BITS( left*64) + MixRead(M4VT[Ch])*{5,4,3,2,1,0})
 	ELSE res:= Failed
 	END
 END SetVolume4;
@@ -402,10 +402,10 @@ BEGIN
 	res:= Done;
 	CASE Ch OF
 		MASTER, MIDI, CD, VOICE, LINE:
-			left:= SYSTEM.VAL(LONGINT, MixRead(M4VT[Ch])) DIV 8; 
-			right:= SYSTEM.VAL(LONGINT, MixRead(M4VT[Ch]+1)) DIV 8
-		|MIC: left:= SYSTEM.VAL(LONGINT, MixRead(M4VT[Ch])) DIV 8; right:= 0
-		|PCSPEAKER: left:= SYSTEM.VAL(LONGINT, MixRead(M4VT[Ch])) DIV 64; right:= 0
+			left:= ORD( MixRead(M4VT[Ch])) DIV 8; 
+			right:= ORD( MixRead(M4VT[Ch]+1)) DIV 8
+		|MIC: left:= ORD( MixRead(M4VT[Ch])) DIV 8; right:= 0
+		|PCSPEAKER: left:= ORD( MixRead(M4VT[Ch])) DIV 64; right:= 0
 	ELSE res:= Failed; left:= 0; right:= 0
 	END
 END GetVolume4;
@@ -413,57 +413,57 @@ END GetVolume4;
 (** SetTrebble4 : sets left & right of trebble values *)
 PROCEDURE SetTrebble4*(TrebbleL, TrebbleR: LONGINT);
 BEGIN
-	MixWrite(44H, MixRead(44H)*{3,2,1,0} + SYSTEM.VAL(SET, TrebbleL*16));
-	MixWrite(45H, MixRead(45H)*{3,2,1,0} + SYSTEM.VAL(SET, TrebbleR*16))
+	MixWrite(44H, MixRead(44H)*{3,2,1,0} + BITS( TrebbleL*16));
+	MixWrite(45H, MixRead(45H)*{3,2,1,0} + BITS( TrebbleR*16))
 END SetTrebble4;
 
 (** GetTrebble4 : gets left & right trebble values *)
 PROCEDURE GetTrebble4*(VAR TrebbleL, TrebbleR: LONGINT);
 BEGIN
-	TrebbleL:= SYSTEM.VAL(LONGINT, MixRead(44H)) DIV 16;
-	TrebbleR:= SYSTEM.VAL(LONGINT, MixRead(45H)) DIV 16
+	TrebbleL:= ORD( MixRead(44H)) DIV 16;
+	TrebbleR:= ORD( MixRead(45H)) DIV 16
 END GetTrebble4;
 
 (** SetBass4 : sets left & right bass values *)
 PROCEDURE SetBass4*(BassL, BassR: LONGINT);
 BEGIN
-	MixWrite(46H, MixRead(46H)*{3,2,1,0} + SYSTEM.VAL(SET, BassL*16));
-	MixWrite(47H, MixRead(47H)*{3,2,1,0} + SYSTEM.VAL(SET, BassR*16))
+	MixWrite(46H, MixRead(46H)*{3,2,1,0} + BITS( BassL*16));
+	MixWrite(47H, MixRead(47H)*{3,2,1,0} + BITS( BassR*16))
 END SetBass4;
 
 (** GetBass4 : gets left & right bass values *)
 PROCEDURE GetBass4*(VAR BassL, BassR: LONGINT);
 BEGIN
-	BassL:=SYSTEM.VAL(LONGINT, MixRead(46H)) DIV 16;
-	BassR:=SYSTEM.VAL(LONGINT, MixRead(47H)) DIV 16
+	BassL:=ORD( MixRead(46H)) DIV 16;
+	BassR:=ORD( MixRead(47H)) DIV 16
 END GetBass4;
 
 (** SetInGain4 : sets left & right input gain values (preamplifier) *)
 PROCEDURE SetInGain4*(GainL, GainR: LONGINT);
 BEGIN
-	MixWrite(3FH, MixRead(3FH) * {5,4,3,2,1,0} + SYSTEM.VAL(SET, GainL*64));
-	MixWrite(40H, MixRead(40H) * {5,4,3,2,1,0} + SYSTEM.VAL(SET, GainR*64))
+	MixWrite(3FH, MixRead(3FH) * {5,4,3,2,1,0} + BITS( GainL*64));
+	MixWrite(40H, MixRead(40H) * {5,4,3,2,1,0} + BITS( GainR*64))
 END SetInGain4;
 
 (** GetInGain4 : gets left & right input gain values *)
 PROCEDURE GetInGain4*(VAR GainL, GainR: LONGINT);
 BEGIN
-	GainL:= SYSTEM.VAL(LONGINT, MixRead(3FH)) DIV 64;
-	GainR:= SYSTEM.VAL(LONGINT, MixRead(40H)) DIV 64
+	GainL:= ORD( MixRead(3FH)) DIV 64;
+	GainR:= ORD( MixRead(40H)) DIV 64
 END GetInGain4;
 
 (** SetOutGain4 : sets left & right output gain values *)
 PROCEDURE SetOutGain4*(GainL, GainR: LONGINT);
 BEGIN
-	MixWrite(41H, MixRead(41H) * {5,4,3,2,1,0} + SYSTEM.VAL(SET, GainL*64));
-	MixWrite(42H, MixRead(42H) * {5,4,3,2,1,0} + SYSTEM.VAL(SET, GainR*64))
+	MixWrite(41H, MixRead(41H) * {5,4,3,2,1,0} + BITS( GainL*64));
+	MixWrite(42H, MixRead(42H) * {5,4,3,2,1,0} + BITS( GainR*64))
 END SetOutGain4;
 
 (** GetOutGain4 : gets left & right output gain values *)
 PROCEDURE GetOutGain4*(VAR GainL, GainR: LONGINT);
 BEGIN
-	GainL:= SYSTEM.VAL(LONGINT, MixRead(41H)) DIV 64;
-	GainR:= SYSTEM.VAL(LONGINT, MixRead(42H)) DIV 64
+	GainL:= ORD( MixRead(41H)) DIV 64;
+	GainR:= ORD( MixRead(42H)) DIV 64
 END GetOutGain4;
 
 (** DSP *)
@@ -473,12 +473,12 @@ PROCEDURE DspWrite*(Val: INTEGER);
 BEGIN
 	cx:= 65000; dat:= {};
 	(* read Write-status and wait until ok or counter zero *)
-	SYSTEM.PORTIN(wport, SYSTEM.VAL(CHAR, dat));
+	SYSTEM.PORTIN(wport, ( dat));
 	WHILE (7 IN dat)&(cx # 0) DO
 		DEC(cx);
-		SYSTEM.PORTIN(wport, SYSTEM.VAL(CHAR, dat))
+		SYSTEM.PORTIN(wport, ( dat))
 	END;
-	IF cx > 0 THEN SYSTEM.PORTOUT(wport, SYSTEM.VAL(CHAR, Val))
+	IF cx > 0 THEN SYSTEM.PORTOUT(wport, ( Val))
 	ELSE IF Val#GETVER THEN HALT(DSPIOError) END
 	END
 END DspWrite;
@@ -489,13 +489,13 @@ PROCEDURE DspRead*(VAR Val: INTEGER);
 BEGIN
 	cx:= 65000; dat:= {};
 	(* read Read-status and wait until ok or counter zero *)
-	SYSTEM.PORTIN(rsport, SYSTEM.VAL(CHAR, dat));
+	SYSTEM.PORTIN(rsport, ( dat));
 	WHILE ~(7 IN dat)&(cx # 0) DO
 		DEC(cx);
-		SYSTEM.PORTIN(rsport, SYSTEM.VAL(CHAR, dat))
+		SYSTEM.PORTIN(rsport, ( dat))
 	END;
 	Val:= 0;
-	IF cx > 0 THEN SYSTEM.PORTIN(rdport, SYSTEM.VAL(CHAR, Val))
+	IF cx > 0 THEN SYSTEM.PORTIN(rdport, ( Val))
 	ELSE HALT(DSPIOError)
 	END
 END DspRead;
@@ -505,10 +505,10 @@ PROCEDURE DspReset*;
 	VAR i, Val : INTEGER; t: LONGINT;
 BEGIN
 	(* write first a 1, wait, and then an 0 to the reset-port *)
-	SYSTEM.PORTOUT(resetport, SYSTEM.VAL(CHAR, 1));
+	SYSTEM.PORTOUT(resetport, ( 1));
 	t := Kernel.GetTimer()+2;  REPEAT UNTIL Kernel.GetTimer() >= t;	(* assume one tick is long enough *)
 	(*t := Kernel.SetTimeout(3);  REPEAT UNTIL Kernel.Expired(t);*)
-	SYSTEM.PORTOUT(resetport, SYSTEM.VAL(CHAR, 0));
+	SYSTEM.PORTOUT(resetport, ( 0));
 	DspRead(Val);
 	(* i:= 0; WHILE (Val#0AAH)&(i<100) DO INC(i); DspRead(Val) END; *)
 	IF Val # 0AAH THEN res:= ResetErr

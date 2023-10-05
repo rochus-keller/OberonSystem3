@@ -292,7 +292,7 @@ BEGIN
 		SYSTEM.PUT(SYSTEM.ADR(b[13H]), SYSTEM.VAL(INTEGER, rsize1+dsize));	(* total sectors *)
 		SYSTEM.PUT(SYSTEM.ADR(b[18H]), SYSTEM.VAL(INTEGER, 18));	(* sectors/track *)
 		SYSTEM.PUT(SYSTEM.ADR(b[1AH]), SYSTEM.VAL(INTEGER, 2));	(* heads *)
-		SYSTEM.PUT(SYSTEM.ADR(b[1CH]), SYSTEM.VAL(LONGINT, 0));	(* boot sector *)
+		SYSTEM.PUT(SYSTEM.ADR(b[1CH]), ORD( 0));	(* boot sector *)
 		SYSTEM.PUT(SYSTEM.ADR(b[24H]), 0X);	(* drive 0 *)
 		SYSTEM.PUT(SYSTEM.ADR(b[0EH]), rsize1);	(* new reserved size *)
 		b[10] := CHR(flag);

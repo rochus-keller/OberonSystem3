@@ -487,9 +487,9 @@ PROCEDURE LowerACK();
 VAR
 	portdata: CHAR;
 BEGIN
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1+SPIOEN));
-	SYSTEM.PORTIN(portbase+SCSIDAT,SYSTEM.VAL(CHAR,portdata));
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1+SPIOEN));
+	SYSTEM.PORTIN(portbase+SCSIDAT,(portdata));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1));
 	REPEAT UNTIL ~TestHi(SCSISIG,ACKI);
 END LowerACK;
 
@@ -501,18 +501,18 @@ BEGIN
 	LOOP
 		REPEAT
 			REPEAT
-				phase:= {}; SYSTEM.PORTIN(portbase+SSTAT1,SYSTEM.VAL(CHAR,phase));
+				phase:= {}; SYSTEM.PORTIN(portbase+SSTAT1,(phase));
 			UNTIL (phase * (BUSFREE+SCSIRSTI+REQINIT) # {});
 			IF (phase * BUSFREE # {}) THEN
 				RETURN(PBUSFREE);
 			ELSIF (phase * SCSIRSTI # {}) THEN
 				(* IBM drive responds RSTI to RSTO *)
-				SYSTEM.PORTOUT(portbase+SSTAT1,SYSTEM.VAL(CHAR,SCSIRSTI));
+				SYSTEM.PORTOUT(portbase+SSTAT1,(SCSIRSTI));
 			END;
     	UNTIL TestLo(SCSISIG,ACKI) & TestHi(SSTAT1,REQINIT);
 
-		SYSTEM.PORTOUT(portbase+SSTAT1,SYSTEM.VAL(CHAR,CLRSCSIPERR));
-		phase:= {}; SYSTEM.PORTIN(portbase+SCSISIG,SYSTEM.VAL(CHAR,phase));
+		SYSTEM.PORTOUT(portbase+SSTAT1,(CLRSCSIPERR));
+		phase:= {}; SYSTEM.PORTIN(portbase+SCSISIG,(phase));
 		phase:= phase * PMASK;
 
 		IF TestHi(SSTAT1,SCSIPERR) THEN            (* DATA phase *)
@@ -532,17 +532,17 @@ BEGIN
 	IF (current # NIL) THEN
 		cmd:= current; current:= NIL;
 		IF (issued = NIL) THEN
-			SYSTEM.PORTOUT(portbase+PORTA,SYSTEM.VAL(CHAR,0));	(* LED off *)
+			SYSTEM.PORTOUT(portbase+PORTA,(0));	(* LED off *)
 		END;
 		IF (discon # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDI));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDI));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(0));
 		END;
 		IF (issued # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENBUSFREE));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(ENBUSFREE));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(0));
 		END;
 		WHILE TestLo(SSTAT1,BUSFREE) DO END;	(* BUS FREE loop *)
 		IF (status # Good) THEN cmd.status:= DriverError; END;
@@ -563,11 +563,11 @@ BEGIN
 	END;
 
 	(* disable sequences *)
-	SYSTEM.PORTOUT(portbase+SCSISEQ,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SSTAT0,SYSTEM.VAL(CHAR,CLRSELDI));
-	SYSTEM.PORTOUT(portbase+SSTAT1,SYSTEM.VAL(CHAR,CLRBUSFREE));
+	SYSTEM.PORTOUT(portbase+SCSISEQ,(0));
+	SYSTEM.PORTOUT(portbase+SSTAT0,(CLRSELDI));
+	SYSTEM.PORTOUT(portbase+SSTAT1,(CLRBUSFREE));
 
-	selid:= {}; SYSTEM.PORTIN(portbase+SELID,SYSTEM.VAL(CHAR,selid));
+	selid:= {}; SYSTEM.PORTIN(portbase+SELID,(selid));
 	selid:= selid * (-{hostid});
 	IF (selid = {}) THEN
 		status:= drvTarget; RETURN;
@@ -575,25 +575,25 @@ BEGIN
 	
 	target:= 0; WHILE ~(target IN selid) DO INC(target); END;
 
-	selid:= SYSTEM.VAL(SET,SYSTEM.LSH(hostid,OID0));
-	selid:= selid + (SYSTEM.VAL(SET,target) * {0..2});
-	SYSTEM.PORTOUT(portbase+SCSIID,SYSTEM.VAL(CHAR,selid));
+	selid:= BITS(SYSTEM.LSH(hostid,OID0));
+	selid:= selid + (BITS(target) * {0..2});
+	SYSTEM.PORTOUT(portbase+SCSIID,(selid));
 
-	SYSTEM.PORTOUT(portbase+SCSISEQ,SYSTEM.VAL(CHAR,ENRESELI));
+	SYSTEM.PORTOUT(portbase+SCSISEQ,(ENRESELI));
 
 	IF TestLo(SSTAT0,SELDI) THEN
 		status:= drvReselect; RETURN;
 	END;
 
-    SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,PMSGI));
+    SYSTEM.PORTOUT(portbase+SCSISIG,(PMSGI));
 
     IF (ScsiPhase() # PMSGI) THEN
 		status:= drvIdentify; RETURN;
 	END;
 
-    SYSTEM.PORTOUT(portbase+SCSISEQ,SYSTEM.VAL(CHAR,0));
-    SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1));
-	selid:= {}; SYSTEM.PORTIN(portbase+SCSIBUS,SYSTEM.VAL(CHAR,selid));
+    SYSTEM.PORTOUT(portbase+SCSISEQ,(0));
+    SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1));
+	selid:= {}; SYSTEM.PORTIN(portbase+SCSIBUS,(selid));
 
 	IF (selid * IDENTIFYBASE = {}) THEN
 		status:= drvLun; RETURN;
@@ -608,8 +608,8 @@ BEGIN
 	END;
 	EXCL(current.phase,Disconnected);
 
-	SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENPHASEMIS+ENBUSFREE));
+	SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENPHASEMIS+ENBUSFREE));
 	SetBits(DMACNTRL0,INTEN);
 END ScsiReconnect;
 
@@ -621,25 +621,25 @@ BEGIN
 	current:= RemScsiCmd(issued,-1,-1);
 	INCL(current.phase,InSelection);
 
-	id:= SYSTEM.VAL(SET,SYSTEM.LSH(hostid,OID0));
-	id:= id + (SYSTEM.VAL(SET,current.target) * {0..2});
-	SYSTEM.PORTOUT(portbase+SCSIID,SYSTEM.VAL(CHAR,id));
+	id:= BITS(SYSTEM.LSH(hostid,OID0));
+	id:= id + (BITS(current.target) * {0..2});
+	SYSTEM.PORTOUT(portbase+SCSIID,(id));
 
 	(* Enable int SELECTION OUT DONE and SELECTION OUT INITIATED *)
 	IF CanDoParity THEN
-		SYSTEM.PORTOUT(portbase+SXFRCTL1,SYSTEM.VAL(CHAR,ENSPCHK+ENSTIMER));
+		SYSTEM.PORTOUT(portbase+SXFRCTL1,(ENSPCHK+ENSTIMER));
 	ELSE
-		SYSTEM.PORTOUT(portbase+SXFRCTL1,SYSTEM.VAL(CHAR,ENSTIMER));
+		SYSTEM.PORTOUT(portbase+SXFRCTL1,(ENSTIMER));
 	END;
 
 	(* enable int for SELECTION OUT DONE and SELECTION TIME OUT *)
 	IF (discon # NIL) THEN
-		SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDO+ENSELDI));
+		SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDO+ENSELDI));
 	ELSE
-		SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDO));
+		SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDO));
 	END;
 
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENSELTIMO));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENSELTIMO));
 
 	(* Enable SELECTION OUT sequence *)
 	SetBits(SCSISEQ,ENSELO+ENAUTOATNO);
@@ -653,7 +653,7 @@ BEGIN
 		IF TestHi(SSTAT0,SELDO) THEN
 
 			(* clear BUS FREE interrupt *)
- 	       SYSTEM.PORTOUT(portbase+SSTAT1,SYSTEM.VAL(CHAR,CLRBUSFREE));
+ 	       SYSTEM.PORTOUT(portbase+SSTAT1,(CLRBUSFREE));
 
 	        (* Disable SELECTION OUT sequence *)
  	       ClrBits(SCSISEQ,ENSELO + ENAUTOATNO);
@@ -673,12 +673,12 @@ BEGIN
 			END;
 
 			(* selection was done *)
-			SYSTEM.PORTOUT(portbase+SSTAT0,SYSTEM.VAL(CHAR,CLRSELDO));
+			SYSTEM.PORTOUT(portbase+SSTAT0,(CLRSELDO));
 			EXCL(current.phase,InSelection); INCL(current.phase,InOther);
 
-			SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,PMSGO));
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENREQINIT+ENBUSFREE));
+			SYSTEM.PORTOUT(portbase+SCSISIG,(PMSGO));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(ENREQINIT+ENBUSFREE));
 			SetBits(DMACNTRL0,INTEN);
 			RETURN(TRUE);
 		ELSE
@@ -690,15 +690,15 @@ BEGIN
 		SYSTEM.PORTOUT(portbase+SSTAT1,CLRSELTIMO);
 
 		IF (discon # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDI));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDI));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(0));
 		END;
 
 		IF (issued # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENBUSFREE));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(ENBUSFREE));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(0));
 		END;
 
 		SetBits(DMACNTRL0,INTEN);
@@ -728,9 +728,9 @@ BEGIN
 	ELSE
 		IF ~(SentIdent IN current.phase) THEN
 			IF CanDisconnect THEN
-				msg:= IDENTIFYBASE + {6} + (SYSTEM.VAL(SET,current.lun) * {0..2});
+				msg:= IDENTIFYBASE + {6} + (BITS(current.lun) * {0..2});
 			ELSE
-				msg:= IDENTIFYBASE + (SYSTEM.VAL(SET,current.lun) * {0..2});
+				msg:= IDENTIFYBASE + (BITS(current.lun) * {0..2});
 			END;
 			INCL(current.phase,SentIdent);
 		ELSE
@@ -739,8 +739,8 @@ BEGIN
 	END;
 
 	ClrBits(SXFRCTL0,ENDMA);
-	SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENPHASEMIS+ENREQINIT+ENBUSFREE));
+	SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENPHASEMIS+ENREQINIT+ENBUSFREE));
 
 	(* wait for data latch to become ready or a phase change *)
 	WHILE TestLo(DMASTAT,INTSTAT) DO END;
@@ -750,8 +750,8 @@ BEGIN
 	END;
 
 	(* Leave MESSAGE OUT after transfer *)
-	SYSTEM.PORTOUT(portbase+SSTAT1,SYSTEM.VAL(CHAR,CLRATNO));
-	SYSTEM.PORTOUT(portbase+SCSIDAT,SYSTEM.VAL(CHAR,msg));
+	SYSTEM.PORTOUT(portbase+SSTAT1,(CLRATNO));
+	SYSTEM.PORTOUT(portbase+SCSIDAT,(msg));
 
 	LowerACK; phase:= ScsiPhase();
 
@@ -773,16 +773,16 @@ BEGIN
 	IF ~(SentCommand IN current.ctrl) THEN
 
 		(* reset fifo and enable writes *)
-		SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,WRITEREAD+RSTFIFO));
-		SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,ENDMA+WRITEREAD));
+		SYSTEM.PORTOUT(portbase+DMACNTRL0,(WRITEREAD+RSTFIFO));
+		SYSTEM.PORTOUT(portbase+DMACNTRL0,(ENDMA+WRITEREAD));
 
 		(* clear transfer count and scsi fifo *)
-		SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1+CLRSTCNT+CLRCH1));
-		SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,SCSIEN+DMAEN+CH1));
+		SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1+CLRSTCNT+CLRCH1));
+		SYSTEM.PORTOUT(portbase+SXFRCTL0,(SCSIEN+DMAEN+CH1));
 
 		(* missing phase raises INTSTAT *)
-		SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-		SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENPHASEMIS+ENBUSFREE));
+		SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+		SYSTEM.PORTOUT(portbase+SIMODE1,(ENPHASEMIS+ENBUSFREE));
 
 		(* wait for FIFO to get empty *)
 		WHILE TestLo(DMASTAT,DFIFOEMP+INTSTAT) DO END;
@@ -817,12 +817,12 @@ VAR
 BEGIN
 	phase:= PMSGI; exit:= FALSE;
 
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1));
-	SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENBUSFREE));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1));
+	SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENBUSFREE));
 
 	WHILE (phase = PMSGI) DO
-		msg:= 0; SYSTEM.PORTIN(portbase+SCSIBUS,SYSTEM.VAL(CHAR,msg));
+		msg:= 0; SYSTEM.PORTIN(portbase+SCSIBUS,(msg));
 		CASE msg OF
 		| Disconnect:
 			msg:= 0;
@@ -837,20 +837,20 @@ BEGIN
 		| ExtMessage:
 			LowerACK();
 			IF (ScsiPhase() = PMSGI) THEN
-				cnt:= 0; SYSTEM.PORTIN(portbase+SCSIBUS,SYSTEM.VAL(CHAR,cnt));
+				cnt:= 0; SYSTEM.PORTIN(portbase+SCSIBUS,(cnt));
 				LowerACK();
 				IF (ScsiPhase() = PMSGI) THEN
-					code:= 0; SYSTEM.PORTIN(portbase+SCSIBUS,SYSTEM.VAL(CHAR,code));
+					code:= 0; SYSTEM.PORTIN(portbase+SCSIBUS,(code));
 					CASE code OF
 					| ExtModifyDataPointer:
-						SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,PMSGI+ATNO));
+						SYSTEM.PORTOUT(portbase+SCSISIG,(PMSGI+ATNO));
 					| ExtSDTR:
-						SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,PMSGI+ATNO));
+						SYSTEM.PORTOUT(portbase+SCSISIG,(PMSGI+ATNO));
 					| ExtExtendedIdentify:
 					| ExtWDTR:
-						SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,PMSGI+ATNO));
+						SYSTEM.PORTOUT(portbase+SCSISIG,(PMSGI+ATNO));
 					ELSE
-						SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,PMSGI+ATNO));
+						SYSTEM.PORTOUT(portbase+SCSISIG,(PMSGI+ATNO));
 					END;
 
 					WHILE (cnt > 0) DO
@@ -858,11 +858,11 @@ BEGIN
 						IF (ScsiPhase() # PMSGI) THEN
 							cnt:= 0;
 						ELSE
-							code:= 0; SYSTEM.PORTIN(portbase+SCSIBUS,SYSTEM.VAL(CHAR,code));
+							code:= 0; SYSTEM.PORTIN(portbase+SCSIBUS,(code));
 							DEC(cnt);
 						END;
 					END;
-					SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,PMSGI+ATNO));
+					SYSTEM.PORTOUT(portbase+SCSISIG,(PMSGI+ATNO));
 				END;
 			END;
 		ELSE
@@ -874,14 +874,14 @@ BEGIN
 
     (* clear SCSI fifo on BUSFREE *)
 	IF (phase = PBUSFREE) THEN
-		SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1+CLRCH1));
+		SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1+CLRCH1));
 	END;
 
 	IF (Disconnected IN current.phase) THEN
 		AppScsiCmd(discon,current); current:= NIL; exit:= TRUE;
 		SetBits(SCSISEQ,ENRESELI);
-		SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDI));
-		SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,0));
+		SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDI));
+		SYSTEM.PORTOUT(portbase+SIMODE1,(0));
 		SetBits(DMACNTRL0,INTEN);
 	END;
 	RETURN(exit);
@@ -892,11 +892,11 @@ PROCEDURE ScsiPhaseSTATUS(): BOOLEAN;
 VAR
 	msg: SET;
 BEGIN
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1));
-	SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENREQINIT+ENBUSFREE));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1));
+	SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENREQINIT+ENBUSFREE));
 
-	SYSTEM.PORTIN(portbase+SCSIBUS,SYSTEM.VAL(CHAR,current.status));
+	SYSTEM.PORTIN(portbase+SCSIBUS,(current.status));
 	LowerACK();
 	msg:= ScsiPhase();
 	RETURN(FALSE);
@@ -910,13 +910,13 @@ VAR
 	cnt: LONGINT;
 BEGIN
 	(* reset host fifo *)
-	SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,RSTFIFO));
-	SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,RSTFIFO+ENDMA));
+	SYSTEM.PORTOUT(portbase+DMACNTRL0,(RSTFIFO));
+	SYSTEM.PORTOUT(portbase+DMACNTRL0,(RSTFIFO+ENDMA));
 
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1+SCSIEN+DMAEN));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1+SCSIEN+DMAEN));
 
-	SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENPHASEMIS+ENBUSFREE));
+	SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENPHASEMIS+ENBUSFREE));
 
     (* done is set when the FIFO is empty after the target left DATA IN *)
 	done:= FALSE; fifodata:= 0; current.dlen:= 0;
@@ -927,13 +927,13 @@ BEGIN
 		WHILE TestLo(DMASTAT,DFIFOFULL+INTSTAT) DO END;
 
 		IF TestHi(DMASTAT,DFIFOFULL) THEN
-			SYSTEM.PORTIN(portbase+FIFOSTAT,SYSTEM.VAL(CHAR,fifodata));
+			SYSTEM.PORTIN(portbase+FIFOSTAT,(fifodata));
 		ELSE
 			(* wait for SCSI fifo to get empty *)
 			WHILE TestLo(SSTAT2,SEMPTY) DO END;
 
 			(* rest of data in FIFO *)
-			SYSTEM.PORTIN(portbase+FIFOSTAT,SYSTEM.VAL(CHAR,fifodata));
+			SYSTEM.PORTIN(portbase+FIFOSTAT,(fifodata));
 			done:= TRUE;
 		END;
 
@@ -965,22 +965,22 @@ VAR
 	fifostat: SET;
 	res,cnt: LONGINT;
 BEGIN
-	fifostat:= {}; SYSTEM.PORTIN(portbase+FIFOSTAT,SYSTEM.VAL(CHAR,fifostat));
+	fifostat:= {}; SYSTEM.PORTIN(portbase+FIFOSTAT,(fifostat));
 	IF (fifostat # {}) THEN
-		fifostat:= {}; SYSTEM.PORTIN(portbase+SSTAT2,SYSTEM.VAL(CHAR,fifostat));
+		fifostat:= {}; SYSTEM.PORTIN(portbase+SSTAT2,(fifostat));
 		IF (fifostat*SFULL*SFCNT # {}) THEN
 			status:= drvFifo; RETURN(FALSE);
 		END;
 	END;
   
-	SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,WRITEREAD+RSTFIFO));
-	SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,ENDMA+WRITEREAD));
+	SYSTEM.PORTOUT(portbase+DMACNTRL0,(WRITEREAD+RSTFIFO));
+	SYSTEM.PORTOUT(portbase+DMACNTRL0,(ENDMA+WRITEREAD));
 
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1+CLRSTCNT+CLRCH1));
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,SCSIEN+DMAEN+CH1));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1+CLRSTCNT+CLRCH1));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(SCSIEN+DMAEN+CH1));
 
-	SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENPHASEMIS+ENBUSFREE));
+	SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENPHASEMIS+ENBUSFREE));
 
 	WHILE TestLo(SSTAT1,PHASEMIS) & (current.ofs < current.dlen) DO
 		res:= current.dlen - current.ofs;
@@ -1008,14 +1008,14 @@ BEGIN
 	IF (current.ofs < current.dlen) THEN
 		cnt:= 0; res:= 0;
 		(* data in fifos has to be resend *)
-		SYSTEM.PORTIN(portbase+SSTAT2,SYSTEM.VAL(CHAR,cnt));
-		SYSTEM.PORTIN(portbase+FIFOSTAT,SYSTEM.VAL(CHAR,res));
+		SYSTEM.PORTIN(portbase+SSTAT2,(cnt));
+		SYSTEM.PORTIN(portbase+FIFOSTAT,(res));
 
-		cnt:= SYSTEM.VAL(LONGINT,SYSTEM.VAL(SET,cnt) * (SFULL+SFCNT));
+		cnt:= ORD(BITS(cnt) * (SFULL+SFCNT));
 		DEC(current.ofs,res+cnt);
 
-		SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,WRITEREAD+RSTFIFO));
-		SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,SCSIEN+DMAEN));
+		SYSTEM.PORTOUT(portbase+DMACNTRL0,(WRITEREAD+RSTFIFO));
+		SYSTEM.PORTOUT(portbase+SXFRCTL0,(SCSIEN+DMAEN));
 		ClrBits(DMACNTRL0,ENDMA);
 	ELSE
 		(* wait for SCSI fifo to get empty *)
@@ -1061,10 +1061,10 @@ BEGIN
 
 	(* "real" phase *)
 	IF ((phase * (-PMASK)) = {}) THEN
-		SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,phase));
+		SYSTEM.PORTOUT(portbase+SCSISIG,(phase));
 	END;
 
-	SYSTEM.PORTOUT(portbase+SSTAT1,SYSTEM.VAL(CHAR,CLRPHASECHG));
+	SYSTEM.PORTOUT(portbase+SSTAT1,(CLRPHASECHG));
 	phase:= (phase * (-(PMASK*{1}))) + phase;
 
 	(* information transfer phase *)
@@ -1081,12 +1081,12 @@ BEGIN
 	ELSIF (phase = PDATAO) THEN	(* DATA OUT phase *)
 		IF ScsiPhaseDATAO() THEN RETURN; END;
 	ELSIF (phase = PBUSFREE) THEN	(* BUSFREE *)
-		phase:= SYSTEM.VAL(SET,SYSTEM.LSH(PMASK,16));
+		phase:= BITS(SYSTEM.LSH(PMASK,16));
     	current.phase:= current.phase * (-phase);
 		INCL(current.ctrl,Finished);
 		RETURN;
 	ELSIF (phase = PPARITY) THEN	(* parity error in DATA phase *)
-		phase:= SYSTEM.VAL(SET,SYSTEM.LSH(PMASK,16));
+		phase:= BITS(SYSTEM.LSH(PMASK,16));
     	current.phase:= current.phase * (-phase);
 		SetBits(DMACNTRL0,INTEN);
 		INCL(current.ctrl,Finished);
@@ -1097,21 +1097,21 @@ BEGIN
 
 	IF (Finished IN current.ctrl) OR (status # Good) THEN
 		IF (discon # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDI));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDI));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(0));
 		END;
 
 		IF (issued # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENBUSFREE));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(ENBUSFREE));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(0));
 		END;
 
 		IF (discon # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SCSISEQ,SYSTEM.VAL(CHAR,ENRESELI));
+			SYSTEM.PORTOUT(portbase+SCSISEQ,(ENRESELI));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SCSISEQ,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SCSISEQ,(0));
 		END;
 		SetBits(DMACNTRL0,INTEN);
 		ScsiDone();
@@ -1122,8 +1122,8 @@ BEGIN
 		current.phase:= current.phase + {16};
 	END;
 
-	SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENPHASEMIS+ENBUSFREE));
+	SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENPHASEMIS+ENBUSFREE));
 	SetBits(DMACNTRL0,INTEN);
 	RETURN;
 END InterruptHandler;
@@ -1132,40 +1132,40 @@ PROCEDURE ResetPorts;
 	(* reset all ports of the controller *)
 BEGIN
 	(* disable interrupts *)
-	SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,RSTFIFO));
+	SYSTEM.PORTOUT(portbase+DMACNTRL0,(RSTFIFO));
 
-	SYSTEM.PORTOUT(portbase+SCSISEQ,SYSTEM.VAL(CHAR,0));
+	SYSTEM.PORTOUT(portbase+SCSISEQ,(0));
 
-	SYSTEM.PORTOUT(portbase+SXFRCTL1,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SCSISIG,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SCSIRATE,SYSTEM.VAL(CHAR,0));
+	SYSTEM.PORTOUT(portbase+SXFRCTL1,(0));
+	SYSTEM.PORTOUT(portbase+SCSISIG,(0));
+	SYSTEM.PORTOUT(portbase+SCSIRATE,(0));
 
 	(* clear all interrupt conditions *)
-	SYSTEM.PORTOUT(portbase+SSTAT0,SYSTEM.VAL(CHAR,{0..6}));
-	SYSTEM.PORTOUT(portbase+SSTAT1,SYSTEM.VAL(CHAR,{0..3,5..7}));
+	SYSTEM.PORTOUT(portbase+SSTAT0,({0..6}));
+	SYSTEM.PORTOUT(portbase+SSTAT1,({0..3,5..7}));
 
-	SYSTEM.PORTOUT(portbase+SSTAT4,SYSTEM.VAL(CHAR,SYNCERR+FWERR+FRERR));
+	SYSTEM.PORTOUT(portbase+SSTAT4,(SYNCERR+FWERR+FRERR));
 
-	SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+DMACNTRL1,SYSTEM.VAL(CHAR,0));
+	SYSTEM.PORTOUT(portbase+DMACNTRL0,(0));
+	SYSTEM.PORTOUT(portbase+DMACNTRL1,(0));
 
-	SYSTEM.PORTOUT(portbase+BRSTCNTRL,SYSTEM.VAL(CHAR,{0,4..7}));
+	SYSTEM.PORTOUT(portbase+BRSTCNTRL,({0,4..7}));
 
 	(* clear SCSI fifo and transfer count *)
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1+CLRCH1+CLRSTCNT));
-	SYSTEM.PORTOUT(portbase+SXFRCTL0,SYSTEM.VAL(CHAR,CH1));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1+CLRCH1+CLRSTCNT));
+	SYSTEM.PORTOUT(portbase+SXFRCTL0,(CH1));
 
 	(* enable interrupts *)
 	IF (discon # NIL) THEN
-		SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDI));
+		SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDI));
 	ELSE
-		SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
+		SYSTEM.PORTOUT(portbase+SIMODE0,(0));
 	END;
 
 	IF (issued # NIL) THEN
-		SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENBUSFREE));
+		SYSTEM.PORTOUT(portbase+SIMODE1,(ENBUSFREE));
 	ELSE
-		SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,0));
+		SYSTEM.PORTOUT(portbase+SIMODE1,(0));
 	END;
 END ResetPorts;
 
@@ -1180,25 +1180,25 @@ BEGIN
 		ClrBits(DMACNTRL0,INTEN);
 
 		(* RESET OUT *)
-		SYSTEM.PORTOUT(portbase+SCSISEQ,SYSTEM.VAL(CHAR,SCSIRSTO));
+		SYSTEM.PORTOUT(portbase+SCSISEQ,(SCSIRSTO));
 		t:= Kernel.GetTimer(); REPEAT UNTIL Kernel.GetTimer() - t > 90;
-		SYSTEM.PORTOUT(portbase+SCSISEQ,SYSTEM.VAL(CHAR,0));
+		SYSTEM.PORTOUT(portbase+SCSISEQ,(0));
 		t:= Kernel.GetTimer(); REPEAT UNTIL Kernel.GetTimer() - t > 180;
 
 		IF (discon # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDI));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDI));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SIMODE0,(0));
     	END;
 
 		IF (issued # NIL) THEN
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENBUSFREE));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(ENBUSFREE));
 		ELSE
-			SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,0));
+			SYSTEM.PORTOUT(portbase+SIMODE1,(0));
 		END;
 	END;
 
-	SYSTEM.PORTOUT(portbase+DMACNTRL0,SYSTEM.VAL(CHAR,INTEN));
+	SYSTEM.PORTOUT(portbase+DMACNTRL0,(INTEN));
 END Reset;
 
 PROCEDURE Init;
@@ -1206,7 +1206,7 @@ PROCEDURE Init;
 VAR
 	t: LONGINT;
 BEGIN
-	SetBits(SCSIID,SYSTEM.VAL(SET,SYSTEM.LSH(hostid,4)));
+	SetBits(SCSIID,BITS(SYSTEM.LSH(hostid,4)));
 	SetBits(SCSISEQ,SCSIRSTO);
 	t:= Kernel.GetTimer(); REPEAT UNTIL Kernel.GetTimer() - t > 90;
 	ClrBits(SCSISEQ,SCSIRSTO);
@@ -1218,8 +1218,8 @@ BEGIN
 		SYSTEM.GET(bios+0CH+t,signature[t]); INC(t);
 	UNTIL (t = LEN(signature)) OR (signature[t-1] = 0X);
 
-	SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,0));
+	SYSTEM.PORTOUT(portbase+SIMODE0,(0));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(0));
 	SetBits(DMACNTRL0,INTEN);
 	Kernel.InstallIP(InterruptHandler,Kernel.IRQ+irq);
 END Init;
@@ -1233,15 +1233,15 @@ BEGIN
 
 	SYSTEM.CLI();
 	IF (issued = NIL) THEN
-		SYSTEM.PORTOUT(portbase+PORTA,SYSTEM.VAL(CHAR,1));
+		SYSTEM.PORTOUT(portbase+PORTA,(1));
 	END;
 	AppScsiCmd(issued,cmd);
 	IF (discon # NIL) THEN
-		SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDI));
+		SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDI));
 	ELSE
-		SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
+		SYSTEM.PORTOUT(portbase+SIMODE0,(0));
 	END;
-	SYSTEM.PORTOUT(portbase+SIMODE1,SYSTEM.VAL(CHAR,ENBUSFREE));
+	SYSTEM.PORTOUT(portbase+SIMODE1,(ENBUSFREE));
 	SYSTEM.STI();
 END Initiate;
 
@@ -1278,15 +1278,15 @@ BEGIN
 				(* set command current and initiate selection for abortion *)
 				current:= cmd; cmd.phase:= {InSelection,Aborted};
 
-				selid:= SYSTEM.VAL(SET,SYSTEM.LSH(hostid,OID0));
-				selid:= selid + (SYSTEM.VAL(SET,hostid) * {0..2});
-				SYSTEM.PORTOUT(portbase+SCSIID,SYSTEM.VAL(CHAR,selid));
+				selid:= BITS(SYSTEM.LSH(hostid,OID0));
+				selid:= selid + (BITS(hostid) * {0..2});
+				SYSTEM.PORTOUT(portbase+SCSIID,(selid));
 
 				(* enable interrupts for SELECTION OUT DONE and SELECTION TIME OUT *)
 				IF (discon # NIL) THEN
-					SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,ENSELDI));
+					SYSTEM.PORTOUT(portbase+SIMODE0,(ENSELDI));
 				ELSE
-					SYSTEM.PORTOUT(portbase+SIMODE0,SYSTEM.VAL(CHAR,0));
+					SYSTEM.PORTOUT(portbase+SIMODE0,(0));
 				END;
 				SYSTEM.PORTOUT(portbase+SIMODE1,ENSELTIMO);
 

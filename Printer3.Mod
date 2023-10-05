@@ -79,7 +79,7 @@ VAR
 		(* zoom pattern *)
 		D := Display.Unit; P := Unit;
 		Display.GetDim(pat, w, h);
-		p := SYSTEM.VAL(LONGINT,pat) + 2; 
+		p := ORD(pat) + 2; 
 		y := 0; 
 		WHILE y < h DO x := 0;
 			SYSTEM.GET(p,s);
@@ -105,7 +105,7 @@ VAR
 		H := SHORT(h * D DIV P);
 		W := SHORT(w * D DIV P);
 		SYSTEM.NEW(ptr, (W +7) DIV 8 * 8 * H + 8); 
-		p := SYSTEM.VAL(LONGINT,ptr); 
+		p := ORD(ptr); 
 		k := SHORT(W); SYSTEM.PUT(p,k); INC(p); 
 		k := SHORT(H); SYSTEM.PUT(p,k); INC(p); 
 		y := 0;
@@ -117,7 +117,7 @@ VAR
 			END;
 			INC(y);
 		END ;
-		RETURN SYSTEM.VAL(LONGINT,ptr);
+		RETURN ORD(ptr);
 	END NewPattern;
 *)
 

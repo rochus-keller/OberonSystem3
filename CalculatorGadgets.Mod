@@ -62,40 +62,40 @@ PROCEDURE and(x,y: LONGREAL): LONGREAL;
 VAR
 	setx,sety: SET;
 BEGIN
-	setx:= SYSTEM.VAL(SET,ENTIER(x)); sety:= SYSTEM.VAL(SET,ENTIER(y));
-	RETURN(SYSTEM.VAL(LONGINT,setx * sety));
+	setx:= BITS(ENTIER(x)); sety:= BITS(ENTIER(y));
+	RETURN(ORD(setx * sety));
 END and;
 
 PROCEDURE or(x,y: LONGREAL): LONGREAL;
 VAR
 	setx,sety: SET;
 BEGIN
-	setx:= SYSTEM.VAL(SET,ENTIER(x)); sety:= SYSTEM.VAL(SET,ENTIER(y));
-	RETURN(SYSTEM.VAL(LONGINT,setx + sety));
+	setx:= BITS(ENTIER(x)); sety:= BITS(ENTIER(y));
+	RETURN(ORD(setx + sety));
 END or;
 
 PROCEDURE nor(x,y: LONGREAL): LONGREAL;
 VAR
 	setx,sety: SET;
 BEGIN
-	setx:= SYSTEM.VAL(SET,ENTIER(x)); sety:= SYSTEM.VAL(SET,ENTIER(y));
-	RETURN(SYSTEM.VAL(LONGINT,(setx / {MIN(SET)..MAX(SET)}) + sety));
+	setx:= BITS(ENTIER(x)); sety:= BITS(ENTIER(y));
+	RETURN(ORD((setx / {MIN(SET)..MAX(SET)}) + sety));
 END nor;
 
 PROCEDURE xor(x,y: LONGREAL): LONGREAL;
 VAR
 	setx,sety: SET;
 BEGIN
-	setx:= SYSTEM.VAL(SET,ENTIER(x)); sety:= SYSTEM.VAL(SET,ENTIER(y));
-	RETURN(SYSTEM.VAL(LONGINT,setx / sety));
+	setx:= BITS(ENTIER(x)); sety:= BITS(ENTIER(y));
+	RETURN(ORD(setx / sety));
 END xor;
 
 PROCEDURE xnor(x,y: LONGREAL): LONGREAL;
 VAR
 	setx,sety: SET;
 BEGIN
-	setx:= SYSTEM.VAL(SET,ENTIER(x)); sety:= SYSTEM.VAL(SET,ENTIER(y));
-	RETURN(SYSTEM.VAL(LONGINT,(setx / {MIN(SET)..MAX(SET)}) / sety));
+	setx:= BITS(ENTIER(x)); sety:= BITS(ENTIER(y));
+	RETURN(ORD((setx / {MIN(SET)..MAX(SET)}) / sety));
 END xnor;
 
 (* ** Built-In Functions **************************************** *)
@@ -104,8 +104,8 @@ PROCEDURE not(x: LONGREAL): LONGREAL;
 VAR
 	setx: SET;
 BEGIN
-	setx:= SYSTEM.VAL(SET,ENTIER(x));
-	RETURN(SYSTEM.VAL(LONGINT,setx / {MIN(SET)..MAX(SET)}));
+	setx:= BITS(ENTIER(x));
+	RETURN(ORD(setx / {MIN(SET)..MAX(SET)}));
 END not;
 
 PROCEDURE Rad(value: LONGREAL; angle: INTEGER): LONGREAL;

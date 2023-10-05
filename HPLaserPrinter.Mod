@@ -163,13 +163,13 @@ END SB;
 PROCEDURE Reverse(VAR c: CHAR);
 VAR ib, ob: SET;  ip,op: INTEGER;
 BEGIN
-	ib := SYSTEM.VAL(SET, c);
+	ib := BITS( c);
 	ip := 0;  op := 7;  ob := {};
 	WHILE ip < 8 DO
 		IF ip IN ib THEN INCL(ob, op) END;
 		INC(ip);  DEC(op)
 	END;
-	c := SYSTEM.VAL(CHAR, ob)
+	c := ( ob)
 END Reverse;
 
 (* Write procedures *)

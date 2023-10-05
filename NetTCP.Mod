@@ -127,8 +127,8 @@ VAR
 PROCEDURE HLen (tcph: Header): INTEGER;
 VAR set: SET;
 BEGIN
-	set := SYSTEM.VAL(SET, LONG(LONG(tcph.offs))) * {4..7};
-	RETURN SHORT(SYSTEM.VAL(LONGINT, SYSTEM.LSH(set, -2)))
+	set := BITS( LONG(LONG(tcph.offs))) * {4..7};
+	RETURN SHORT(ORD( SYSTEM.LSH(set, -2)))
 END HLen;
 
 PROCEDURE Max (n, m: LONGINT): LONGINT;
@@ -257,11 +257,11 @@ BEGIN NetBase.NewItem(item);
 	DEC(item.ofs, MinHLen); INC(item.len, MinHLen);
 	ntcph := SYSTEM.VAL(Header, SYSTEM.ADR(item.data[item.ofs]));
 	IF Ack IN code THEN
-		ntcph.seq := tcph.ack; ntcph.code := SHORT(SHORT(SYSTEM.VAL(LONGINT, {Rst})))
+		ntcph.seq := tcph.ack; ntcph.code := SHORT(SHORT(ORD( {Rst})))
 	ELSE
 		ntcph.ack := tcph.seq + (iph.len - NetIP.HdrLen(iph) - HLen(tcph));
 		IF code * {Fin,Syn} # {} THEN INC(ntcph.ack) END;
-		ntcph.seq := 0; ntcph.code := SHORT(SHORT(SYSTEM.VAL(LONGINT, {Rst, Ack})))
+		ntcph.seq := 0; ntcph.code := SHORT(SHORT(ORD( {Rst, Ack})))
 	END;
 	ntcph.src := tcph.dst; ntcph.dst := tcph.src;
 	ntcph.offs := MinOffset; ntcph.win := 0; ntcph.up := 0;
@@ -309,7 +309,7 @@ BEGIN
 		ntcph := SYSTEM.VAL(Header, SYSTEM.ADR(item.data[item.ofs]));
 		ntcph.src := tcph.dst; ntcph.dst := tcph.src;
 		ntcph.seq := C.snext; ntcph.ack := C.rnext;
-		ntcph.code := SHORT(SHORT(SYSTEM.VAL(LONGINT, {Ack})));
+		ntcph.code := SHORT(SHORT(ORD( {Ack})));
 		ntcph.offs := MinOffset; ntcph.up := 0;
 		ntcph.win := SHORT(RWindow(C));
 		SendItem(iph.dst, iph.src, item)
@@ -341,8 +341,8 @@ BEGIN
 		IF Syn IN C.code THEN INC(C.snext) END
 	ELSE C.snext := C.snext + Max(C.suna + dlen - C.snext, 0)
 	END;
-	IF dlen > 0 THEN hcode := SHORT(SHORT(SYSTEM.VAL(LONGINT, C.code + {Psh})))
-	ELSE hcode := SHORT(SHORT(SYSTEM.VAL(LONGINT, C.code)))
+	IF dlen > 0 THEN hcode := SHORT(SHORT(ORD( C.code + {Psh})))
+	ELSE hcode := SHORT(SHORT(ORD( C.code)))
 	END;
 	
 	NetBase.NewItem(item);
@@ -524,7 +524,7 @@ VAR
 BEGIN
 	iph := SYSTEM.VAL(NetIP.IPHeader, SYSTEM.ADR(item.data[item.ofs]));
 	tcph := SYSTEM.VAL(Header, SYSTEM.ADR(item.data[item.ofs + NetIP.MinHdrLen]));
-	code := SYSTEM.VAL(SET, LONG(LONG(tcph.code))); len := HLen(tcph) - MinHLen;
+	code := BITS( LONG(LONG(tcph.code))); len := HLen(tcph) - MinHLen;
 	IF ChkSeqSpace(C, tcph, iph, code) THEN
 		IF len > 0 THEN ProcessOpts(C, item, len, code) END;
 		demux[C.instate](C, item, iph, tcph, code)
@@ -800,7 +800,7 @@ BEGIN
 		NetBase.NetToHost(tcph.src); NetBase.NetToHost(tcph.dst);
 		NetBase.NetLToHost(tcph.seq); NetBase.NetLToHost(tcph.ack);
 		NetBase.NetToHost(tcph.win); NetBase.NetToHost(tcph.up);
-		code := SYSTEM.VAL(SET, LONG(LONG(tcph.code)));
+		code := BITS( LONG(LONG(tcph.code)));
 		IF NetPorts.Search(NetIP.routes[0].adr, tcph.dst, iph.src, tcph.src, Syn IN code, C) THEN
 			IF C IS Connection THEN
 				WITH C: Connection DO

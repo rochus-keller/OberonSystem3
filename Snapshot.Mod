@@ -232,9 +232,9 @@ PROCEDURE BankGetPixelPlane(x, y: LONGINT): LONGINT;	(* harry *)
 VAR offset, mask, col: LONGINT;  pg: SET;  byte: CHAR;
 BEGIN
 	offset := y*80 + (x DIV 8);	(* Setup the video page *)
-	pg := SYSTEM.VAL(SET, offset DIV 10000H) * {0..3};
+	pg := BITS( offset DIV 10000H) * {0..3};
 	pg := pg + SYSTEM.LSH(pg, 4);
-	SYSTEM.PORTOUT(3CDH, CHR(SYSTEM.VAL(LONGINT, pg)));
+	SYSTEM.PORTOUT(3CDH, CHR(ORD( pg)));
 	offset := offset MOD 10000H;
 	mask := SYSTEM.LSH(80H, -(x MOD 8));
 	SYSTEM.PORTOUT(3CEH, 8X);	(* Select bit *)
@@ -243,19 +243,19 @@ BEGIN
 	SYSTEM.PORTOUT(3CEH, 4X);	(* Select plane 0 *)
 	SYSTEM.PORTOUT(3CFH, 0X);
 	SYSTEM.GET(offset, byte);
-	IF SYSTEM.VAL(SET, byte) * SYSTEM.VAL(SET, mask) # {} THEN INC(col, 1) END;
+	IF BITS(ORD(byte)) * BITS(mask) # {} THEN INC(col, 1) END;
 	SYSTEM.PORTOUT(3CEH, 4X);	(* Select plane 1 *)
 	SYSTEM.PORTOUT(3CFH, 1X);
 	SYSTEM.GET(offset, byte);
-	IF SYSTEM.VAL(SET, byte) * SYSTEM.VAL(SET, mask) # {} THEN INC(col, 2) END;
+	IF BITS(ORD(byte)) * BITS(mask) # {} THEN INC(col, 2) END;
 	SYSTEM.PORTOUT(3CEH, 4X);	(* Select plane 2 *)
 	SYSTEM.PORTOUT(3CFH, 2X);
 	SYSTEM.GET(offset, byte);
-	IF SYSTEM.VAL(SET, byte) * SYSTEM.VAL(SET, mask) # {} THEN INC(col, 4) END;
+	IF BITS(ORD(byte)) * BITS(mask) # {} THEN INC(col, 4) END;
 	SYSTEM.PORTOUT(3CEH, 4X);	(* Select plane 3 *)
 	SYSTEM.PORTOUT(3CFH, 3X);
 	SYSTEM.GET(offset, byte);
-	IF SYSTEM.VAL(SET, byte) * SYSTEM.VAL(SET, mask) # {} THEN INC(col, 8) END;
+	IF BITS(ORD(byte)) * BITS(mask) # {} THEN INC(col, 8) END;
 	RETURN col
 END BankGetPixelPlane;
 
@@ -263,9 +263,9 @@ PROCEDURE BankGetPixel(x, y: LONGINT): LONGINT;	(* harry *)
 VAR offset: LONGINT;  byte: CHAR;  pg: SET;
 BEGIN
 	offset := y*Display.Width + x;
-	pg := SYSTEM.VAL(SET, offset DIV 10000H) * {0..3};
+	pg := BITS( offset DIV 10000H) * {0..3};
 	pg := pg + SYSTEM.LSH(pg, 4);
-	SYSTEM.PORTOUT(3CDH, CHR(SYSTEM.VAL(LONGINT, pg)));
+	SYSTEM.PORTOUT(3CDH, CHR(ORD( pg)));
 	SYSTEM.GET(base + offset MOD 010000H, byte);
 	RETURN ORD(byte)
 END BankGetPixel;

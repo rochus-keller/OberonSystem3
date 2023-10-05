@@ -286,7 +286,7 @@ BEGIN
 	GetBlocks(ddrive, partitionoffset, 1, b, 0);
 	x := 0;  SYSTEM.GET(SYSTEM.ADR(b[0BH]), SYSTEM.VAL(INTEGER, x));
 	IF x # BS THEN error := "Bad block size"; RETURN FALSE END;
-	x := 0;  SYSTEM.GET(SYSTEM.ADR(b[0DH]), SYSTEM.VAL(CHAR, x));
+	x := 0;  SYSTEM.GET(SYSTEM.ADR(b[0DH]), ( x));
 	csize := x*BS;	(* bytes per cluster *)
 	numfat := ORD(b[10H]);	(* FAT copies *)
 	x := 0;  SYSTEM.GET(SYSTEM.ADR(b[16H]), SYSTEM.VAL(INTEGER, x));
@@ -368,7 +368,7 @@ BEGIN
 	WHILE j # 16 DO
 		IF Equal(b, name, j*32, 0, 11) THEN
 			start := 0;  attr := {};
-			SYSTEM.GET(SYSTEM.ADR(b[j*32+0BH]), SYSTEM.VAL(CHAR, attr));
+			SYSTEM.GET(SYSTEM.ADR(b[j*32+0BH]), ( attr));
 			SYSTEM.GET(SYSTEM.ADR(b[j*32+1AH]), SYSTEM.VAL(INTEGER, start));
 			SYSTEM.GET(SYSTEM.ADR(b[j*32+1CH]), size);
 			RETURN TRUE
@@ -506,7 +506,7 @@ BEGIN
 	s := (nummax+1+31) DIV 32;
 	NEW(map, s);
 	WHILE s # 0 DO DEC(s); map[s] := 0 END;
-	INCL(SYSTEM.VAL(SET, map[0]), 0)	(* reserve sector 0 (illegal to use) *)
+	INCL(BITS( map[0]), 0)	(* reserve sector 0 (illegal to use) *)
 END InitTable;
 
 (* ---- Ceres-like interface ---- *)
@@ -527,9 +527,9 @@ BEGIN
 	LOOP
 		IF i > nummax THEN i := 0 END;
 		IF native THEN
-			IF (i MOD 32) IN SYSTEM.VAL(SET, map[i DIV 32]) THEN INC(i)	(* in use *)
+			IF (i MOD 32) IN BITS( map[i DIV 32]) THEN INC(i)	(* in use *)
 			ELSE
-				sec := i;  INCL(SYSTEM.VAL(SET, map[i DIV 32]), i MOD 32);  INC(numused);
+				sec := i;  INCL(BITS( map[i DIV 32]), i MOD 32);  INC(numused);
 				sec := sec*29;	(* "Encode" sector number. *)
 				EXIT
 			END
@@ -552,7 +552,7 @@ BEGIN
 	IF ~init OR (sec MOD 29 # 0) THEN Halt(15) END;
 	sec := sec DIV 29;
 	IF (sec < 1) OR (sec > nummax) THEN Halt(15) END;
-	IF native THEN INCL(SYSTEM.VAL(SET, map[sec DIV 32]), sec MOD 32)
+	IF native THEN INCL(BITS( map[sec DIV 32]), sec MOD 32)
 	ELSE map[sec] := -ABS(map[sec])
 	END;
 	INC(numused)
@@ -565,7 +565,7 @@ BEGIN
 	IF ~init OR (sec MOD 29 # 0) THEN Halt(15) END;
 	sec := sec DIV 29;
 	IF (sec < 1) OR (sec > nummax) THEN Halt(15) END;
-	IF native THEN EXCL(SYSTEM.VAL(SET, map[sec DIV 32]), sec MOD 32)
+	IF native THEN EXCL(BITS( map[sec DIV 32]), sec MOD 32)
 	ELSE map[sec] := ABS(map[sec])
 	END;
 	DEC(numused)
@@ -578,7 +578,7 @@ BEGIN
 	IF ~init OR (sec MOD 29 # 0) THEN Halt(15) END;
 	sec := sec DIV 29;
 	IF (sec < 1) OR (sec > nummax) THEN Halt(15) END;
-	IF native THEN RETURN (sec MOD 32) IN SYSTEM.VAL(SET, map[sec DIV 32])
+	IF native THEN RETURN (sec MOD 32) IN BITS( map[sec DIV 32])
 	ELSE RETURN map[sec] < 0
 	END
 END Marked;

@@ -81,31 +81,31 @@ VAR
 (** Masterclear : reset the controller of the chosen channel *)
 PROCEDURE MasterClear*(Chan : INTEGER);
 BEGIN
-	SYSTEM.PORTOUT(dmclr[Chan DIV 4], SYSTEM.VAL(CHAR,0));
+	SYSTEM.PORTOUT(dmclr[Chan DIV 4], (0));
 END MasterClear;
 
 (** SetRequest : release transfer on the chosen channel *)
 PROCEDURE SetRequest*(Chan : INTEGER);
 BEGIN
-	SYSTEM.PORTOUT(dreq[Chan DIV 4], SYSTEM.VAL(CHAR, REQSET+(SYSTEM.VAL(SET, Chan)*CHMSK)));
+	SYSTEM.PORTOUT(dreq[Chan DIV 4], ( REQSET+(BITS( Chan)*CHMSK)));
 END SetRequest;
 
 (** ClrRequest : stop transfer on the chosen channel *)
 PROCEDURE ClrRequest*(Chan : INTEGER);
 BEGIN
-	SYSTEM.PORTOUT(dreq[Chan DIV 4], SYSTEM.VAL(CHAR, REQCLR+(SYSTEM.VAL(SET, Chan)*CHMSK)));
+	SYSTEM.PORTOUT(dreq[Chan DIV 4], ( REQCLR+(BITS( Chan)*CHMSK)));
 END ClrRequest;
 
 (** SetMask : mask/block chosen channel *)
 PROCEDURE SetMask*(Chan : INTEGER);
 BEGIN
-	SYSTEM.PORTOUT(dchmask[Chan DIV 4], SYSTEM.VAL(CHAR, CHSET+(SYSTEM.VAL(SET, Chan)*CHMSK)));
+	SYSTEM.PORTOUT(dchmask[Chan DIV 4], ( CHSET+(BITS( Chan)*CHMSK)));
 END SetMask;
 
 (** ClrMask : free chosen channel *)
 PROCEDURE ClrMask*(Chan : INTEGER);
 BEGIN
-	SYSTEM.PORTOUT(dchmask[Chan DIV 4],SYSTEM.VAL(CHAR, CHCLR+(SYSTEM.VAL(SET, Chan)*CHMSK)));
+	SYSTEM.PORTOUT(dchmask[Chan DIV 4],( CHCLR+(BITS( Chan)*CHMSK)));
 END ClrMask;
 
 (** ReadStatus : read statusregister of the controller of the chosen channel *)
@@ -120,7 +120,7 @@ END ReadStatus;
 to differ between the Lo- and the Hi-byte transferaddress or the transfercounter *)
 PROCEDURE ClrFlipFlop*(Chan : INTEGER);
 BEGIN
-	SYSTEM.PORTOUT(dff[Chan DIV 4], SYSTEM.VAL(CHAR, 0));
+	SYSTEM.PORTOUT(dff[Chan DIV 4], ( 0));
 END ClrFlipFlop;
 
 (** ReadCount : read transfercounter of the chosen channel; value is between 0 and 65535 *)
@@ -129,8 +129,8 @@ PROCEDURE ReadCount*(Chan : INTEGER) : LONGINT;
 BEGIN
 	l:= 0; h:= 0;
 	ClrFlipFlop(Chan);
-	SYSTEM.PORTIN(dcnt[Chan], SYSTEM.VAL(CHAR, l));
-	SYSTEM.PORTIN(dcnt[Chan], SYSTEM.VAL(CHAR, h));
+	SYSTEM.PORTIN(dcnt[Chan], ( l));
+	SYSTEM.PORTIN(dcnt[Chan], ( h));
 	RETURN h * 256 + l;
 END ReadCount;
 
@@ -138,7 +138,7 @@ END ReadCount;
 the register, so the standard values for the bits have to be assumed *)
 PROCEDURE SetCommand*(controller: INTEGER; cmd: SET);
 BEGIN
-	SYSTEM.PORTOUT(dcmd[controller], SYSTEM.VAL(CHAR, cmd))
+	SYSTEM.PORTOUT(dcmd[controller], ( cmd))
 END SetCommand;
 
 (** SetChannel : Prepare DMA-channel for transfer *)
@@ -159,17 +159,17 @@ BEGIN
 		Size:= Size DIV 2	(* 2 bytes by sample will be counted ! *)
 	END;
 
-	SYSTEM.PORTOUT(dmode[Chan DIV 4], SYSTEM.VAL(CHAR, Mode + (SYSTEM.VAL(SET,Chan)*MCHMSK)));
+	SYSTEM.PORTOUT(dmode[Chan DIV 4], ( Mode + (BITS(Chan)*MCHMSK)));
 
 	ClrFlipFlop(Chan);	(* clear address-/counterflipflop and... *)
 									(* transfer address to DMA-controller (Lo/Hi-byte) *)
-	SYSTEM.PORTOUT(dadr[Chan], SYSTEM.VAL(CHAR, Adress MOD 100H));	(* Lo-byte *)
-	SYSTEM.PORTOUT(dadr[Chan], SYSTEM.VAL(CHAR, Adress DIV 100H));	(* Hi-byte *)
-	SYSTEM.PORTOUT(dpge[Chan], SYSTEM.VAL(CHAR, Page));	(* set mem-page *)
+	SYSTEM.PORTOUT(dadr[Chan], ( Adress MOD 100H));	(* Lo-byte *)
+	SYSTEM.PORTOUT(dadr[Chan], ( Adress DIV 100H));	(* Hi-byte *)
+	SYSTEM.PORTOUT(dpge[Chan], ( Page));	(* set mem-page *)
 	ClrFlipFlop(Chan);	(* clear address-/counterflipflop and ... *)
 									(* transfer counter to DMA-controller (Lo/Hi-byte) *)
-	SYSTEM.PORTOUT(dcnt[Chan], SYSTEM.VAL(CHAR, Size MOD 100H));	(* Lo-byte *)
-	SYSTEM.PORTOUT(dcnt[Chan], SYSTEM.VAL(CHAR, Size DIV 100H));	(* Hi-byte *)
+	SYSTEM.PORTOUT(dcnt[Chan], ( Size MOD 100H));	(* Lo-byte *)
+	SYSTEM.PORTOUT(dcnt[Chan], ( Size DIV 100H));	(* Hi-byte *)
 	ClrMask(Chan);	(* free DMA-channel *)
 END SetChannel;
 

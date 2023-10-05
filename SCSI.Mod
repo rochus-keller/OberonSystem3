@@ -344,15 +344,15 @@ BEGIN
 	res := Cmd.status;
 	IF res = Good THEN
 		inq.deviceClass := SHORT(ORD(data[0]) MOD 32);
-		inq.rmb := 7 IN SYSTEM.VAL(SET, data[1]);
+		inq.rmb := 7 IN BITS( data[1]);
 		inq.ANSI := SHORT(ORD(data[2]) MOD 8);
 		inq.ECMA := SHORT(SYSTEM.LSH(ORD(data[2]), -3) MOD 8);
 		inq.ISO  := SHORT(SYSTEM.LSH(ORD(data[2]), -6) MOD 4);
-		inq.w32 := 6 IN SYSTEM.VAL(SET, data[7]);
-		inq.w16 := 5 IN SYSTEM.VAL(SET, data[7]);
-		inq.sync := 4 IN SYSTEM.VAL(SET, data[7]);
-		inq.link := 3 IN SYSTEM.VAL(SET, data[7]);
-		inq.que := 1 IN SYSTEM.VAL(SET, data[7]);
+		inq.w32 := 6 IN BITS( data[7]);
+		inq.w16 := 5 IN BITS( data[7]);
+		inq.sync := 4 IN BITS( data[7]);
+		inq.link := 3 IN BITS( data[7]);
+		inq.que := 1 IN BITS( data[7]);
 		SYSTEM.MOVE(SYSTEM.ADR(data[8]), SYSTEM.ADR(inq.manufacturer), 8); 
 		i := 7;  WHILE (i >= 0) & (inq.manufacturer[i] = 20X) DO  DEC(i)  END; inq.manufacturer[i+1]:= 0X;
 		SYSTEM.MOVE(SYSTEM.ADR(data[16]), SYSTEM.ADR(inq.product), 16);

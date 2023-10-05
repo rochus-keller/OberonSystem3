@@ -318,7 +318,7 @@ VAR
 BEGIN
 	NetBase.Copy(adr, netadr, NetIP.AdrLen);
 	i := 0; hostname[0] := 0X; NetBase.NetLToHost(adr); j := 0;
-	LOOP n := ORD(SYSTEM.VAL(CHAR, adr[i])); k := 0;
+	LOOP n := ORD(( adr[i])); k := 0;
 		REPEAT num[k] := CHR(n MOD 10 + 30H);
 			n := n DIV 10; INC(k)
 		UNTIL n = 0; num[k] := 0X;

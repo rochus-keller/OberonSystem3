@@ -431,7 +431,7 @@ MODULE TextStreams;	(** portable *)
 	BEGIN
 		WITH S: WriterStream DO
 			FOR i := 0 TO n-1 DO
-				Texts.Write(S.W, SYSTEM.VAL(CHAR, x[i]))
+				Texts.Write(S.W, ( x[i]))
 			END;
 			S.res := 0
 		END

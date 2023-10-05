@@ -196,6 +196,11 @@ Portable routines to write the standard Oberon types.
 		IF x THEN Write(R, 1) ELSE Write(R, 0) END
 	END WriteBool;
 
+	PROCEDURE WriteChar*(VAR R: Rider; x: CHAR);
+	BEGIN
+  	Write(R, ORD(x))
+	END WriteChar;
+
 	PROCEDURE WriteReal*(VAR R: Rider; x: REAL);
 	BEGIN WriteBytes(R, SYSTEM.VAL(Bytes4, x), 4)
 	END WriteReal;

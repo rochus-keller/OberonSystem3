@@ -37,7 +37,7 @@ BEGIN
 	T := TextFrames.Text("");
 	M := Kernel.modules;
 	WHILE M # NIL DO
-		SYSTEM.GET(SYSTEM.VAL(LONGINT, M.entries)-24, size);
+		SYSTEM.GET(ORD( M.entries)-24, size);
 		Texts.WriteString(W, M.name);  Texts.Write(W, 9X);
 		Texts.WriteInt(W, size, 1);  Texts.Write(W, 9X);
 		Texts.WriteInt(W, M.refcnt, 1);  Texts.Write(W, 9X);
@@ -74,7 +74,7 @@ BEGIN
 		size := SIZE(LONGINT) * (LEN(m.varEntries)+LEN(m.entries)+LEN(m.ptrTab)+
 			LEN(m.tdescs)+LEN(m.imports)) + SIZE(Kernel.Cmd)*LEN(m.cmds) + 
 			LEN(m.data)+LEN(m.code);
-		IF (SYSTEM.VAL(LONGINT, m.refs) # 0) & (LEN(m.refs) # 0) THEN INC(size, LEN(m.refs)) END;
+		IF (ORD( m.refs) # 0) & (LEN(m.refs) # 0) THEN INC(size, LEN(m.refs)) END;
 		a[i].start := SYSTEM.ADR(m.varEntries[0]);  a[i].end := SYSTEM.ADR(m.varEntries[0]) + size - 1;  INC(n);
 		m := m.next
 	END;
@@ -515,7 +515,7 @@ BEGIN
 	mod := Kernel.GetMod(adr);
 	IF mod = NIL THEN Texts.WriteString(W, "<not found>")
 	ELSE
-		IF (SYSTEM.VAL(LONGINT, mod.refs) # 0) & (LEN(mod.refs) # 0) THEN
+		IF (ORD( mod.refs) # 0) & (LEN(mod.refs) # 0) THEN
 			refstart := 0;  refpos := SYSTEM.ADR(mod.refs[0]);
 			limit := refpos + LEN(mod.refs);
 			LOOP
