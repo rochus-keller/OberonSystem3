@@ -310,7 +310,7 @@ BEGIN
 	//CheckMemory;	(* adjust memTop *)
 	pageheap0 := pageheap;  pageheap1 := 0;  heapTop := memTop;
 	//InitTracing(heapTop);
-	version := "OBX PAL / based on PC Native 05.01.2003";
+	version := "OBX PAL / based on PC Native 2.3.6";
 	WriteString("ETH Oberon / ");  WriteString(version);  WriteLn;
 	//InitProcessor;  InitInterrupts;  InitTrapHandling;
 	//InitMemory;  InitHeap;

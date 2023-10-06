@@ -20,7 +20,7 @@ It provides the system with the type Object and defines what messages objects un
 Most entities in Oberon are derived from this base type.
 *)
 
-  IMPORT SYSTEM, Kernel, Files, Modules;
+  IMPORT Kernel, Files, Modules;
 
   CONST
     enum* = 0; get* = 1; set* = 2; (** AttrMsg and LinkMsg id *)
@@ -58,7 +58,7 @@ Most entities in Oberon are derived from this base type.
     (** Set, get and enumerate the attributes of an object. *)
 	AttrMsg* = RECORD (ObjMsg)
 		id*: INTEGER;	(** get, set or enum. *)
-		Enum*: PROCEDURE (name: ARRAY OF CHAR);	(** Called by object to enumerate attribute names. *)
+		Enum*: PROCEDURE (IN name: ARRAY OF CHAR);	(** Called by object to enumerate attribute names. *)
 		name*: Name;	(** Name of the attribute to be set or retrieved. *)
 		res*: INTEGER;	(** Return result: < 0 = no response, >= 0 action completed. *)
 		class*: INTEGER;	(** Attribute class (Inval, String, Int, Real, LongReal, Char or Bool). *)
@@ -73,7 +73,7 @@ Most entities in Oberon are derived from this base type.
 	(** Link objects with each other or retrieve the link structure between objects *)
 	LinkMsg* = RECORD (ObjMsg)
 		id*: INTEGER;	(** get, set or enum. *)
-		Enum*: PROCEDURE (name: ARRAY OF CHAR);	(** Called by object to enumerate link names. *)
+		Enum*: PROCEDURE (IN name: ARRAY OF CHAR);	(** Called by object to enumerate link names. *)
 		name*: Name;	(** Link name. *)
 		res*: INTEGER;	(** Return result: < 0 = no response, >= 0 action completed. *)
         obj*: Object	(** Value of the link to be set, or link result. *)
@@ -107,7 +107,7 @@ Most entities in Oberon are derived from this base type.
 	DummyDesc* = RECORD (ObjDesc)
 		GName*: Name;	(** Generator procedure of failed object. *)
 		len: LONGINT;	(* length of data block *)
-		blk: POINTER TO ARRAY OF CHAR	(* stores the data on file *)
+		blk: POINTER TO ARRAY OF BYTE	(* stores the data on file *)
     END;
 
 	(** (Hidden) Data structure containing the objects of a library. *)
@@ -271,7 +271,7 @@ Most entities in Oberon are derived from this base type.
   END ThisLibrary;
 
 (** Free library from public library cache *)
-  PROCEDURE FreeLibrary* (name: ARRAY OF CHAR);
+  PROCEDURE FreeLibrary* (IN name: ARRAY OF CHAR);
     VAR L: Library;
   BEGIN
     L := FirstLib.next;
@@ -309,10 +309,10 @@ Most entities in Oberon are derived from this base type.
 
   PROCEDURE ReadName (VAR R: Files.Rider; VAR name: ARRAY OF CHAR);
     VAR i: INTEGER; ch: CHAR;
-  BEGIN i := 0; Files.Read(R, ch);
-    WHILE (ch # ".") & (ch # 0X) DO name[i] := ch; INC(i); Files.Read(R, ch) END;
-    name[i] := "."; INC(i); Files.Read(R, ch);
-    WHILE ch # 0X DO name[i] := ch; INC(i); Files.Read(R, ch) END;
+  BEGIN i := 0; Files.ReadChar(R, ch);
+    WHILE (ch # ".") & (ch # 0X) DO name[i] := ch; INC(i); Files.ReadChar(R, ch) END;
+    name[i] := "."; INC(i); Files.ReadChar(R, ch);
+    WHILE ch # 0X DO name[i] := ch; INC(i); Files.ReadChar(R, ch) END;
     name[i] := 0X
   END ReadName;
 
@@ -415,7 +415,7 @@ Most entities in Oberon are derived from this base type.
 		IF ref >= ind.size THEN
 			size := (ref DIV StepSize + 1) * StepSize;
 			NEW(index, size);
-			IF ind.index # NIL THEN SYSTEM.MOVE(SYSTEM.ADR(ind.index^), SYSTEM.ADR(index^), ind.size*4) END;
+			IF ind.index # NIL THEN FOR i := 0 TO ind.size DO index[i] := ind.index[i] END END;
 			FOR i := ind.size TO size-1 DO index[i] := NoObj END;
 			ind.size := size; ind.index := index
 		END;
@@ -440,7 +440,7 @@ Most entities in Oberon are derived from this base type.
 				run: ARRAY MaxRuns OF RunRec; ind: ArrayIndex; dict: ListDict;
 	BEGIN
 		ind := L.ind(ArrayIndex); dict:= L.dict(ListDict);
-		Files.Set(R, f, pos); Files.Read(R, type);
+		Files.Set(R, f, pos); Files.ReadSInt(R, type);
 		Files.ReadLInt(R, clen);
 		Files.Set(S, f, pos + 1 + clen);
 		Files.ReadLInt(S, dlen);
@@ -453,7 +453,7 @@ Most entities in Oberon are derived from this base type.
 			Files.ReadInt(S, key)
 		END;
 		IF type >= 0 THEN (*old format*)
-			Files.Read(R, ch); Files.Read(R, ch);
+			Files.ReadChar(R, ch); Files.ReadChar(R, ch);
 			Files.ReadInt(R, i); Files.ReadInt(R, i); Files.ReadInt(R, i);
 			Files.ReadInt(R, i); Files.ReadInt(R, i)
 		END;
@@ -465,7 +465,7 @@ Most entities in Oberon are derived from this base type.
 		END;
 		N := 0; k := 0; m := 0;
 		WHILE k < NofRuns DO m := run[k].beg;
-			WHILE m < run[k].end DO Files.Read(R, n);
+			WHILE m < run[k].end DO Files.ReadSInt(R, n);
 				IF n = N THEN ReadName(R, GName[N]); INC(N) END;
 				SplitName(GName[n], MName, PName);
 				Mod := Modules.ThisMod(MName);
@@ -557,13 +557,16 @@ Most entities in Oberon are derived from this base type.
 	BEGIN
 		ind := L.ind(ArrayIndex);
 		Files.Set(R, f, pos);
-		Files.Write(R, LibBlockId);
+		Files.WriteChar(R, LibBlockId);
 		Files.WriteLInt(R, Version);
 		Files.WriteLInt(R, -1);	(* place holder genTable pos *)
 		Files.WriteLInt(R, -1);	(* place holder dict pos *)
 		Files.WriteInt(R, L.maxref);
 		indorg := Files.Pos(R); Files.Set(indR, f, indorg);
-		IF L.maxref > 0 THEN Files.WriteBytes(R, ind.index^, L.maxref*4) END;
+		IF L.maxref > 0 THEN 
+  		// NOTE: original was Files.WriteBytes(R, ind.index^, L.maxref*4) but value unused
+  		FOR i := 0 TO L.maxref - 1 DO Files.WriteLInt(R,0) END
+  	END;
 
 		(* store obj data *)
 		A.id := get; A.name := "Gen";
@@ -585,7 +588,7 @@ Most entities in Oberon are derived from this base type.
 					Files.WriteLInt(indR, Files.Pos(R));	(* write index *)
 					Files.WriteInt(R, n);
 					Files.WriteLInt(R, olen);
-					WHILE olen > 0 DO Files.Read(L.R, ch); Files.Write(R, ch); DEC(olen) END
+					WHILE olen > 0 DO Files.ReadChar(L.R, ch); Files.WriteChar(R, ch); DEC(olen) END
 				ELSE	(* there was never an object with this ref *)
 					Files.WriteLInt(indR, -1)
 				END
@@ -639,7 +642,7 @@ Most entities in Oberon are derived from this base type.
 	BEGIN
 		f := Files.Old(L.name);
 		IF f # NIL THEN
-			Files.Set(R, f, 0); Files.Read(R, id);
+			Files.Set(R, f, 0); Files.ReadChar(R, id);
 			IF id = LibBlockId THEN LoadLibrary(L, f, 1, len)
 			ELSE L.f := NIL; L.ind(ArrayIndex).size := 0; L.ind(ArrayIndex).index := NIL
 			END
@@ -671,7 +674,7 @@ Most entities in Oberon are derived from this base type.
   END NewLibrary;
 
 (** Given an object name, return the object reference number from the dictionary. *)
-	PROCEDURE GetRef* (VAR D: Dictionary; name: ARRAY OF CHAR; VAR ref: INTEGER);
+	PROCEDURE GetRef* (VAR D: Dictionary; IN name: ARRAY OF CHAR; VAR ref: INTEGER);
 		VAR cur: Entry;
 	BEGIN
 		IF D IS ListDict THEN
@@ -683,7 +686,7 @@ Most entities in Oberon are derived from this base type.
 	END GetRef;
 
 (** Allocate a key (any integer < 0) to a name. *)
-  PROCEDURE GetKey* (VAR D: Dictionary; name: ARRAY OF CHAR; VAR key: INTEGER);
+  PROCEDURE GetKey* (VAR D: Dictionary; IN name: ARRAY OF CHAR; VAR key: INTEGER);
 		VAR cur: Entry;
 	BEGIN
 		IF D IS ListDict THEN
@@ -712,7 +715,7 @@ Most entities in Oberon are derived from this base type.
 	END GetName;
 
 (** Associate a name with a reference number. *)
-  PROCEDURE PutName* (VAR D: Dictionary; key: INTEGER; name: ARRAY OF CHAR);
+  PROCEDURE PutName* (VAR D: Dictionary; key: INTEGER; IN name: ARRAY OF CHAR);
 (* Note: D could be value parameter *)
 		VAR cur: Entry;
 	BEGIN

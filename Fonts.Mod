@@ -20,7 +20,7 @@ The Module Fonts implement the Oberon font manager. Fonts are collections
 of characters, each character being a pattern and and metric data.
 *)
 
-	IMPORT SYSTEM, Kernel, Files, Objects, Display;
+	IMPORT Kernel, Files, Objects, Display;
 
 	CONST MaxRuns = 32; IndexSize = 256*4;
 		substitute* = -1; font* = 0; metric* = 1; (** Font types. *)
@@ -46,69 +46,35 @@ of characters, each character being a pattern and and metric data.
 			dx, x, y, w, h: INTEGER
 		END;
 
+    Box = RECORD dx, x, y: INTEGER; pat: Display.Pattern END;
+    FontIndexDesc = POINTER TO RECORD (Objects.IndexDesc)
+      index: ARRAY 256 OF Box;
+    END;
+
 	VAR FontId*: CHAR;	(** Initial character of font files (.Fnt). *)
 			Default*: Font;	(** Default system screen font (typically Oberon10.Scn.Fnt). *)
 			theChar: Char;
 			default: Objects.Name;
 			conv: BOOLEAN;
 	 
-	PROCEDURE Put1 (VAR a: LONGINT; x: INTEGER);
-	VAR y: SHORTINT;
-	BEGIN y := SHORT(x); SYSTEM.PUT(a, y); INC(a)
-	END Put1;
-	 
-	PROCEDURE Put2 (VAR a: LONGINT; x: LONGINT);
-	VAR y: INTEGER;
-	BEGIN y := SHORT(x); SYSTEM.PUT(a, y); a := a + 2
-	END Put2;
-	 
-	PROCEDURE Put4 (VAR a: LONGINT; x: LONGINT);
-	BEGIN SYSTEM.PUT(a, x); a := a + 4
-	END Put4;
-
 	PROCEDURE ReadInt (VAR R: Files.Rider; VAR x: INTEGER);
 	VAR c0: CHAR; s1: SHORTINT;
-	BEGIN Files.ReadChar(R, c0); Files.Read(R, s1); x := s1; x := x * 100H + ORD(c0)
+	BEGIN Files.ReadChar(R, c0); Files.ReadSInt(R, s1); x := s1; x := x * 100H + ORD(c0)
 	END ReadInt;
 
-	PROCEDURE *GetCharObj (L: Objects.Library; ref: INTEGER; VAR obj: Objects.Object);
-	(*CODE {SYSTEM.i386}
-		MOV EAX, L[EBP]
-		MOV EAX, 4[EAX]	; Objects.LibDesc ind
-		MOVSX EBX, ref[EBP]
-		MOV EAX, [EAX][EBX*4]
-		MOV ECX, theChar
-		MOVZX DX, BYTE -3[EAX] ;dx
-		MOV 24[ECX], DX
-		MOVSX DX, BYTE -2[EAX] ;x
-		MOV 26[ECX], DX
-		MOVSX DX, BYTE -1[EAX] ;y
-		MOV 28[ECX], DX
-		MOVZX DX, BYTE [EAX] ;w
-		MOV 30[ECX], DX
-		MOVZX DX, BYTE 1[EAX] ;h
-		MOV 32[ECX], DX
-		MOV 36[ECX], EAX
-		MOV EAX, obj[EBP]
-		MOV [EAX], ECX*)
-	END GetCharObj;
-
-(*
-	(* portable version *)
 	PROCEDURE GetCharObj (L: Objects.Library; ref: INTEGER; VAR obj: Objects.Object);	
-	VAR m: LONGINT; h1: SHORTINT; h2: LONGINT; ch: CHAR;
+	VAR m: LONGINT; h1: SHORTINT; h2: LONGINT; ch: CHAR; ind: FontIndexDesc;
 	BEGIN
-		SYSTEM.GET(ORD( L) + 4, m); (* L.ind *)
-		SYSTEM.GET(m + ref * SIZE(LONGINT), h2); (* pat adr*)
-		theChar.pat := h2; 
-		SYSTEM.GET(h2-3, h1); theChar.dx := h1; 
-		SYSTEM.GET(h2-2, h1); theChar.x := h1;
-		SYSTEM.GET(h2-1, h1); theChar.y := h1;
-		SYSTEM.GET(h2, ch); theChar.w := ORD(ch);	(*width & height always positive*)
-		SYSTEM.GET(h2+1,ch); theChar.h := ORD(ch);
+	  ind := L.ind(FontIndexDesc);
+		theChar.pat := ind.index[ref].pat; 
+		theChar.dx := ind.index[ref].dx; 
+		theChar.x := ind.index[ref].x;
+		theChar.y := ind.index[ref].y;
+		theChar.w := ORD(ind.index[ref].pat[0]);	(*width & height always positive*)
+		theChar.h := ORD(ind.index[ref].pat[1]);
 		obj := theChar
 	END GetCharObj;
-*)
+
 
 (** Return the character and data of ch in a font. *)
 	PROCEDURE GetChar* (F: Font; ch: CHAR; VAR dx, x, y, w, h: INTEGER; VAR pat: Display.Pattern);
@@ -122,12 +88,21 @@ of characters, each character being a pattern and and metric data.
 	PROCEDURE Internalize (F: Font; VAR R: Files.Rider; type: SHORTINT);
 	VAR n: SHORTINT; ch: CHAR;
 			NofRuns, NofBoxes, N, i, k, l, m: INTEGER;
-			NofBytes, RasterBase, A, a: LONGINT;
 			run: ARRAY MaxRuns OF RunRec;
-			box: ARRAY 256 OF BoxRec;
+			box: ARRAY 256 OF BoxRec; 
+			ind: FontIndexDesc; pat: Display.Pattern;
+			
+    PROCEDURE Put2( pat: Display.Pattern; off, val: LONGINT );
+    VAR tmp: ARRAY 2 OF CHAR;
+    BEGIN
+      BYTES(tmp, SHORT(val));
+      pat[off] := tmp[0];
+      pat[off+1] := tmp[1];
+    END Put2;
+
 	BEGIN F.type := type;
-		Files.Read(R, ch); (*family*)
-		Files.Read(R, ch); (*variant*)
+		Files.ReadChar(R, ch); (*family*)
+		Files.ReadChar(R, ch); (*variant*)
 		ReadInt(R, F.height);
 		ReadInt(R, F.minX); ReadInt(R, F.maxX);
 		ReadInt(R, F.minY); ReadInt(R, F.maxY);
@@ -146,49 +121,70 @@ of characters, each character being a pattern and and metric data.
 			INC(l)
 		END;
 		IF type = font THEN
-			NofBytes := IndexSize + 29; l := 0;
-			WHILE l # NofBoxes DO
-				NofBytes := NofBytes + 5 + (box[l].w + 7) DIV 8 * box[l].h; INC(l)
-			END;
-			SYSTEM.NEW(F.ind, NofBytes);
-			RasterBase := ORD( F.ind);
-			A := RasterBase; a := A + IndexSize;
-			Put1(a, 12); Put1(a, 0); Put1(a, -3); Put1(a, 12); Put1(a, 12); (*null char*)
-			Put2(a, 0FFFH);
-			Put2(a, 0801H); Put2(a, 0801H); Put2(a, 0801H); Put2(a, 0801H); Put2(a, 0801H);
-			Put2(a, 0801H); Put2(a, 0801H); Put2(a, 0801H); Put2(a, 0801H); Put2(a, 0801H);
-			Put2(a, 0FFFH);
+			NEW(ind); 
+			F.ind := ind;
+			
+			(*null char*)
+			ind.index[0].dx := 12;
+			ind.index[0].x := 0;
+			ind.index[0].y := -3;
+			NEW(pat, 26);
+			ind.index[0].pat := pat;
+			pat[0] := CHR(12); pat[1] := CHR(12);
+			
+			Put2(pat, 2, 0FFFH);
+			Put2(pat, 4, 0801H); Put2(pat, 6, 0801H); Put2(pat, 8, 0801H); 
+			Put2(pat, 10, 0801H); Put2(pat, 12, 0801H);
+			Put2(pat, 14, 0801H); Put2(pat, 16, 0801H); Put2(pat, 18, 0801H); 
+			Put2(pat, 20, 0801H); Put2(pat, 22, 0801H);
+			Put2(pat, 24, 0FFFH);
+			
 			k := 0; l := 0; m := 0;
 			WHILE k < NofRuns DO
-				WHILE m < run[k].beg DO Put4(A, RasterBase + IndexSize + 3); INC(m) END;
-				WHILE m < run[k].end DO Put4(A, a + 3);
-					Put1(a, box[l].dx);
-					Put1(a, box[l].x); Put1(a, box[l].y);
-					Put1(a, box[l].w); Put1(a, box[l].h);
-					i := (box[l].w + 7) DIV 8 * box[l].h;
-					WHILE i # 0 DO Files.Read(R, ch); Put1(a, ORD(ch)); DEC(i) END;
+				WHILE m < run[k].beg DO ind.index[m] := ind.index[0]; INC(m) END;
+				WHILE m < run[k].end DO 
+				  ind.index[m].dx := box[l].dx;
+				  ind.index[m].x := box[l].x;
+				  ind.index[m].y := box[l].y;
+					
+					n := (box[l].w + 7) DIV 8 * box[l].h + 2;
+					NEW(pat, n);
+					ind.index[m].pat := pat;
+					pat[0] := CHR(box[l].w); pat[1] := CHR(box[l].h);
+					i := 2;
+					WHILE i < n DO Files.ReadChar(R, ch); pat[i] := ch; INC(i) END;
 					INC(l); INC(m)
 				END;
 				INC(k)
 			END;
-			WHILE m < 256 DO Put4(A, RasterBase + IndexSize + 3); INC(m) END
+			WHILE m < 256 DO ind.index[m] := ind.index[0]; INC(m) END
 		ELSE (*type := metric*)
-			SYSTEM.NEW(F.ind, IndexSize + 5 + NofBoxes*5);
-			RasterBase := ORD( F.ind);
-			A := RasterBase; a := A + IndexSize;
-			Put1(a, 12); Put1(a, 0); Put1(a, -3); Put1(a, 12); Put1(a, 12); (*null char*)
+  		NEW(ind); 
+			F.ind := ind;
+
+			(*null char*)
+			ind.index[0].dx := 12;
+			ind.index[0].x := 0;
+			ind.index[0].y := -3;
+			NEW(pat, 2);
+			ind.index[0].pat := pat;
+			pat[0] := CHR(12); pat[1] := CHR(12);
+
 			k := 0; l := 0; m := 0;
 			WHILE k < NofRuns DO
-				WHILE m < run[k].beg DO Put4(A, RasterBase + IndexSize + 3); INC(m) END;
-				WHILE m < run[k].end DO Put4(A, a + 3);
-					Put1(a, box[l].dx);
-					Put1(a, box[l].x); Put1(a, box[l].y);
-					Put1(a, box[l].w); Put1(a, box[l].h);
+				WHILE m < run[k].beg DO ind.index[m] := ind.index[0]; INC(m) END;
+				WHILE m < run[k].end DO 
+				  ind.index[m].dx := box[l].dx;
+				  ind.index[m].x := box[l].x;
+				  ind.index[m].y := box[l].y;
+					NEW(pat, 2);
+					ind.index[m].pat := pat;
+					pat[0] := CHR(box[l].w); pat[1] := CHR(box[l].h);
 					INC(l); INC(m)
 				END;
 				INC(k)
 			END;
-			WHILE m < 256 DO Put4(A, RasterBase + IndexSize + 3); INC(m) END
+			WHILE m < 256 DO ind.index[m] := ind.index[0]; INC(m) END
 		END
 	END Internalize;
 
@@ -238,8 +234,8 @@ of characters, each character being a pattern and and metric data.
 				END
 			END;
 			IF f # NIL THEN
-				Files.Set(R, f, 0); Files.Read(R, id);
-				IF id = FontId THEN Files.Read(R, L.type);
+				Files.Set(R, f, 0); Files.ReadChar(R, id);
+				IF id = FontId THEN Files.ReadSInt(R, L.type);
 					IF (L.type = metric) OR (L.type = font) THEN Internalize(L, R, L.type) ELSE Substitute(L) END
 				ELSE Substitute(L) END
 			ELSE  name := L.name; i := 0;
@@ -247,8 +243,8 @@ of characters, each character being a pattern and and metric data.
 				IF (i >= 8) & (name[i-8] = ".") & (name[i-7] = "M") & (name[i-6] = "d") THEN
 					name[i-7] := "P"; name[i-6] := "r"; f := Files.Old(name);
 					IF f # NIL THEN
-						Files.Set(R, f, 0); Files.Read(R, id);
-						IF id = FontId THEN Files.Read(R, L.type);
+						Files.Set(R, f, 0); Files.ReadChar(R, id);
+						IF id = FontId THEN Files.ReadSInt(R, L.type);
 							IF (L.type = metric) OR (L.type = font) THEN Internalize(L, R, metric) ELSE Substitute(L) END
 						ELSE Substitute(L) END
 					ELSE Substitute(L) END
@@ -258,7 +254,7 @@ of characters, each character being a pattern and and metric data.
 	END Load;
 
 (** Load and cache a font. *)
-	PROCEDURE This* (name: ARRAY OF CHAR): Font;
+	PROCEDURE This* (IN name: ARRAY OF CHAR): Font;
 	VAR L: Objects.Library;
 	BEGIN
 		L := Objects.ThisLibrary(name);

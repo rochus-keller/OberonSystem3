@@ -42,5 +42,9 @@ Modification steps:
 - Redesigned display modules to work with ObxPal; Pattern and FrameBuffer are now regular CHAR/BYTE arrays, no longer unmanaged memory we had to
   access by SYSTEM backdoors; thus replaced all SYSTEM calls with regular language constructs; in consequence patterns are no longer LONGINT but 
   Display.Pattern all over the code.
-- Implementing File based on ObxPal, WIP
+- Reimplemented File, Input and MathL module based on ObxPal
+- Replaced all Oberon BYTE and VAR ARRAY OF BYTE tricks by properly typed constructs
+- Redesigned modules to no longer depend on SYSTEM: Objects, Fonts
+- Finished minimal system 1 which just paints the screen background and the mouse cursor; git commit
+
 

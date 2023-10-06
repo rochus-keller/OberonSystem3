@@ -1,13 +1,16 @@
 [General]
-BuildDir=
+BuildDir=/home/me/Programme/build
 BuiltInOakwood=false
 BuiltInObSysInner=false
 IntegerIsInt16=true
-MainModule=@ByteArray()
-MainProc=@ByteArray()
+MainModule=@ByteArray(Oberon)
+MainProc=@ByteArray(Loop)
 Options=@ByteArray()
 Suffixes=@Invalid()
-WorkingDir=
+WorkingDir=/home/me/Programme/build/Files
+
+[.]
+size=0
 
 [Modules]
 1\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/CLUTs.Mod
@@ -46,4 +49,5 @@ size=16
 
 [Packages]
 1\Name=@ByteArray()
-size=1
+2\Name=@ByteArray()
+size=2

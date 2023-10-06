@@ -137,7 +137,7 @@ TYPE
 
   PROCEDURE ReadDocHeader (VAR R: Files.Rider);
     VAR ch: CHAR; x, y, w, h: INTEGER; name: ARRAY 32 OF CHAR;
-  BEGIN Files.Read(R, ch);
+  BEGIN Files.ReadChar(R, ch);
     Files.ReadString(R, name);
     Files.ReadInt(R, x); Files.ReadInt(R, y);
     Files.ReadInt(R, w); Files.ReadInt(R, h)
@@ -159,13 +159,13 @@ TYPE
       Q.lib := NIL; Q.col := 127; Q.voff := 0;
       p := Q;
       Files.Set(R, f, pos);
-      Files.Read(R, type);
+      Files.ReadChar(R, type);
       Files.ReadLInt(R, hlen);
       Files.Set(S, f, pos - 1 + hlen - 4);
       Files.ReadLInt(S, tlen);
       IF (type = TextSpex) OR (type = OldTextSpex) THEN T.obs := NIL; flen := 0
       ELSE NEW(T.obs); Objects.OpenLibrary(T.obs);
-        Files.Set(S, f, pos - 1 + hlen + tlen); Files.Read(S, tag);
+        Files.Set(S, f, pos - 1 + hlen + tlen); Files.ReadChar(S, tag);
         IF tag = Objects.LibBlockId THEN
           Objects.LoadLibrary(T.obs, f, pos - 1 + hlen + tlen + 1, flen)
         END;
@@ -175,7 +175,7 @@ TYPE
       N := 1;
       off := pos - 1 + hlen;
       WHILE Files.Pos(R) < pos - 1 + hlen - 5 DO
-        Files.Read(R, lib);
+        Files.ReadSInt(R, lib);
         IF lib = N THEN
           Files.ReadString(R, LName);
           Dict[N] := Objects.ThisLibrary(LName);
@@ -183,12 +183,12 @@ TYPE
         END;
         NEW(q); q.lib := Dict[lib]; q.obj := NIL;
         IF ~(q.lib IS Fonts.Font) THEN
-          Files.Set(S, f, off); Files.Read(S, ref); (*q.lib.GetObj(q.lib, ORD(ref), q.obj)*); q.ref := ORD(ref)
+          Files.Set(S, f, off); Files.ReadChar(S, ref); (*q.lib.GetObj(q.lib, ORD(ref), q.obj)*); q.ref := ORD(ref)
         ELSE
           q.ref := MIN(INTEGER)
         END;
-        Files.Read(R, q.col);
-        Files.Read(R, q.voff);
+        Files.ReadSInt(R, q.col);
+        Files.ReadSInt(R, q.voff);
         Files.ReadLInt(R, q.len);
         IF q.len < 0 THEN
           LoadAscii (T, f); RETURN
@@ -233,7 +233,7 @@ TYPE
 	BEGIN
 		IF (p.ref >= 0) & (p.obj = NIL) & ~(p.lib IS Fonts.Font) THEN
 			T.obs.GetObj(T.obs, p.ref, p.obj);
-			Files.Set(R, p.f, p.off); Files.Read(R, ch);
+			Files.Set(R, p.f, p.off); Files.ReadChar(R, ch);
 			p.lib.PutObj(p.lib, ORD(ch), p.obj)
 		END
 	END SyncPiece;
@@ -259,8 +259,8 @@ TYPE
       allObjs, curObjs, objs: ObjsBlock;
   BEGIN
     Files.Set(W, f, pos);
-    Files.Write(W, TextBlockId);
-    Files.Write(W, 0X (*type*)); (*place holder*)
+    Files.WriteChar(W, TextBlockId);
+    Files.Write(W, 0 (*type*)); (*place holder*)
     Files.WriteLInt(W, 0 (*hlen*)); (*place holder*)
     Dict[0] := "";
     N := 1;
@@ -282,7 +282,7 @@ TYPE
       Files.WriteLInt(W, rlen);
       p := q
     END;
-    Files.Write(W, 0X); Files.WriteLInt(W, T.len);
+    Files.Write(W, 0); Files.WriteLInt(W, T.len);
     NEW(allObjs);
     allObjs.next := NIL;
     curObjs := allObjs;
@@ -290,7 +290,7 @@ TYPE
     id := 0; p := T.trailer.next;
     WHILE p # T.trailer DO
       Files.Set(R, p.f, p.off); m := p.len;
-      WHILE m # 0 DO Files.Read(R, ch);
+      WHILE m # 0 DO Files.ReadChar(R, ch);
         IF p.lib.name[0] = 0X THEN
           SyncPiece(T, p);
           p.lib.GetObj(p.lib, ORD(ch), obj); p.obj := obj;
@@ -313,7 +313,7 @@ TYPE
           END;
           ch := CHR(i)
         END;
-        Files.Write(W, ch); DEC(m)
+        Files.WriteChar(W, ch); DEC(m)
       END;
       p := p.next
     END;
@@ -356,7 +356,7 @@ TYPE
     ELSE type := TextSpex; flen := 0 (*no integrated objects*)
     END;
     Files.Set(W, f, pos + 1);
-    Files.Write(W, type); (*fixup*)
+    Files.WriteChar(W, type); (*fixup*)
     Files.WriteLInt(W, hlen); (*fixup*)
     len := hlen + T.len + flen
   END Store;
@@ -373,19 +373,19 @@ TYPE
   END GenNew;
 
 (** Open text T from file specified by name. A new text is opened when name = "". *)
-  PROCEDURE Open* (T: Text; name: ARRAY OF CHAR);
+  PROCEDURE Open* (T: Text; IN name: ARRAY OF CHAR);
     VAR f: Files.File; R: Files.Rider; len: LONGINT; ch: CHAR;
   BEGIN
     obs := NIL;
     f := Files.Old(name);
     IF f # NIL THEN
-      Files.Set(R, f, 0); Files.Read(R, ch);
+      Files.Set(R, f, 0); Files.ReadChar(R, ch);
       IF ch = DocBlockId THEN
       	ReadDocHeader(R);
-      	Files.Read(R, ch);
+      	Files.ReadChar(R, ch);
       	IF ch = 0F7X THEN	(* skip meta info *)
-      		Files.Read(R, ch);
-      		IF ch = 08X THEN Files.ReadLInt(R, len); Files.Set(R, f, Files.Pos(R) + len); Files.Read(R, ch) END
+      		Files.ReadChar(R, ch);
+      		IF ch = 08X THEN Files.ReadLInt(R, len); Files.Set(R, f, Files.Pos(R) + len); Files.ReadChar(R, ch) END
       	END 
       END;
       IF (ch = TextBlockId) OR (ch = OldTextBlockId) THEN Load(T, f, Files.Pos(R), len)
@@ -607,8 +607,8 @@ TYPE
         END
       ELSIF M IS Objects.FileMsg THEN
         WITH M: Objects.FileMsg DO
-          IF M.id = Objects.load THEN Files.Read(M.R, ch);
-            IF ch = DocBlockId THEN ReadDocHeader(R); Files.Read(R, ch) END;
+          IF M.id = Objects.load THEN Files.ReadChar(M.R, ch);
+            IF ch = DocBlockId THEN ReadDocHeader(R); Files.ReadChar(R, ch) END;
             IF (ch = TextBlockId) OR (ch = OldTextBlockId) THEN
               Load(obj, Files.Base(M.R), Files.Pos(M.R), len);
               Files.Set(M.R, Files.Base(M.R), Files.Pos(M.R) + len)
@@ -664,7 +664,7 @@ TYPE
 information about the last character read. *)
   PROCEDURE Read* (VAR R: Reader; VAR ch: CHAR);
   BEGIN
-    Files.Read(R.R, ch);
+    Files.ReadChar(R.R, ch);
     R.lib := R.ref.lib; R.col := R.ref.col; R.voff := R.ref.voff;
     INC(R.off);
     IF R.off >= R.ref.len THEN
@@ -863,7 +863,7 @@ information about the last character read. *)
       q.next := NIL; p.next := q; q.prev := p; p := q;
       W.buf.last := p
     END;
-    Files.Write(W.R, ch);
+    Files.WriteChar(W.R, ch);
     INC(p.len); INC(W.buf.len)
   END Write;
 
@@ -873,7 +873,7 @@ information about the last character read. *)
   END WriteLn;
   
 (** Write string s to W's buffer. *)
-  PROCEDURE WriteString* (VAR W: Writer; s: ARRAY OF CHAR);
+  PROCEDURE WriteString* (VAR W: Writer; IN s: ARRAY OF CHAR);
     VAR i: INTEGER;
   BEGIN i := 0;
     WHILE s[i] # 0X DO Write(W, s[i]); INC(i) END
@@ -1198,7 +1198,7 @@ END WriteSet;
 
 BEGIN
   TextBlockId := 0F0X; DocBlockId := 0F7X; NoSpex := 0X; TextSpex := 1X; NoSpex2 := 2X;
-  H := Handle; Wfile := Files.New(""); Files.Set(R, Wfile, 0); Files.Write(R, 0X);
+  H := Handle; Wfile := Files.New(""); Files.Set(R, Wfile, 0); Files.Write(R, 0);
   NEW(DelBuf); OpenBuf(DelBuf); InitScan(); obs := NIL
 END Texts.
 

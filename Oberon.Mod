@@ -118,7 +118,7 @@ scheduling of tasks, cursor handling and command execution.
     CurCol*, CurOff*: SHORTINT;	(** Current color and offset when typing. *)
 
 	OptionChar*: CHAR;	(** Option character "/" or "\" *)
-	OpenText*: PROCEDURE (title: ARRAY OF CHAR; T: Texts.Text; W, H: INTEGER);
+	OpenText*: PROCEDURE (IN title: ARRAY OF CHAR; T: Texts.Text; W, H: INTEGER);
 
     CurTask: Task;
 	NextTask*: Task;	(** non-portable, for internal use. *)
@@ -265,10 +265,14 @@ default layout of the Oberon screen. *)
     BEGIN
        Input.SetMouseLimits(0, 0, Viewers.curW + UW + SW, H);
        Display.ReplConst(FillerColor, Viewers.curW, 0, UW + SW, H, 0);
-       NEW(Filler); Filler.handle := HandleFiller;
-       Viewers.InitTrack(UW, H, Filler); (*init user track*)
-       NEW(Filler); Filler.handle := HandleFiller;
-       Viewers.InitTrack(SW, H, Filler) (*init system track*)
+       IF UW # 0 THEN
+         NEW(Filler); Filler.handle := HandleFiller;
+         Viewers.InitTrack(UW, H, Filler) (*init user track*)
+       END;
+       IF SW # 0 THEN 
+         NEW(Filler); Filler.handle := HandleFiller;
+         Viewers.InitTrack(SW, H, Filler) (*init system track*)
+       END
     END OpenDisplay;
 
 (** Returns the width in pixels of the display that contains the X coordinate. *)
@@ -398,8 +402,8 @@ Modules.resMsg contains an explanation of what went wrong when res # 0. *)
       IF new THEN
       	Modules.Free(name, FALSE);
       	IF (Modules.res = 0) OR (Modules.res = 6) THEN Mod := Modules.ThisMod(name) END
-  	ELSE
-  		Mod := Modules.ThisMod(name)
+    	ELSE
+    		Mod := Modules.ThisMod(name)
       END;
       IF Modules.res = 0 THEN
         INC(i); j := i;
@@ -459,6 +463,7 @@ by calling its handler when the system has nothing else to do. *)
 (** Set the default font used when typing characters. *)
     PROCEDURE SetFont* (fnt: Fonts.Font);
     BEGIN CurFnt := fnt
+  		IF CurFnt = NIL THEN CurFnt := Fonts.Default END
     END SetFont;
 
 (** Set the color of typed characters. *)
@@ -497,9 +502,9 @@ by calling its handler when the system has nothing else to do. *)
   BEGIN
     f := Files.Old(OberonText);
     IF f = NIL THEN t := 0; d := 0 ELSE Files.GetDate(f, t, d) END;
-	IF (t # conftime) OR (d # confdate) THEN
-		conftime := t;  confdate := d;
-		Texts.Open(conftext, OberonText)	(* possibly load other modules, because of Objects in text *)
+  	IF (t # conftime) OR (d # confdate) THEN
+  		conftime := t;  confdate := d;
+  		Texts.Open(conftext, OberonText)	(* possibly load other modules, because of Objects in text *)
     END;
     Texts.OpenScanner(S, conftext, 0); Texts.Scan(S); done := TRUE;
     WHILE (name[0] # 0X) & ~S.eot & done DO
@@ -535,14 +540,14 @@ by calling its handler when the system has nothing else to do. *)
     IF ~done OR (conftext.len = 0) THEN S.class := Texts.Inval END
   END OpenScanner;
 
-    PROCEDURE UpdateDisplay;
-    VAR dcm: Display.ControlMsg;  cm: ControlMsg;
-    BEGIN
-    	cm.F := NIL;  cm.id := neutralize;  Display.Broadcast(cm);
-    	FadeCursor(Mouse);  FadeCursor(Pointer);
-    	dcm.F := NIL;  dcm.id := Display.suspend;  Display.Broadcast(dcm);
-    	dcm.F := NIL;  dcm.id := Display.restore;  Display.Broadcast(dcm)
-    END UpdateDisplay;
+  PROCEDURE UpdateDisplay;
+  VAR dcm: Display.ControlMsg;  cm: ControlMsg;
+  BEGIN
+    cm.F := NIL;  cm.id := neutralize;  Display.Broadcast(cm);
+    FadeCursor(Mouse);  FadeCursor(Pointer);
+    dcm.F := NIL;  dcm.id := Display.suspend;  Display.Broadcast(dcm);
+    dcm.F := NIL;  dcm.id := Display.restore;  Display.Broadcast(dcm)
+  END UpdateDisplay;
     
 	PROCEDURE ResetPalette;
 	VAR F: Files.File; R: Files.Rider; i, cols: INTEGER; r, g, b: CHAR;
@@ -552,7 +557,7 @@ by calling its handler when the system has nothing else to do. *)
 		IF F # NIL THEN
 			Files.Set(R, F, 0);
 			FOR  i := 0 TO cols-1 DO
-				Files.Read(R, r); Files.Read(R, g); Files.Read(R, b);
+				Files.ReadChar(R, r); Files.ReadChar(R, g); Files.ReadChar(R, b);
 				Display.SetColor(i, ORD(r), ORD(g), ORD(b))
 			END
 		ELSE
@@ -563,26 +568,26 @@ by calling its handler when the system has nothing else to do. *)
 		IF Display.TrueColor(0) THEN UpdateDisplay END
 	END ResetPalette;
 
-    PROCEDURE ToggleScreen;
-    VAR i, m, r, g, b: INTEGER;
-    BEGIN
-    	i := Display.Depth(0);  m := 1;
-    	WHILE i # 0 DO m := m*2; DEC(i) END;
-    	IF m > 256 THEN m := 256 END;
-    	IF ScreenOn THEN
-    		FOR i := 0 TO m-1 DO
-    			Display.GetColor(i, r, g, b);  Display.SetColor(i, 0, 0, 0);
-    			PalTab[i*3] := CHR(r);  PalTab[i*3+1] := CHR(g);  PalTab[i*3+2] := CHR(b)
-    		END
- 	   ELSE
-   		FOR i := 0 TO m-1 DO
-   			r := ORD(PalTab[i*3]);  g := ORD(PalTab[i*3+1]);  b := ORD(PalTab[i*3+2]);
-   			Display.SetColor(i, r, g, b)
-    		END
- 	   END;
- 	   ScreenOn := ~ScreenOn;
-		IF Display.TrueColor(0) THEN UpdateDisplay END
-    END ToggleScreen;
+  PROCEDURE ToggleScreen;
+  VAR i, m, r, g, b: INTEGER;
+  BEGIN
+    i := Display.Depth(0);  m := 1;
+    WHILE i # 0 DO m := m*2; DEC(i) END;
+    IF m > 256 THEN m := 256 END;
+    IF ScreenOn THEN
+      FOR i := 0 TO m-1 DO
+        Display.GetColor(i, r, g, b);  Display.SetColor(i, 0, 0, 0);
+        PalTab[i*3] := CHR(r);  PalTab[i*3+1] := CHR(g);  PalTab[i*3+2] := CHR(b)
+      END
+    ELSE
+    FOR i := 0 TO m-1 DO
+      r := ORD(PalTab[i*3]);  g := ORD(PalTab[i*3+1]);  b := ORD(PalTab[i*3+2]);
+      Display.SetColor(i, r, g, b)
+      END
+    END;
+    ScreenOn := ~ScreenOn;
+  IF Display.TrueColor(0) THEN UpdateDisplay END
+  END ToggleScreen;
     
 (** Main Oberon task dispatcher. Reads the mouse position and characters 
 typed, informing the viewer of the display space of events using the 
@@ -593,11 +598,13 @@ selections and the caret. The Loop periodically activates background tasks and
 the garbage collector, if no mouse or keyboard events are arriving. *)
    PROCEDURE Loop*;
       VAR V: Viewers.Viewer; M: InputMsg; N: ControlMsg;
-       X, Y: INTEGER; keys: SET; ch: CHAR;
+       X, Y: INTEGER; keys: SET; ch: CHAR; quit: BOOLEAN;
     BEGIN
       IF (CurTask # NIL) & ~CurTask.safe THEN Remove(CurTask) END;
       Input.Mouse(keys, X, Y);
       LOOP
+        quit := Display.ProcessEvents();
+        IF quit THEN EXIT END;
         IF Input.Available() > 0 THEN Input.Read(ch);
           IF ch = Neutralise THEN
             N.F := NIL; N.id := neutralize; Display.Broadcast(N);
@@ -651,9 +658,11 @@ the garbage collector, if no mouse or keyboard events are arriving. *)
 	VAR cmd: Modules.Command;  m: Modules.Module;
 	BEGIN
 		m := Modules.ThisMod("System");	(* init System trap, log etc. *)
-		INC(m.refcnt);	(* disallow unloading of System *)
-		cmd := Modules.ThisCommand(m, "Init");
-		cmd	(* execute System.InitCommands from Oberon.Text (uses Oberon.OpenScanner) *)
+		IF m # NIL THEN
+  		INC(m.refcnt);	(* disallow unloading of System *)
+  		cmd := Modules.ThisCommand(m, "Init");
+  		cmd	(* execute System.InitCommands from Oberon.Text (uses Oberon.OpenScanner) *)
+		END
 	END LoadSystem;
 	
 BEGIN

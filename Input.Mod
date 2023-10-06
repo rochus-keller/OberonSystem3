@@ -25,19 +25,20 @@ MODULE Input;	(** portable, except where noted *)	(* pjm *)
 Module Input is responsible for event timing, mouse and keyboard input.
 *)
 
-IMPORT
-	Files, Display, Kernel;
+IMPORT P := ObxPal;
 
 CONST
 	TimeUnit* = 1000;	(** portable, but VAR on other ports *)	(** timer ticks per second (platform dependent). *)
 
-	SHIFT* = 0;  CTRL* = 1;  ALT* = 2;	(** for GetShiftState *)
-
+	SHIFT* = 0;  CTRL* = 1;  ALT* = 2;	(** for KeyState *)
+	
 
 (* ---- Interface ---- *)
 
 (** Returns the number of keystrokes in the keyboard input buffer. *)
 PROCEDURE Available*() : INTEGER;
+BEGIN
+	RETURN SHORT(P.pending_keys())
 END Available;
 
 (** Reads the current mouse position x, y and the key state of the mouse buttons 
@@ -45,25 +46,39 @@ END Available;
 0, 1, 2 (i.e. 1 is the middle mouse button). For example, when the left and middle 
 buttons are pressed, keys will be set to {1, 2}. *)
 PROCEDURE Mouse*(VAR keys: SET; VAR x, y: INTEGER);
+VAR a,b,c: ARRAY 1 OF INT32;
+BEGIN
+  P.mouse_state(a,b,c);
+  x := SHORT(a[0]);
+  y := SHORT(b[0]);
+  keys := BITS(c[0]);
 END Mouse;
 
 (** Read a character from the keyboard buffer. Blocks if no character is available. *)
 PROCEDURE Read*(VAR ch: CHAR);
+BEGIN
+  ch := CHR(P.next_key())
 END Read;
 
 (** Returns the elapsed number of timer ticks from Oberon startup. *)
 PROCEDURE Time*(): LONGINT;
+BEGIN
+	RETURN P.time() // already milliseconds
 END  Time;
 
 (** Return the state of the shift keys. *)
 PROCEDURE KeyState*(VAR keys: SET);
+VAR k: ARRAY 1 OF INT32;
+BEGIN
+  P.modifier_state(k)
+  keys := BITS(k[0])
 END KeyState;
 
 (** Restricts the extent of the mouse coordinates returned by Mouse. *)
 PROCEDURE SetMouseLimits*(x, y, w, h: INTEGER);	(** non-portable *)
+BEGIN
+// TODO
 END SetMouseLimits;
-
-
 
 BEGIN
 END Input.
