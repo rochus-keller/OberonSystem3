@@ -213,7 +213,7 @@ VAR doc: Documents.Document;
 BEGIN
 	NEW(doc); doc.Load:= Load; doc.Store:= Store; doc.handle:= Handler;
 	Objects.NewObj:= doc;
-	COPY(name, doc.name);
+	 doc.name := name;
 	MakeDoc(doc, P);
 	Desktops.ShowDoc(doc)	(* Version 1.6 *)
 END OpenPict;

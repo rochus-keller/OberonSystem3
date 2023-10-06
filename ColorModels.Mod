@@ -51,11 +51,11 @@ VAR
 	x,y,z: REAL;
 BEGIN
 	sym:= NIL; last:= NIL;
-	COPY("ColorSystem.", system); Strings.Append(system,model);
+	 system := "ColorSystem."; Strings.Append(system,model);
 	Oberon.OpenScanner(S,system);
 	IF (S.class # Texts.Inval) THEN
 		WHILE ~S.eot & (S.class = Texts.Name) DO
-			NEW(col); COPY(S.s, col.name); Texts.Scan(S);
+			NEW(col);  col.name := S.s; Texts.Scan(S);
 			IF S.class = Texts.Real THEN x := S.x; Texts.Scan(S) END;
 			IF S.class = Texts.Real THEN y := S.x; Texts.Scan(S) END;
 			IF S.class = Texts.Real THEN z := S.x; Texts.Scan(S) END;

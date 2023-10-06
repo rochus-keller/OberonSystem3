@@ -72,7 +72,7 @@ MODULE ObjExplorer; (* ejz,   *)
 	BEGIN
 		NEW(item); item.obj := obj; item.s := "";
 		IF (obj.lib # NIL) & (obj.lib.name # "") THEN
-			COPY(obj.lib.name, item.s);
+			 item.s := obj.lib.name;
 			Strings.AppendCh(item.s, ".");
 			Objects.GetName(obj.lib.dict, obj.ref, name);
 			IF name = "" THEN
@@ -98,7 +98,7 @@ MODULE ObjExplorer; (* ejz,   *)
 	PROCEDURE *EnumObjs(name: ARRAY OF CHAR);
 		VAR L: Objects.LinkMsg;
 	BEGIN
-		L.id := Objects.get; COPY(name, L.name); L.obj := NIL;
+		L.id := Objects.get;  L.name := name; L.obj := NIL;
 		enumObj.handle(enumObj, L);
 		IF L.obj # NIL THEN
 			AddObj(L.obj)

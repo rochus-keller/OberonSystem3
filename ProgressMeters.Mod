@@ -55,7 +55,7 @@ MODULE ProgressMeters;	(** portable *) (* ejz,   *)
 	BEGIN
 		A.id := Objects.get; A.name := "Field"; A.class := Objects.Inval; A.s := ""; A.res := -1;
 		F.handle(F, A);
-		IF (A.res >= 0) & (A.s # "") THEN COPY(A.s, A.name) ELSE A.name := "Value" END;
+		IF (A.res >= 0) & (A.s # "") THEN  A.name := A.s ELSE A.name := "Value" END;
 		A.class := Objects.Inval; A.res := -1; F.obj.handle(F.obj, A);
 		A.res := -1; ApplyValue(F, A);
 		RETURN A.res = 0

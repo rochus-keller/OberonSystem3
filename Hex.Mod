@@ -663,7 +663,7 @@ PROCEDURE FrameAttr (F: Frame; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
 		IF M.name = "Gen" THEN
-			M.class := Objects.String; COPY("Hex.NewFrame", M.s); M.res := 0
+			M.class := Objects.String;  M.s := "Hex.NewFrame"; M.res := 0
 		ELSE Gadgets.framehandle(F, M)
 		END
 	ELSIF M.id = Objects.set THEN
@@ -816,7 +816,7 @@ BEGIN
 	IF D.name # "" THEN
 		F := Files.New(D.name); IF F = NIL THEN HALT(99) END;
 
-		COPY(D.name, new); i := 0; WHILE new[i] # 0X DO INC(i) END;
+		 new := D.name; i := 0; WHILE new[i] # 0X DO INC(i) END;
 		new[i] := "."; new[i+1] := "B"; new[i+2] := "a"; new[i+3] := "k"; new[i+4] := 0X;
 		Files.Rename(D.name, new, i);
 		
@@ -1036,7 +1036,7 @@ VAR T: Texts.Text; time, beg, end: LONGINT; S: Texts.Scanner;
 	VAR D: Documents.Document;
 	BEGIN
 		NewDoc; D := Objects.NewObj(Documents.Document);
-		COPY(S.s, D.name);
+		 D.name := S.s;
 		D.Load(D);
 		Desktops.ShowDoc(D)
 	END OpenThis;
@@ -1165,7 +1165,7 @@ BEGIN
 		IF (T # NIL) & (time >= 0) THEN Texts.OpenScanner(S, T, beg); Texts.Scan(S) END
 	END;
 	IF S.class IN {Texts.String, Texts.Name} THEN
-		COPY(S.s, sPat); sLen := S.len; CalcDispVec
+		 sPat := S.s; sLen := S.len; CalcDispVec
 	ELSIF (S.class = Texts.Char) & (S.c = "#") THEN
 		Texts.Scan(S);
 		IF S.class = Texts.Name THEN
@@ -1223,7 +1223,7 @@ VAR obj: Objects.Object; cnt: INTEGER; M: ListRiders.ConnectMsg; A: Objects.Attr
 
 	PROCEDURE AddItem (R: ListRiders.Rider; val: ARRAY OF CHAR);
 	VAR d: ListRiders.String;
-	BEGIN NEW(d); COPY(val, d.s); R.do.Write(R, d); INC(cnt)
+	BEGIN NEW(d);  d.s := val; R.do.Write(R, d); INC(cnt)
 	END AddItem;
 
 BEGIN

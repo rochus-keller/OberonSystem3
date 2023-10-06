@@ -166,7 +166,7 @@ MODULE FindFile; (** portable *)	(* ejz   *)
 	PROCEDURE *EnumFiles(path, name: ARRAY OF CHAR; time, date, size: LONGINT; isdir: BOOLEAN);
 		VAR fullname: FileDir.FileName;
 	BEGIN
-		COPY(path, fullname); Strings.AppendCh(fullname, FileDir.PathChar); Strings.Append(fullname, name);
+		 fullname := path; Strings.AppendCh(fullname, FileDir.PathChar); Strings.Append(fullname, name);
 		IF ~isdir & (size >= minSize) & (size <= maxSize) & (date >= begDate) & (date <= endDate) THEN
 			SearchInFile(fullname)
 		ELSIF isdir & recursive THEN

@@ -338,7 +338,7 @@ MODULE OTFonts;	(** eos   **)
 				OType.InitGlyph(Glyph, font);
 				Texts.Scan(s);
 				IF s.class IN {Texts.Name, Texts.String} THEN
-					COPY(s.s, name);
+					 name := s.s;
 					Texts.Scan(s);
 					IF s.class IN {Texts.Name, Texts.String} THEN
 						style := s.s[0];
@@ -361,7 +361,7 @@ MODULE OTFonts;	(** eos   **)
 						END;
 						IF res # 0 THEN
 							FOR i := 0 TO sizes-1 DO
-								COPY(name, fname);
+								 fname := name;
 								Strings.IntToStr(size[i], str);
 								Strings.Append(fname, str);
 								IF style # 0X THEN Strings.AppendCh(fname, style) END;

@@ -207,13 +207,13 @@ END PutSectors;
   (*Oberon format support*)
 
   PROCEDURE InEntry (VAR f: FileDesc; VAR g: File);
-  BEGIN COPY(f.name, g.name);
+  BEGIN  g.name := f.name;
     g.time := LONG(f.time)*2; g.date := LONG(f.date) + 80*512;
     g.start := f.start; g.size := f.size
   END InEntry;
 
   PROCEDURE OutEntry (VAR f: File; VAR g: FileDesc);
-  BEGIN COPY(f.name, g.name);
+  BEGIN  g.name := f.name;
     g.time := SHORT(f.time DIV 2); g.date := SHORT(f.date - 80*512);
     g.start := f.start; g.size := f.size
   END OutEntry;
@@ -223,7 +223,7 @@ END PutSectors;
   BEGIN (*buf[0] ready*)
     s := vol.dirStart; i := 0;
     NEW(vol.dir); InEntry(buf[0], vol.dir);
-    COPY(vol.dir.name, vol.name); vol.dir.name[0] := 0X;
+     vol.name := vol.dir.name; vol.dir.name[0] := 0X;
     vol.dir.next := vol.dir; vol.dir.prev := vol.dir;
     LOOP
       DEC(vol.freeEntries); INC(i);
@@ -243,7 +243,7 @@ END PutSectors;
     VAR f: File; s, i: INTEGER;
       buf: ARRAY maxEntries OF FileDesc;
   BEGIN s := vol.dirStart;
-    COPY(vol.name, vol.dir.name);
+     vol.dir.name := vol.name;
     OutEntry(vol.dir, buf[0]); buf[0].name[21] := "o";
     i := 1; f := vol.dir.next;
     WHILE f # vol.dir DO
@@ -259,7 +259,7 @@ END PutSectors;
   PROCEDURE InitOberonVol* (name: ARRAY OF CHAR);
     VAR i: INTEGER;
   BEGIN GetVolDesc;
-    COPY(name, vol.name); vol.code := "o"; 
+     vol.name := name; vol.code := "o"; 
     NEW(vol.dir); vol.dir.name[0] := 0X;
     Oberon.GetClock(vol.dir.time, vol.dir.date); vol.dir.size := 0;
     vol.dir.next := vol.dir; vol.dir.prev := vol.dir;
@@ -317,7 +317,7 @@ END PutSectors;
       IF buf[i].name[0] # 0E5X THEN
         IF ORD(buf[i].name[11]) MOD 16 DIV 8 = 1 THEN (*volume label*)
           InDOSEntry(buf[i], vol.dir);
-          COPY(vol.dir.name, vol.name); vol.dir.name[0] := 0X
+           vol.name := vol.dir.name; vol.dir.name[0] := 0X
         ELSE NEW(g); InDOSEntry(buf[i], g);
           Locate(g.name, f);
           g.next := f.next; f.next := g; g.next.prev := g; g.prev := f;
@@ -339,7 +339,7 @@ END PutSectors;
   BEGIN
     s := vol.dirStart; i := 0;
     IF ORD(vol.dir.attributes) MOD 16 DIV 8 = 1 THEN (*volume*)
-      COPY(vol.name, vol.dir.name); OutDOSEntry(vol.dir, buf[0]); INC(i)
+       vol.dir.name := vol.name; OutDOSEntry(vol.dir, buf[0]); INC(i)
     END;
     f := vol.dir.next;
     WHILE f # vol.dir DO
@@ -355,7 +355,7 @@ END PutSectors;
   PROCEDURE InitDOSVol* (name: ARRAY OF CHAR);
     VAR i: INTEGER;
   BEGIN GetVolDesc;
-    COPY(name, vol.name); vol.code := 0X;
+     vol.name := name; vol.code := 0X;
     NEW(vol.dir); vol.dir.name[0] := 0X; vol.dir.attributes := 28X; (*archive & volume*)
     Oberon.GetClock(vol.dir.time, vol.dir.date); vol.dir.size := 0;
     vol.dir.next := vol.dir; vol.dir.prev := vol.dir;
@@ -502,7 +502,7 @@ END PutSectors;
         END
       ELSE need := Blocks(size);
         IF (vol.freeEntries > 0) & (vol.freeBlocks - need >= 0) THEN
-          NEW(h); COPY(nname, h.name);
+          NEW(h);  h.name := nname;
           Oberon.GetClock(h.time, h.date); h.size := size;
           addFile(f, g, h);
           DEC(vol.freeEntries);

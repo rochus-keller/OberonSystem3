@@ -106,15 +106,15 @@ END TimeOk;
 
 PROCEDURE ValueToStr (d: ListRiders.Data; VAR str: ARRAY OF CHAR);
 BEGIN
-	IF d = NIL THEN COPY("EMPTY", str)
+	IF d = NIL THEN  str := "EMPTY"
 	ELSE
-		IF d IS ListRiders.String THEN COPY(d(ListRiders.String).s, str)
+		IF d IS ListRiders.String THEN  str := d(ListRiders.String).s
 		ELSIF d IS ListRiders.Int THEN Strings.IntToStr(d(ListRiders.Int).i, str)
 		ELSIF d IS ListRiders.Real THEN Strings.RealToStr(d(ListRiders.Real).x, str)
 		ELSIF d IS ListRiders.LReal THEN Strings.RealToStr(d(ListRiders.LReal).x, str)
 		ELSIF d IS ListRiders.Bool THEN Strings.BoolToStr(d(ListRiders.Bool).b, str)
 		ELSIF d IS ListRiders.Char THEN str[0] := d(ListRiders.Char).c; str[1] := 0X
-		ELSE COPY("UNKNOWN DATA", str)
+		ELSE  str := "UNKNOWN DATA"
 		END
 	END
 END ValueToStr;
@@ -592,7 +592,7 @@ BEGIN
 		Texts.OpenScanner(S, T, beg); S.class := Texts.Inval; Texts.Scan(S); NEW(d);
 		WHILE ~(S.class = Texts.Inval) DO
 			CASE S.class OF
-				Texts.String, Texts.Name: COPY(S.s, d.s)
+				Texts.String, Texts.Name:  d.s := S.s
 				| Texts.Int: Strings.IntToStr(S.i, d.s)
 				| Texts.Real: Strings.RealToStr(S.x, d.s)
 				| Texts.Char: d.s[0] := S.c; d.s[1] := 0X
@@ -1151,7 +1151,7 @@ BEGIN
 				WHILE (l # F.lines) & ~l.sel DO l := l.next END;
 				IF l # F.lines THEN M.i := l.key END
 			END
-		ELSIF M.name = "Font" THEN M.class := Objects.String; COPY(F.fnt.name, M.s); M.res := 0
+		ELSIF M.name = "Font" THEN M.class := Objects.String;  M.s := F.fnt.name; M.res := 0
 		ELSIF M.name = "LineupHY" THEN M.class := Objects.Int; M.i := F.H - Fonts.Default.height; M.res := 0
 		ELSIF M.name = "BackCol" THEN M.class := Objects.Int; M.i := F.backC; M.res := 0
 		ELSIF M.name = "TextCol" THEN M.class := Objects.Int; M.i := F.textC; M.res := 0
@@ -1508,7 +1508,7 @@ PROCEDURE InsertVScrollList*;
 VAR P, vBar: Display.Frame; F: Frame; str, wStr: ARRAY 16 OF CHAR; fName: ARRAY 32 OF CHAR; S: Attributes.Scanner;
 BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Attributes.Scan(S);
-	IF S.class = Attributes.Name THEN COPY(S.s, fName); Attributes.Scan(S)
+	IF S.class = Attributes.Name THEN  fName := S.s; Attributes.Scan(S)
 	ELSE fName := ""
 	END;
 	IF S.class = Attributes.Name THEN
@@ -1535,7 +1535,7 @@ VAR P, hBar, vBar: Display.Frame; F: Frame; obj: Objects.Object; str, wStr: ARRA
 		S: Attributes.Scanner;
 BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Attributes.Scan(S);
-	IF S.class = Attributes.Name THEN COPY(S.s, fName); Attributes.Scan(S)
+	IF S.class = Attributes.Name THEN  fName := S.s; Attributes.Scan(S)
 	ELSE fName := ""
 	END;
 	IF S.class = Attributes.Name THEN

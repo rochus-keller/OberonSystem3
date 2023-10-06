@@ -129,7 +129,7 @@ END DropOnFittingStack;
 PROCEDURE TalonAttr(T: Talon; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Spider.NewTalon", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Spider.NewTalon"; M.res := 0
 	ELSE Cards.StackHandler(T, M)
 	END
 END TalonAttr;
@@ -204,7 +204,7 @@ END NewTalon;
 PROCEDURE DepotAttr(D: Depot; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Spider.NewDepot", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Spider.NewDepot"; M.res := 0
 	ELSE Cards.StackHandler(D, M);
 	END
 END DepotAttr;
@@ -255,7 +255,7 @@ END NewDepot;
 PROCEDURE ColumnAttr(C: Column; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Spider.NewColumn", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Spider.NewColumn"; M.res := 0
 	ELSE Cards.StackHandler(C, M);
 	END
 END ColumnAttr;

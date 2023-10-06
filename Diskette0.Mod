@@ -55,7 +55,7 @@ VAR
 PROCEDURE Error(msg: ARRAY OF CHAR);
 VAR error, reason: ARRAY 32 OF CHAR;  i: SHORTINT;  r0, r1, r2: SET;
 BEGIN
-	COPY(msg, error);  r0 := errors[0];  r1 := errors[1];  r2 := errors[2];
+	 error := msg;  r0 := errors[0];  r1 := errors[1];  r2 := errors[2];
 	IF (0 IN r1) OR (0 IN r2) THEN reason := "Missing address mark"
 	ELSIF 1 IN r1 THEN reason := "Write protected"
 	ELSIF 2 IN r1 THEN reason := "Sector not found"

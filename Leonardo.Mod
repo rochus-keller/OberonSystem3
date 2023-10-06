@@ -499,7 +499,7 @@ MODULE Leonardo;	(** eos   **)
 		Texts.Append(Oberon.Log, W.buf);
 		
 		(* keep backup *)
-		COPY(doc.name, bak);
+		 bak := doc.name;
 		Strings.Append(bak, ".Bak");
 		Files.Rename(doc.name, bak, res);
 		
@@ -648,7 +648,7 @@ MODULE Leonardo;	(** eos   **)
 	BEGIN
 		NEW(frame); LeoFrames.InitFrame(frame, fig, Figures.cm, 10);
 		NEW(doc); InitDoc(doc);
-		COPY(name, doc.name);
+		 doc.name := name;
 		NEW(ruler); InitRuler(ruler, frame);
 		Documents.Init(doc, ruler);
 		Desktops.ShowDoc(doc)
@@ -801,7 +801,7 @@ MODULE Leonardo;	(** eos   **)
 			IF (llx < urx) & (lly < ury) THEN
 				Attributes.OpenScanner(s, Oberon.Par.text, Oberon.Par.pos);
 				Attributes.Scan(s);
-				IF s.class = Attributes.Name THEN COPY(s.s, name); Attributes.Scan(s)
+				IF s.class = Attributes.Name THEN  name := s.s; Attributes.Scan(s)
 				ELSE name := "Figure.eps"
 				END;
 				IF s.class = Attributes.Int THEN res := s.i; Attributes.Scan(s)

@@ -408,7 +408,7 @@ PROCEDURE HIntToIntStr*(x: HUGEINT; n: LONGINT; VAR str: ARRAY OF CHAR);
     VAR i, j: LONGINT; x0: HUGEINT; a: ARRAY 20 OF CHAR;
 BEGIN i := 0; j := 0;
     IF x < ZERO THEN
-      IF x = MINH THEN COPY("-9223372036854775808", str); RETURN
+      IF x = MINH THEN  str := "-9223372036854775808"; RETURN
       ELSE n:=n-1; x0 := -x
       END
     ELSE x0 := x

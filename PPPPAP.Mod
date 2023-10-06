@@ -167,13 +167,13 @@ TYPE
 	PROCEDURE GiveState*(f: PAPStat; VAR s: ARRAY OF CHAR);
 	BEGIN
 		CASE f.state OF
-			|Initial: COPY("Initial", s)
-			|Closed: COPY("Closed", s)
-			|Pending: COPY("Pending", s)
-			|AuthReq: COPY("AuthReq", s)
-			|Open: COPY("Open", s)
-			|BadAuth: COPY("BadAuth", s)
-		ELSE COPY("unknown state", s)
+			|Initial:  s := "Initial"
+			|Closed:  s := "Closed"
+			|Pending:  s := "Pending"
+			|AuthReq:  s := "AuthReq"
+			|Open:  s := "Open"
+			|BadAuth:  s := "BadAuth"
+		ELSE  s := "unknown state"
 		END
 	END GiveState;
 

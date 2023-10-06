@@ -613,11 +613,11 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 			D := Desktops.CurDoc(Gadgets.context);
 			IF D # NIL THEN
 				cmdSource := Menu;
-				COPY(D.name, name);
+				 name := D.name;
 				RETURN
 			END
 		END;
-		cmdSource := Cmd; COPY(EOFName, name)
+		cmdSource := Cmd;  name := EOFName
 	END GetArcName;
 (* TextDocs *)
 
@@ -633,11 +633,11 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 			Texts.Scan(S);
 			IF S.class = Texts.Name THEN
 				cmdSource := Menu;
-				COPY(S.s, name);
+				 name := S.s;
 				RETURN
 			END
 		END;
-		cmdSource := Cmd; COPY(EOFName, name)
+		cmdSource := Cmd;  name := EOFName
 	END GetArcName;
 TextFrames *)
 
@@ -687,7 +687,7 @@ TextFrames *)
 			cmd: Modules.Command;
 			i, j: LONGINT;
 	BEGIN
-		ClearCrypt(); COPY(key, curKey);
+		ClearCrypt();  curKey := key;
 		i := 0;
 		WHILE (install[i] # 0X) & (install[i] # ".") DO
 			INC(i)
@@ -731,7 +731,7 @@ TextFrames *)
 			arrow := TRUE;
 			NEW(h);
 			h.next := NIL;
-			COPY(mn, h.name);
+			 h.name := mn;
 			nameList := h;
 			last := nameList;
 			Oberon.GetSelection(T, beg, end, time);
@@ -747,7 +747,7 @@ TextFrames *)
 				Texts.Scan(S);
 				ASSERT(S.class = Texts.Name);
 				CASE CAP(S.s[0]) OF
-					"C": Texts.Scan(S); COPY(S.s, mn); ASSERT(S.class = Texts.Name);
+					"C": Texts.Scan(S);  mn := S.s; ASSERT(S.class = Texts.Name);
 							Texts.Scan(S); ASSERT(S.class IN {Texts.Name, Texts.String});
 							InstallCrypt(mn, S.s)
 					|"D": verbose := TRUE
@@ -769,7 +769,7 @@ TextFrames *)
 							((cmdSource = Cmd) & (S.class = Texts.Name) & (~arrow OR (arrow & (pos <= end+StringLen(S.s))))) DO
 			NEW(h);
 			h.next := NIL;
-			COPY(S.s, h.name);
+			 h.name := S.s;
 			IF Search(nameList, h.name) = NIL THEN
 				IF last = NIL THEN
 					nameList := h
@@ -807,7 +807,7 @@ TextFrames *)
 			INC(i)
 		END;
 		IF j >= 0 THEN
-			COPY(name, back);
+			 back := name;
 			j := j+1;
 			i := 0;
 			WHILE (j < l) & (back[j] # 0X) DO
@@ -926,10 +926,10 @@ TextFrames *)
 			ReadHeader(Ra, h, err);
 			WHILE (h.name # EOFName) & ~err DO
 				IF addL = NIL THEN
-					NEW(addL); COPY(h.name, addL.name);
+					NEW(addL);  addL.name := h.name;
 					addL.next := NIL
 				ELSE
-					NEW(ha); COPY(h.name, ha.name);
+					NEW(ha);  ha.name := h.name;
 					ha.next := addL;
 					addL := ha
 				END;
@@ -946,7 +946,7 @@ TextFrames *)
 				NextName(file)
 			END;
 			pos := Files.Pos(Ra);
-			COPY(file, h.name);
+			 h.name := file;
 			h.extensions := {};
 			WriteHeader(Ra, h);
 			CopyToArc(R, Ra, len, h);
@@ -1273,7 +1273,7 @@ TextFrames *)
 		ELSE
 			D := Gadgets.CreateObject("Compress.NewDoc");
 			WITH D: Documents.Document DO
-				COPY(nameList.name, D.name);
+				 D.name := nameList.name;
 				LoadDoc(D);
 				Desktops.ShowDoc(D)
 			END
@@ -1391,10 +1391,10 @@ TextFrames *)
 		ReadHeader(R, h, err);
 		WHILE (h.name # EOFName) & ~err DO
 			IF addL = NIL THEN
-				NEW(addL); COPY(h.name, addL.name);
+				NEW(addL);  addL.name := h.name;
 				addL.next := NIL
 			ELSE
-				NEW(ha); COPY(h.name, ha.name);
+				NEW(ha);  ha.name := h.name;
 				ha.next := addL;
 				addL := ha
 			END;
@@ -1426,7 +1426,7 @@ TextFrames *)
 				END;
 				Files.Set(R, ArcF, Files.Length(ArcF));
 				pos := Files.Pos(R);
-				COPY(nl.name, h.name);
+				 h.name := nl.name;
 				Texts.WriteString(W, "    ");
 				Texts.WriteString(W, nl.name);
 				Texts.WriteLn(W);
@@ -1619,7 +1619,7 @@ TextFrames *)
 		WHILE (h.name # EOFName) &  ~err & (AddF = NIL) DO
 			pos := Files.Pos(R);
 			IF h.name = nameList.next.name THEN
-				COPY(Temp, temp);
+				 temp := Temp;
 				res := 0;
 				WHILE temp[res] # 0X DO
 					INC(res)
@@ -1662,7 +1662,7 @@ TextFrames *)
 		IF AddF # NIL THEN
 			(* TextDocs *)
 			D := Documents.Open(temp);
-			COPY(h.name, D.name);
+			 D.name := h.name;
 			Desktops.ShowDoc(D);
 			(* TextDocs *)
 			(* TextFrames
@@ -1792,7 +1792,7 @@ TextFrames *)
 			IF res = Done THEN
 				Texts.Scan(S);
 				WHILE (S.class IN {Texts.Name, Texts.String}) & (res = Done) DO
-					COPY(S.s, name); res := -1;
+					 name := S.s; res := -1;
 					Texts.WriteLn(W); Texts.WriteString(W, "    ");
 					Texts.WriteString(W, name);
 					Texts.Scan(S);
@@ -1810,7 +1810,7 @@ TextFrames *)
 									END;
 									IF h = NIL THEN
 										Texts.WriteString(W, " => "); Texts.WriteString(W, S.s);
-										COPY(S.s, hn.header.name); res := Done
+										 hn.header.name := S.s; res := Done
 									ELSE
 										Texts.WriteString(W, " name conflict")
 									END

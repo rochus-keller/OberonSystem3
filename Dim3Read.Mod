@@ -220,7 +220,7 @@ BEGIN
 		trans := FALSE
 	END;
 	IF sym = ident THEN
-		COPY(S.s, textName);
+		 textName := S.s;
 		Get;
 	ELSE
 		Error("ident expected");
@@ -266,7 +266,7 @@ BEGIN
 		trans := FALSE
 	END;
 	IF sym = string THEN
-		COPY(S.s, textName);
+		 textName := S.s;
 		Get;
 	ELSE
 		Error("string expected");
@@ -464,7 +464,7 @@ PROCEDURE Font (s: Dim3Engine.Shape);
 BEGIN
 	Get;
 	IF sym =  ident THEN
-		COPY(S.s, cur.font);
+		 cur.font := S.s;
 		Get;
 	ELSE
 		Error("ident expected")
@@ -532,7 +532,7 @@ BEGIN
 	Get;
 	IF sym = ident THEN
 		NEW(s);
-		COPY(S.s, s.name);
+		 s.name := S.s;
 		s.startpos := Texts.Pos(S);
 		s.next := shapes;
 		shapes := s
@@ -576,7 +576,7 @@ BEGIN
 				Get;
 				IF sym = string THEN
 					NEW(shape.cmd);
-					COPY(S.s, shape.cmd^);
+					 shape.cmd^ := S.s;
 					Get
 				ELSE Error("command string expected")
 				END

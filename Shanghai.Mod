@@ -424,7 +424,7 @@ END Track;
 PROCEDURE Attributes (F: Frame; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		COPY("Shanghai.NewFrame", M.s); M.res := 0
+		 M.s := "Shanghai.NewFrame"; M.res := 0
 	ELSE Gadgets.framehandle(F, M)
 	END
 END Attributes;
@@ -526,7 +526,7 @@ BEGIN
 			Files.ReadString(R, name);
 			Files.ReadInt(R, x); Files.ReadInt(R, y); Files.ReadInt(R, w); Files.ReadInt(R, h)
 		END
-	ELSE COPY("Shanghai.Game", D.name)
+	ELSE  D.name := "Shanghai.Game"
 	END;
 	Documents.Init(D, f)	
 END Load;

@@ -187,14 +187,14 @@ VAR s: Texts.Scanner;  from, to: ARRAY 64 OF CHAR;
 BEGIN
 	OpenScanner(s);
 	WHILE s.class IN {Texts.Name, Texts.String} DO
-		COPY(s.s, from);  Texts.Scan(s);
+		 from := s.s;  Texts.Scan(s);
 		IF (s.class = Texts.Char) & (s.c = "=") THEN
 			Texts.Scan(s);
 			IF (s.class = Texts.Char) & (s.c = ">") THEN
 				Texts.Scan(s);
 				IF (s.class IN {Texts.Name, Texts.String}) THEN
 					StartTask;
-					COPY(s.s, to);  Texts.Scan(s);
+					 to := s.s;  Texts.Scan(s);
 					Texts.WriteString(wn, from);  Texts.WriteString(wn, " => ");  Texts.WriteString(wn, to);
 					Texts.Append(Oberon.Log, wn.buf);
 					IF OberonName(from) THEN
@@ -246,7 +246,7 @@ BEGIN
 	OpenScanner(s);
 	IF s.class IN {Texts.Name, Texts.String} THEN
 		StartTask;
-		COPY(s.s, dir);  Texts.Scan(s);
+		 dir := s.s;  Texts.Scan(s);
 		WHILE s.class IN {Texts.Name, Texts.String} DO
 			i := 0;  WHILE (s.s[i] # 0X) & (s.s[i] # "?") & (s.s[i] # "*") DO INC(i) END;
 			IF s.s[i] = 0X THEN	(* no wildcard *)
@@ -272,7 +272,7 @@ BEGIN
 	OpenScanner(s);
 	IF s.class IN {Texts.Name, Texts.String} THEN
 		StartTask;
-		COPY(s.s, dir);  Texts.Scan(s);
+		 dir := s.s;  Texts.Scan(s);
 		WHILE s.class IN {Texts.Name, Texts.String} DO
 			JoinName(dir, s.s, to);
 			Texts.WriteString(wn, s.s);  Texts.WriteString(wn, " => ");  Texts.WriteString(wn, to);
@@ -307,14 +307,14 @@ VAR s: Texts.Scanner;  from, to: ARRAY 64 OF CHAR;  res: LONGINT;
 BEGIN
 	OpenScanner(s);
 	WHILE s.class IN {Texts.Name, Texts.String} DO
-		COPY(s.s, from);  Texts.Scan(s);
+		 from := s.s;  Texts.Scan(s);
 		IF (s.class = Texts.Char) & (s.c = "=") THEN
 			Texts.Scan(s);
 			IF (s.class = Texts.Char) & (s.c = ">") THEN
 				Texts.Scan(s);
 				IF (s.class IN {Texts.Name, Texts.String}) THEN
 					StartTask;
-					COPY(s.s, to);  Texts.Scan(s);
+					 to := s.s;  Texts.Scan(s);
 					Texts.WriteString(wn, from);  Texts.WriteString(wn, " => ");  Texts.WriteString(wn, to);
 					Texts.Append(Oberon.Log, wn.buf);
 					IF OberonName(from) OR OberonName(to) THEN

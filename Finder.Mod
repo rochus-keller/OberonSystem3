@@ -171,7 +171,7 @@ MODULE Finder;	(** portable *) (* ejz 3.1.95 / jm - adapted for ver 1.6 / ps ext
 				NEW(e); e.doc := frame(Desktops.DocGadget); e.open := TRUE;
 				doc := Desktops.Main(frame(Desktops.DocGadget));
 				IF doc(Documents.Document).name = "" THEN e.s := NoName
-				ELSE COPY(doc(Documents.Document).name, e.s)
+				ELSE  e.s := doc(Documents.Document).name
 				END;
 				Display3.StringSize(e.s, list.fnt, strW, strH, strDsr); INC(strW, addW);
 				IF strW > maxW THEN maxW := strW END;
@@ -186,7 +186,7 @@ MODULE Finder;	(** portable *) (* ejz 3.1.95 / jm - adapted for ver 1.6 / ps ext
 		WHILE ~R.eol DO
 			inserted := TRUE;
 			NEW(e);
-			e.doc := R.d(Entry).doc; COPY(R.d(Entry).s, e.s); e.open := FALSE;
+			e.doc := R.d(Entry).doc;  e.s := R.d(Entry).s; e.open := FALSE;
 			Display3.StringSize(e.s, list.fnt, strW, strH, strDsr); INC(strW, addW);
 			IF strW > maxW THEN maxW := strW END;
 			W.do.Write(W, e);
@@ -197,7 +197,7 @@ MODULE Finder;	(** portable *) (* ejz 3.1.95 / jm - adapted for ver 1.6 / ps ext
 		(* add doc templates *)
 		t := templates;
 		WHILE t # NIL DO
-			NEW(e); e.doc := NIL; e.open := FALSE; COPY(t.name, e.s);
+			NEW(e); e.doc := NIL; e.open := FALSE;  e.s := t.name;
 			Display3.StringSize(e.s, list.fnt, strW, strH, strDsr); INC(strW, addW);
 			IF strW > maxW THEN maxW := strW END;
 			W.do.Write(W, e);
@@ -250,15 +250,15 @@ MODULE Finder;	(** portable *) (* ejz 3.1.95 / jm - adapted for ver 1.6 / ps ext
 	BEGIN
 		D := Desktops.Main(doc);
 		IF D # NIL THEN
-			COPY(D(Documents.Document).name, name);
+			 name := D(Documents.Document).name;
 			t := templates;
 			WHILE (t # NIL) & (t.name # name) DO t := t.next END;
 			IF t = NIL THEN
 				NEW(t);
-				COPY(name, t.name);
+				 t.name := name;
 				t.next := templates; templates := t
 			END;
-			COPY(name, t.docName);
+			 t.docName := name;
 			(*Registry.Set(FinderSection, name, name);
 			Texts.WriteString(W, "added "); Texts.Write(W, 22X); Texts.WriteString(W, name);
 			Texts.Write(W, 22X); Texts.WriteLn(W);*)
@@ -500,7 +500,7 @@ MODULE Finder;	(** portable *) (* ejz 3.1.95 / jm - adapted for ver 1.6 / ps ext
 					e.doc := obj(Desktops.DocGadget); e.open := FALSE;
 					obj := Desktops.Main(obj(Desktops.DocGadget));
 					IF obj(Documents.Document).name = "" THEN e.s := NoName
-					ELSE COPY(obj(Documents.Document).name, e.s)
+					ELSE  e.s := obj(Documents.Document).name
 					END;
 					R.do.Write(R, e);
 					RemoveFrame(e.doc)
@@ -513,7 +513,7 @@ MODULE Finder;	(** portable *) (* ejz 3.1.95 / jm - adapted for ver 1.6 / ps ext
 	VAR t: Template;
 	BEGIN
 		NEW(t);  t.next := NIL;
-		COPY(key, t.name); COPY(value, t.docName);
+		 t.name := key;  t.docName := value;
 		IF templates = NIL THEN templates := t ELSE last.next := t END;
 		last := t
 	END RegEnum;

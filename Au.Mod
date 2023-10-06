@@ -269,7 +269,7 @@ PROCEDURE Play*;
 BEGIN
 	IF ~recorded OR (file = NIL) THEN
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
-		COPY(S.s, filename);
+		 filename := S.s;
 		file:= Files.Old(filename)
 	END;
 	IF file # NIL THEN
@@ -313,7 +313,7 @@ BEGIN
 	recorded:= FALSE;
 	Root:= NIL;
 	Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
-	Texts.Scan(S); COPY(S.s, filename); Texts.Scan(S); dd.freq:= S.i;
+	Texts.Scan(S);  filename := S.s; Texts.Scan(S); dd.freq:= S.i;
 	 Texts.Scan(S); enc:= SHORT(S.i);
 	SetAF(enc, dd);
 	IF dd.bits = 16 THEN
@@ -415,7 +415,7 @@ PROCEDURE Store*;
 BEGIN
 	res:= Done;
 	IF recorded & (file # NIL) THEN
-		COPY(filename, name); Concat(name, ".Bak");
+		 name := filename; Concat(name, ".Bak");
 		Files.Rename(filename, name, r);
 		Files.Register(file);
 		recorded:= FALSE;
@@ -432,7 +432,7 @@ PROCEDURE Show*;
 	VAR gobj: Objects.Object; A: Objects.AttrMsg; S: Texts.Scanner;
 BEGIN
 	Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
-	COPY(S.s, A.s);
+	 A.s := S.s;
 	A.id:= Objects.set; A.name:= "Value"; A.class:= Objects.String;
 	gobj:= Gadgets.FindObj(Gadgets.context, "FName");
 	IF gobj # NIL THEN

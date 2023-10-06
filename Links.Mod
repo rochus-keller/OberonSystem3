@@ -65,7 +65,7 @@ BEGIN
 	ELSE
 		Files.ReadInt(r, l);
 		Objects.GetName(lib.dict, l, name);
-		IF name[0] = 0X THEN F := lib; COPY(lib.name, name); ELSE F := Objects.ThisLibrary(name); END;
+		IF name[0] = 0X THEN F := lib;  name := lib.name; ELSE F := Objects.ThisLibrary(name); END;
 		IF F # NIL THEN
 			F.GetObj(F, i, obj);
 			IF obj = NIL THEN (* Warning: Object imported from does not exist (NIL pointer) *)
@@ -95,7 +95,7 @@ BEGIN list := NIL;
 	ASSERT(ch = 33X);
 	Files.ReadString(R, s);
 	WHILE s # "" DO
-		NEW(a); COPY(s, a.name); 
+		NEW(a);  a.name := s; 
 		ReadRef(R, lib, a.obj);
 		IF (a.obj # NIL) & (a.obj IS Objects.Dummy) THEN a.obj := NIL END;
 		IF list = NIL THEN list := a ELSE a0.next := a END;
@@ -122,7 +122,7 @@ VAR L, a, a0: Link;
 BEGIN
 	L := in; out := NIL;
 	WHILE L # NIL DO
-		NEW(a); COPY(L.name, a.name); 
+		NEW(a);  a.name := L.name; 
 		a.obj := CopyPtr(M, L.obj);
 		IF out = NIL THEN out := a ELSE a0.next := a END;
 		a0 := a;
@@ -146,7 +146,7 @@ PROCEDURE InsertLink*(VAR list: Link; name: ARRAY OF CHAR; val: Link);
 VAR l, p0: Link;
 BEGIN
 	IF val # NIL THEN
-		COPY(name, val.name);
+		 val.name := name;
 		val.next := NIL;
 		IF list = NIL THEN
 			list := val
@@ -206,7 +206,7 @@ BEGIN
 		IF p # NIL THEN p.obj := M.obj
 		ELSE
 			NEW(p); p.next := list; list := p;
-			COPY(M.name, p.name);
+			 p.name := M.name;
 			p.obj := M.obj
 		END;
 		M.res := 0;
@@ -234,7 +234,7 @@ PROCEDURE GetLink*(obj: Objects.Object; name: ARRAY OF CHAR; VAR ob1: Objects.Ob
 BEGIN
 	IF obj # NIL THEN
 		L.id := Objects.get; L.res := -1; 
-		COPY(name, L.name); L.obj := NIL;
+		 L.name := name; L.obj := NIL;
 		obj.handle(obj, L);
 		ob1 := L.obj
 	ELSE
@@ -248,7 +248,7 @@ PROCEDURE SetLink*(obj: Objects.Object; name: ARRAY OF CHAR; ob1: Objects.Object
 BEGIN
 	IF obj # NIL THEN
 		L.id := Objects.set; L.res := -1; 
-		COPY(name, L.name); L.obj := ob1;
+		 L.name := name; L.obj := ob1;
 		obj.handle(obj, L)
 	END
 END SetLink;

@@ -440,7 +440,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 			digits: ARRAY 16 OF LONGINT;
 	BEGIN
 		IF val = MIN(LONGINT) THEN
-			COPY("-2147483648", str);
+			 str := "-2147483648";
 			RETURN
 		END;
 		IF val < 0 THEN
@@ -639,9 +639,9 @@ END StrToReal;
 	PROCEDURE BoolToStr*(b: BOOLEAN; VAR str: ARRAY OF CHAR);
 	BEGIN
 		IF b THEN
-			COPY("Yes", str)
+			 str := "Yes"
 		ELSE
-			COPY("No", str)
+			 str := "No"
 		END
 	END BoolToStr;
 
@@ -693,7 +693,7 @@ END StrToReal;
 	PROCEDURE DateToStr*(date: LONGINT; VAR str: ARRAY OF CHAR);
 		VAR i, j, k, x: LONGINT; form, name: ARRAY 32 OF CHAR;
 	BEGIN
-		COPY(dateform, form);
+		 form := dateform;
 		IF form = "" THEN form := "DD.MM.YY" END;
 		i := 0; j := 0;
 		WHILE form[j] # 0X DO
@@ -703,8 +703,8 @@ END StrToReal;
 					INC(j);
 					IF CAP(form[j]) = "D" THEN
 						INC(j); x := Dates.DayOfWeek(date);
-						IF CAP(form[j]) = "D" THEN INC(j); COPY(lDayName[x], name)
-						ELSE COPY(sDayName[x], name)
+						IF CAP(form[j]) = "D" THEN INC(j);  name := lDayName[x]
+						ELSE  name := sDayName[x]
 						END;
 						k := 0; WHILE name[k] # 0X DO str[i] := name[k]; INC(i); INC(k) END
 					ELSE (* day with leading zero *)
@@ -722,8 +722,8 @@ END StrToReal;
 					INC(j);
 					IF CAP(form[j]) = "M" THEN
 						INC(j);
-						IF CAP(form[j]) = "M" THEN INC(j); COPY(lMonthName[x-1], name)
-						ELSE COPY(sMonthName[x-1], name) 
+						IF CAP(form[j]) = "M" THEN INC(j);  name := lMonthName[x-1]
+						ELSE  name := sMonthName[x-1] 
 						END;
 						k := 0; WHILE name[k] # 0X DO str[i] := name[k]; INC(i); INC(k) END
 					ELSE
@@ -756,20 +756,20 @@ END StrToReal;
 	PROCEDURE MonthToStr* (month: INTEGER; VAR str: ARRAY OF CHAR; short: BOOLEAN);
 	BEGIN
 		month := (month - 1) MOD 12;
-		IF short THEN COPY(sMonthName[month], str) ELSE COPY(lMonthName[month], str) END
+		IF short THEN  str := sMonthName[month] ELSE  str := lMonthName[month] END
 	END MonthToStr;
 
 (** Returns a day's name (set short to get the abbreviation) *) 
 	PROCEDURE DayToStr* (day: INTEGER; VAR str: ARRAY OF CHAR; short: BOOLEAN);
 	BEGIN
-		IF short THEN COPY(sDayName[day MOD 7], str) ELSE COPY(lDayName[day MOD 7], str) END
+		IF short THEN  str := sDayName[day MOD 7] ELSE  str := lDayName[day MOD 7] END
 	END DayToStr;
 
 (** Convert time (Oberon.GetClock) into specified format. *)
 	PROCEDURE TimeToStr*(time: LONGINT; VAR str: ARRAY OF CHAR);
 		VAR i, j, x, h, hPos: LONGINT; form: ARRAY 32 OF CHAR; shortH, leadingH: BOOLEAN;
 	BEGIN
-		COPY(timeform, form);
+		 form := timeform;
 		IF form = "" THEN form := "HH:MM:SS" END;
 		i := 0; j := 0; h:= time DIV 4096 MOD 32; shortH := FALSE;
 		WHILE form[j] # 0X DO
@@ -847,9 +847,9 @@ END StrToReal;
 		VAR i: LONGINT;  s: Texts.Scanner;
 	BEGIN
 		Oberon.OpenScanner(s, "System.DateFormat");
-		IF s.class = Texts.String THEN COPY(s.s, dateform) ELSE dateform := "" END;
+		IF s.class = Texts.String THEN  dateform := s.s ELSE dateform := "" END;
 		Oberon.OpenScanner(s, "System.TimeFormat");
-		IF s.class = Texts.String THEN COPY(s.s, timeform) ELSE timeform := "" END;
+		IF s.class = Texts.String THEN  timeform := s.s ELSE timeform := "" END;
 		sDayName[0] := "Mon";	sDayName[1] := "Tue";	sDayName[2] := "Wed";	sDayName[3] := "Thu";
 		sDayName[4] := "Fri";	sDayName[5] := "Sat";	sDayName[6] := "Sun";
 

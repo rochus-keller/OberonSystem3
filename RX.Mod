@@ -67,7 +67,7 @@ BEGIN
 	Texts.Scan( s );
 	text := NIL; name[0] := 0X;
 	IF s.class = Texts.Name THEN
-		NEW( text ); Texts.Open( text, s.s ); COPY( s.s, name );
+		NEW( text ); Texts.Open( text, s.s );  name  :=  s.s;
 	ELSIF ( s.class = Texts.Char ) & ( s.c = "*" ) THEN
 		text := NIL; ThisFrame(Oberon.Pointer.X, Oberon.Pointer.Y, F);
 		IF F # NIL THEN
@@ -189,7 +189,7 @@ BEGIN
 			IF casesens THEN
 				RXA.Search( dfa, line, beg, end );
 			ELSE
-				COPY( line, linec ); i := 0; ch := linec[0];
+				 linec  :=  line; i := 0; ch := linec[0];
 				WHILE ch # 0X DO linec[i] := MyCAP( ch ); INC(i); ch := linec[i] END;
 				RXA.Search( dfa, linec, beg, end );
 			END; 
@@ -299,7 +299,7 @@ BEGIN
 		END; 
 	END; 
 	IF end >= 0 THEN
-		stext := text; stextpos := textpos; slinelen := linelen; sbeg := beg; send := end; sreplaced := FALSE; COPY( line, sline );
+		stext := text; stextpos := textpos; slinelen := linelen; sbeg := beg; send := end; sreplaced := FALSE;  sline  :=  line;
 		IF r.eot THEN DEC(slinelen) END
 	ELSE
 		stext := NIL

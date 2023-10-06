@@ -455,7 +455,7 @@ BEGIN
 	rider:= ref;
 	WHILE (rider # NIL) & (rider.name # name) DO rider:= rider.next; END;
 	IF (rider = NIL) THEN
-		NEW(op); op.next:= ref; COPY(name,op.name);
+		NEW(op); op.next:= ref; op.name := name;
 		op.weight:= MAX(INTEGER); op.op:= f; ref:= op;
 	ELSE
 		WITH rider: PrefixOperator DO rider.op:= f; END;
@@ -486,7 +486,7 @@ BEGIN
 		rider:= ref;
 		WHILE (rider # NIL) & (rider.name # name) DO rider:= rider.next; END;
 		IF (rider = NIL) THEN
-			NEW(op); op.next:= ref; COPY(name,op.name);
+			NEW(op); op.next:= ref; op.name := name;
 			op.weight:= w; op.op:= f; ref:= op;
 		ELSE
 			WITH rider: InfixOperator DO rider.weight:= w; rider.op:= f; END;
@@ -517,7 +517,7 @@ BEGIN
 	rider:= ref;
 	WHILE (rider # NIL) & (rider.name # name) DO rider:= rider.next; END;
 	IF (rider = NIL) THEN
-		NEW(op); op.next:= ref; COPY(name,op.name);
+		NEW(op); op.next:= ref; op.name := name;
 		op.weight:= MIN(INTEGER); op.op:= f; ref:= op;
 	ELSE
 		WITH rider: PrefixOperator DO rider.op:= f; END;

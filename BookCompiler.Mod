@@ -213,12 +213,12 @@ MODULE BookCompiler;	(** portable *)
 		l := SearchLabel();
 		IF l = NIL THEN
 			NEW(cl);
-			COPY(ident, cl.name);
+			 cl.name := ident;
 			cl.next := labels;
 			labels := cl
 		ELSIF  l.frame.pos1 >= 0 THEN
 			NEW(cl);
-			COPY(ident, cl.name);
+			 cl.name := ident;
 			cl.next := labels;
 			labels := cl;
 			Mark(ident, " label allready defined")
@@ -288,7 +288,7 @@ MODULE BookCompiler;	(** portable *)
 		l := SearchLabel();
 		IF l = NIL THEN
 			NEW(pl);
-			COPY(ident, pl.name);
+			 pl.name := ident;
 			pl.next := labels;
 			labels := pl
 		ELSE
@@ -344,7 +344,7 @@ MODULE BookCompiler;	(** portable *)
 			Texts.WriteString(Wr, " not found");
 			Texts.Append(Oberon.Log, Wr.buf);
 			NEW(el);
-			COPY(name, el.name);
+			 el.name := name;
 			el.next := i.extLabels;
 			i.extLabels := el;
 			el.book := i;
@@ -750,7 +750,7 @@ MODULE BookCompiler;	(** portable *)
 		Files.Register(F);
 		Files.Close(F);
 		IM.F := NIL;
-		COPY(bookName, IM.name);
+		 IM.name := bookName;
 		IM.res := -1;
 		Display.Broadcast(IM)
 	END RegisterBook;
@@ -891,7 +891,7 @@ MODULE BookCompiler;	(** portable *)
 		ELSE
 			name := "???"
 		END;
-		COPY(name, na)
+		 na := name
 	END SymToName;
 	
 	PROCEDURE Check(sy: INTEGER);
@@ -1061,7 +1061,7 @@ MODULE BookCompiler;	(** portable *)
 			il.next := imports;
 			imports := il;
 			il.ind := -1;
-			COPY(name, il.name);
+			 il.name := name;
 			IF ~BookDocs.Import(il, TRUE) THEN
 				Texts.WriteLn(Wr);
 				Texts.WriteString(Wr, "Warning: tutorial ");
@@ -1190,7 +1190,7 @@ MODULE BookCompiler;	(** portable *)
 					i := Import(name);
 					lk := DefExtLink(i, ident)
 				ELSE
-					COPY(lname, ident);
+					 ident := lname;
 					lk := DefLink()
 				END;
 				Check(rbrSy);
@@ -1587,7 +1587,7 @@ MODULE BookCompiler;	(** portable *)
 		END;
 		Check(identSy);
 		IF error THEN RETURN END;
-		COPY(ident, bookName);
+		 bookName := ident;
 		Texts.WriteString(Wr, "compiling: ");
 		Texts.WriteString(Wr, ident);
 		Texts.Append(Oberon.Log, Wr.buf);
@@ -1873,14 +1873,14 @@ MODULE BookCompiler;	(** portable *)
 			text := text OR verbose
 		END;
 		IF S.class = Texts.Name THEN
-			COPY(S.s, il.name)
+			 il.name := S.s
 		ELSIF (S.class =  Texts.Char) & (S.c = "^") THEN
 			Oberon.GetSelection(t, beg, end, time);
 			IF (t # NIL) & (time > 0) THEN
 				Texts.OpenScanner(S, t, beg);
 				Texts.Scan(S);
 				IF S.class = Texts.Name THEN
-					COPY(S.s, il.name)
+					 il.name := S.s
 				ELSE
 					RETURN
 				END
@@ -1915,7 +1915,7 @@ MODULE BookCompiler;	(** portable *)
 		TextDocs.NewDoc();
 		doc := Objects.NewObj(Documents.Document);
 		doc.W := BookDocs.W; doc.H := BookDocs.H;
-		COPY(il.name, doc.name);
+		 doc.name := il.name;
 		Books0.StrConcat(doc.name, "Def");
 		obj := Gadgets.CreateObject("TextGadgets.New");
 		Documents.Init(doc, obj(Gadgets.Frame));

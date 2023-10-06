@@ -693,7 +693,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 			a: StrPage;
 			sKey: ARRAY StrKeySize OF CHAR;
 	BEGIN
-		ASSERT(T.class = Str); COPY(key, sKey);
+		ASSERT(T.class = Str);  sKey := key;
 		ReadStrPage(T, T.root, a);
 		LOOP 
 			L := 0; R := a.m;
@@ -748,7 +748,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 			IF b = NIL THEN
 				res := Done;
 				u.p := -1; h := TRUE;
-				COPY(key, u.key); u.org := org
+				 u.key := key; u.org := org
 			ELSE
 				insertStr(T, key, org, b, h, u, res)
 			END;
@@ -805,7 +805,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 			h: BOOLEAN;
 			sKey: ARRAY StrKeySize OF CHAR;
 	BEGIN
-		ASSERT(T.class = Str); COPY(key, sKey);
+		ASSERT(T.class = Str);  sKey := key;
 		h := FALSE; u.p := -1;
 		ReadStrPage(T, T.root, r);
 		insertStr(T, sKey, org, r, h, u, res);
@@ -947,7 +947,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 			sKey: ARRAY StrKeySize OF CHAR;
 			h: BOOLEAN;
 	BEGIN
-		ASSERT(T.class = Str); COPY(key, sKey); res := NotFound;
+		ASSERT(T.class = Str);  sKey := key; res := NotFound;
 		ReadStrPage(T, T.root, r);
 		deleteStr(T, sKey, r, h, res);
 		IF (res = Done) & h THEN
@@ -978,9 +978,9 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 			i: LONGINT;
 	BEGIN
 		IF p # NIL THEN
-			COPY(MINStrKey, lkey); i := 0;
+			 lkey := MINStrKey; i := 0;
 			WHILE (i < p.m) & (lkey < max) DO
-				COPY(p.e[i].key, key);
+				 key := p.e[i].key;
 				IF key >= min THEN
 					IF key > min THEN
 						IF i = 0 THEN
@@ -994,7 +994,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 						enum(key, p.e[i].org, cont)
 					END
 				END;
-				COPY(key, lkey); INC(i)
+				 lkey := key; INC(i)
 			END;
 			IF cont & (lkey < max) THEN
 				ReadStrPage(T, p.e[p.m-1].p, q);
@@ -1020,7 +1020,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 	PROCEDURE minStrKey(T: Tree; p: StrPage; VAR key: ARRAY OF CHAR);
 	BEGIN
 		IF p # NIL THEN
-			COPY(p.e[0].key, key);
+			 key := p.e[0].key;
 			ReadStrPage(T, p.p0, p);
 			minStrKey(T, p, key)
 		END
@@ -1042,7 +1042,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 	PROCEDURE maxStrKey(T: Tree; p: StrPage; VAR key: ARRAY OF CHAR);
 	BEGIN
 		IF (p # NIL) & (p.m > 0) THEN
-			COPY(p.e[p.m-1].key, key);
+			 key := p.e[p.m-1].key;
 			ReadStrPage(T, p.e[p.m-1].p, p);
 			maxStrKey(T, p, key)
 		END

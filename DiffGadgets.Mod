@@ -57,7 +57,7 @@ END S;
 PROCEDURE AttributesSlider (F: Slider; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-			M.class := Objects.String; COPY("DiffGadgets.NewSlider", M.s); M.res := 0
+			M.class := Objects.String;  M.s := "DiffGadgets.NewSlider"; M.res := 0
 	ELSE Gadgets.framehandle(F, M)
 	END
 END AttributesSlider;
@@ -361,7 +361,7 @@ BEGIN
 	from.slider.handle(from.slider, N); to.slider := N.obj(Slider);
 	to.lines:= from.lines;
 	to.org:= from.org;
-	COPY(from.name1, to.name1); COPY(from.name2, to.name2)
+	 to.name1 := from.name1;  to.name2 := from.name2
 END Copy;
 
 PROCEDURE Attributes (F: Frame; VAR M: Objects.AttrMsg);
@@ -515,7 +515,7 @@ BEGIN
 	NEW(F.slider); InitSlider(F.slider, lines);
 	INCL(F.slider.state, Gadgets.lockedsize);
 	
-	COPY(n1, F.name1); COPY(n2, F.name2);
+	 F.name1 := n1;  F.name2 := n2;
 
 	M.id := Display.extend; M.mode:= Display.state;
 	M.X:= 0; M.Y:= 0; M.W:= F.W; M.H:= F.H;
@@ -592,7 +592,7 @@ BEGIN
 	
 	NEW(F); Init(F, t1, t2, n1, n2);
 	Documents.Init(D, F);
-	COPY("Diff.Text", D.name);
+	 D.name := "Diff.Text";
 	Desktops.ShowDoc(D)
 END OpenDoc;
 

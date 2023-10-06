@@ -137,7 +137,7 @@ PROCEDURE PostoString(pos: INTEGER; VAR s: ARRAY OF CHAR);
 (* Wandelt eine Zahl in einen String um *)
 VAR hex: ARRAY 17 OF CHAR;
 BEGIN
-	COPY("0123456789ABCDEF", hex);
+	 hex := "0123456789ABCDEF";
 	s[0]:= hex[pos DIV 16];
 	s[1]:= hex[pos MOD 16];
 	s[2]:= 0X
@@ -158,7 +158,7 @@ PROCEDURE ConvertStringtoPos(s: ARRAY OF CHAR; VAR pos: INTEGER);
 (* Wandelt einen String in einen entsprechenden ASCII-Code um *)
 VAR i: INTEGER; hex: ARRAY 17 OF CHAR;
 BEGIN
-	COPY("0123456789ABCDEF", hex);
+	 hex := "0123456789ABCDEF";
 	i := 0; WHILE s[i] # 0X DO INC(i) END;
 	IF i = 1 THEN
 		pos:= ORD(s[0])
@@ -292,7 +292,7 @@ BEGIN
 	IF f.height<=20 THEN zoom:= 16 ELSE zoom:= 7 END;	(* Vergrösserte Darstellung je nach Fontgrösse *)
 	NEW(doc); doc.Load:= LoadDoc; doc.Store:= StoreDoc; doc.handle:= DocHandler;
 	Objects.NewObj:= doc;
-	COPY(name, doc.name);
+	 doc.name := name;
 	obj:= NewCharacter(P, f, pos);
 	doc.X:= 0; doc.Y:= 0; doc.W:= obj.pict.width*zoom; doc.H:=obj.pict.height*zoom;
 	Documents.Init(doc, obj);
@@ -536,7 +536,7 @@ PROCEDURE FtAttributes (F: Fonttable; VAR M: Objects.AttrMsg);
 BEGIN
   IF M.id = Objects.get THEN
     IF M.name = "Gen" THEN
-      M.class := Objects.String; COPY("FontEditor.NewFonttable", M.s); M.res := 0
+      M.class := Objects.String;  M.s := "FontEditor.NewFonttable"; M.res := 0
     ELSIF M.name = "Color" THEN
       M.class := Objects.Int; M.i := F.col; M.res := 0 
     ELSE Gadgets.framehandle(F, M)
@@ -881,7 +881,7 @@ PROCEDURE PreviewAttributes (F: Preview; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
 		IF M.name = "Gen" THEN
-			M.class := Objects.String; COPY("FontEditor.NewPreview", M.s); M.res := 0
+			M.class := Objects.String;  M.s := "FontEditor.NewPreview"; M.res := 0
 		ELSE
 			Rembrandt.FrameAttributes(F, M)
 		END
@@ -942,7 +942,7 @@ VAR obj: Objects.Object; len: INTEGER; f: Font; teststring: ARRAY 64 OF CHAR;
 BEGIN
 	Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Texts.Scan(S);
-	IF S.class = Texts.Name THEN COPY(S.s, teststring) ELSE teststring:= "" END;
+	IF S.class = Texts.Name THEN  teststring := S.s ELSE teststring:= "" END;
 	pw:=0;
 	obj := Gadgets.FindObj(Gadgets.context, "table");
 	IF obj#NIL THEN

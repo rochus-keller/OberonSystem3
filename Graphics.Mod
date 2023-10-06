@@ -392,7 +392,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 				WMsg("loading ", name); Files.Set(R, F, 0); Files.Read(R, ch);
 				IF ch = LibFileId THEN
 					IF L = NIL THEN
-						NEW(L); COPY(Lname, L.name); L.next := FirstLib; FirstLib := L
+						NEW(L);  L.name := Lname; L.next := FirstLib; FirstLib := L
 					END ;
 					L.first := NIL; InitContext(C); LoadElems(R, C, obj);
 					WHILE obj # NIL DO
@@ -410,7 +410,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 
 	PROCEDURE NewLib*(VAR Lname: ARRAY OF CHAR): Library;
 		VAR L: Library;
-	BEGIN NEW(L); COPY(Lname, L.name); L.first := NIL;
+	BEGIN NEW(L);  L.name := Lname; L.first := NIL;
 		L.next := FirstLib; FirstLib := L; RETURN L
 	END NewLib;
 
@@ -464,7 +464,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 			END ;
 			obj := obj.next
 		END ;
-		NEW(mh); mh.w := w; mh.h := h; mh.first := last; mh.ext := NIL; COPY(Mname, mh.name);
+		NEW(mh); mh.w := w; mh.h := h; mh.first := last; mh.ext := NIL;  mh.name := Mname;
 		new := NIL; RETURN mh
 	END MakeMac;
 

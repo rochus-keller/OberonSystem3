@@ -1759,9 +1759,9 @@ END BuildImage;
 
 PROCEDURE InitSysFix(i: LONGINT;  name, module, command: ARRAY OF CHAR);
 BEGIN
-	COPY(name, SysFix[i].name);
-	COPY(module, SysFix[i].module);
-	COPY(command, SysFix[i].command);
+	 SysFix[i].name := name;
+	 SysFix[i].module := module;
+	 SysFix[i].command := command;
 	SysFix[i].adr := 0
 END InitSysFix;
 
@@ -1914,7 +1914,7 @@ VAR
 BEGIN
 	Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);  Texts.Scan(S);
 	IF S.class = Texts.Name THEN
-		COPY(S.s, name);  Texts.Scan(S);
+		 name := S.s;  Texts.Scan(S);
 		IF (S.class = Texts.Char) & (S.c = "^") THEN
 			Oberon.GetSelection(T, beg, end, time);
 			IF time >= 0 THEN
@@ -1926,7 +1926,7 @@ BEGIN
 						Texts.Scan(S);
 						IF (S.class = Texts.Name) & (S.s = "END") THEN
 								(* "END xxxx yyyyyyyyH zzzzzzzzH" *)
-							Texts.Scan(S);  COPY(S.s, name);
+							Texts.Scan(S);   name := S.s;
 							Texts.Scan(S);
 							IF S.class = Texts.Int THEN
 								base := S.i;  Texts.Scan(S);
@@ -1964,10 +1964,10 @@ BEGIN
 		END
 	END;
 	IF (S.class = Texts.Char) & (S.c = "~") THEN	(* default *)
-		S.class := Texts.Name;  COPY(Modules.extension, S.s)
+		S.class := Texts.Name;   S.s := Modules.extension
 	END;
 	IF S.class = Texts.Name THEN
-		COPY(S.s, extension);
+		 extension := S.s;
 		Texts.WriteString(W, "Object file suffix set to ");
 		Texts.WriteString(W, extension)
 	ELSE
@@ -1978,7 +1978,7 @@ END SetObjSuffix;
 
 BEGIN
 	Texts.OpenWriter(W);
-	COPY(Modules.extension, extension);
+	 extension := Modules.extension;
 	Texts.WriteString(W, "Static BootLinker for OM Object Files / prk"); Texts.WriteLn(W);
 	Texts.Append(Oberon.Log, W.buf)
 END BootLinker.

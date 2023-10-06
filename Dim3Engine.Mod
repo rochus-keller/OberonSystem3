@@ -746,8 +746,8 @@ BEGIN
 	poly.texture.basePict := P;
 	poly.texture.transparent := transparent;
 	poly.texture.stringTexture := TRUE;
-	COPY(string, poly.texture.name);
-	COPY(font, poly.texture.font);
+	 poly.texture.name := string;
+	 poly.texture.font := font;
 	poly.texture.fontCol := col; poly.texture.backCol := backCol;
 	Texts.Append(Oberon.Log, W.buf);
 END InitStringTexture;
@@ -763,7 +763,7 @@ BEGIN
 		poly.texture.basePict := P;
 		poly.texture.transparent := transparent;
 		poly.texture.stringTexture := FALSE;
-		COPY(name, poly.texture.name)
+		 poly.texture.name := name
 	ELSE
 		poly.texture := NIL
 	END;
@@ -1235,7 +1235,7 @@ BEGIN
 		IF M.name = "Cmd" THEN
 			M.class := Objects.String; M.res := 0;
 			IF s.cmd # NIL THEN
-				COPY(s.cmd^, M.s)
+				 M.s := s.cmd^
 			ELSE
 				M.s := ""
 			END
@@ -1254,7 +1254,7 @@ BEGIN
 	ELSIF M.id = Objects.set THEN
 		IF (M.name = "Cmd") & (M.class = Objects.String) THEN
 			IF s.cmd = NIL THEN NEW(s.cmd) END;
-			COPY(M.s, s.cmd^);
+			 s.cmd^ := M.s;
 			M.res := 0
 		ELSIF (M.name = "Color") & (M.class = Objects.Int) THEN
 			Display.GetColor(SHORT(M.i), r, g, b);

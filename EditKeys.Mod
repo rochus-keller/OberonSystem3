@@ -77,7 +77,7 @@ MODULE EditKeys;	(** portable *)	(* CAS/MH 27 Jan 93 / jm 2.5.95 *)
 				
 		NEW(f); TextGadgets.Init(f, T, FALSE);	(* create content *)
 		Documents.Init(D, f); (* and merge together *)
-		COPY(title, D.name);
+		 D.name := title;
 		IF systemtrack THEN D.W := Display.Width DIV 8 * 3 - 20 ELSE D.W := Display.Width DIV 8 * 3 + 20 END;
 		Desktops.ShowDoc(D)
 	END OpenText;
@@ -403,7 +403,7 @@ MODULE EditKeys;	(** portable *)	(* CAS/MH 27 Jan 93 / jm 2.5.95 *)
 							END
 						END
 					ELSIF seq.cmd = execCmd THEN PopArg(def, Texts.Name, S, stack);
-						IF errs = 0 THEN COPY(S.s, name); d := Find(name, trig, FALSE);
+						IF errs = 0 THEN  name := S.s; d := Find(name, trig, FALSE);
 							IF d # NIL THEN Expand(d, stack, args, params)
 							ELSE Err(def, "exec of undefined macro")
 							END

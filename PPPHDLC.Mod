@@ -112,7 +112,7 @@ VAR
 			cr: ARRAY 2 OF CHAR;
 			(*es*)res: LONGINT;(**)
 	BEGIN 
-		Config.c := c; COPY(cname, Config.cname);
+		Config.c := c;  Config.cname := cname;
 (*es??? die V24 und Loginsachen macht doch der Dialer. Oder ?
 		(* clear input-buffer *)
 		WHILE V24.Available(c) > 0 DO V24.Receive(c, temp[0],res); END;

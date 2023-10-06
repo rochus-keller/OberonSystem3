@@ -470,10 +470,10 @@ MODULE Edit;	(** portable *) (*JG 4.4.95 / NW 24.1.91*)
 		Texts.WriteString(W, "Edit.Print"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
 		Texts.OpenScanner(S, par.text, par.pos); Texts.Scan(S);
 		IF S.class IN {Texts.Name,Texts.String} THEN
-			COPY(S.s, server);
+			 server := S.s;
 			IF S.nextCh = Oberon.OptionChar THEN
 				Texts.Scan(S);  Texts.Scan(S);
-				IF S.class IN {Texts.Name,Texts.String} THEN COPY(S.s, options)
+				IF S.class IN {Texts.Name,Texts.String} THEN  options := S.s
 				ELSE options := "" 
 				END
 			ELSE options := ""

@@ -24,7 +24,7 @@ VAR prefix: ARRAY 10 OF CHAR;
 BEGIN
 	In.Open; In.Name(prefix);
 	IF In.Done THEN
-		COPY(prefix, FileDir.prefix);
+		 FileDir.prefix := prefix;
 		Out.String("Prefix.Set "); Out.Char(22X); Out.String(FileDir.prefix); 
 		Out.Char(22X); Out.Ln
 	END

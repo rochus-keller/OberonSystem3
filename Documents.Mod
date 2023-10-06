@@ -148,7 +148,7 @@ BEGIN
 		Cmd := Modules.ThisCommand(Mod, PName);
 		IF Modules.res = 0 THEN Objects.NewObj := NIL; Cmd;
 			IF (Objects.NewObj # NIL) & (Objects.NewObj IS Document) THEN
-				D := Objects.NewObj(Document); COPY(name, D.name); D.Load(D)
+				D := Objects.NewObj(Document);  D.name := name; D.Load(D)
 			ELSE loaderror := TRUE
 			END
 		ELSE loaderror := TRUE
@@ -187,7 +187,7 @@ PROCEDURE Open*(name: ARRAY OF CHAR): Document;
 VAR i, j, colonpos: INTEGER; ext: ARRAY 64 OF CHAR; D: Document;
 	loaderror: BOOLEAN;
 BEGIN
-	COPY(name, errMsg); Strings.AppendCh(errMsg, " ");
+	 errMsg := name; Strings.AppendCh(errMsg, " ");
 	D := Generic(name, loaderror);
 	IF (D = NIL) & ~loaderror THEN (* not found *)
 		i := 0; j := -1; colonpos := -1;
@@ -225,7 +225,7 @@ BEGIN
 			ELSE i := reg (* no period *)
 			END
 		END; 
-		IF i = reg THEN (* nothing, use the default *) COPY("TextDocs.NewDoc", DocNewProc[i]) END;
+		IF i = reg THEN (* nothing, use the default *)  DocNewProc[i] := "TextDocs.NewDoc" END;
 		D := generic(name, DocNewProc[i], loaderror)
 	END;
 	Objects.NewObj := NIL; (* for GC *)
@@ -248,8 +248,8 @@ BEGIN
 	i := 0; WHILE ext[i] # 0X DO ext[i] := Cap(ext[i]); INC(i) END;
 	i := 0;
 	WHILE (i # reg) & ((ext # DocExt[i]) OR (service # DocService[i])) DO INC(i) END;
-	IF i = reg THEN COPY(ext, DocExt[reg]); COPY(newproc, DocNewProc[reg]); DocService[reg] := service; INC(reg)
-	ELSE COPY(newproc, DocNewProc[i]);
+	IF i = reg THEN  DocExt[reg] := ext;  DocNewProc[reg] := newproc; DocService[reg] := service; INC(reg)
+	ELSE  DocNewProc[i] := newproc;
 	END
 END Register;
 
@@ -262,11 +262,11 @@ BEGIN
 	ELSE
 		err := FALSE;
 		WHILE (S.class IN {Texts.Name, Texts.String}) & ~err DO
-			COPY(S.s, ext);  Texts.Scan(S);
+			 ext := S.s;  Texts.Scan(S);
 			IF (S.class = Texts.Char) & (S.c = "=") THEN
 				Texts.Scan(S);
 				IF S.class IN {Texts.Name, Texts.String} THEN
-					COPY(S.s, newproc);  Texts.Scan(S);
+					 newproc := S.s;  Texts.Scan(S);
 					Register(ext, newproc, service)
 				ELSE err := TRUE
 				END
@@ -436,7 +436,7 @@ BEGIN
 	
 	to.Load := from.Load;
 	to.Store := from.Store;
-	COPY(from.name, to.name);
+	 to.name := from.name;
 END Copy;
 
 PROCEDURE DocumentAttr(F: Document; VAR M: Objects.AttrMsg);
@@ -444,12 +444,12 @@ BEGIN
 	IF M.id = Objects.get THEN
 		IF M.name = "Gen" THEN HALT(99)
 		ELSIF M.name = "DocumentName" THEN
-			M.class := Objects.String; COPY(F.name, M.s); M.res := 0
+			M.class := Objects.String;  M.s := F.name; M.res := 0
 		ELSE Gadgets.framehandle(F, M)
 		END
 	ELSIF M.id = Objects.set THEN
 		IF M.name = "DocumentName" THEN
-			IF M.class = Objects.String THEN COPY(M.s, F.name); M.res := 0 END;
+			IF M.class = Objects.String THEN  F.name := M.s; M.res := 0 END;
 		ELSE Gadgets.framehandle(F, M)
 		END
 	ELSIF M.id = Objects.enum THEN

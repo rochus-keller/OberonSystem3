@@ -151,7 +151,7 @@ MODULE TextPopups;	(** portable *)	(* tk 6.12.95 *)
 		VAR h: FileHistory; q: FileMenuItem;
 	BEGIN
 		h:=fileHistory; WHILE (h#NIL) & (nof>0) DO
-			NEW(q); COPY(h.filename, q.val); lastItem.link:=q; lastItem:=q;
+			NEW(q);  q.val := h.filename; lastItem.link:=q; lastItem:=q;
 			h:=h.link; DEC(nof)
 		END;
 	END ExtractHistory;
@@ -192,12 +192,12 @@ MODULE TextPopups;	(** portable *)	(* tk 6.12.95 *)
 				END;
 				ExtractHistory(w); 
 			ELSE
-				NEW(cmd); lastItem.link:=cmd; lastItem:=cmd; cmd.link:=NIL; COPY(s, cmd.val);
+				NEW(cmd); lastItem.link:=cmd; lastItem:=cmd; cmd.link:=NIL;  cmd.val := s;
 			END
 		UNTIL R.eot OR (ch="[");
 		p:=itemList.link; 
 		WHILE p # NIL DO 
-			NEW(d); COPY(p.val, d.s); listR.do.Write(listR, d);
+			NEW(d);  d.s := p.val; listR.do.Write(listR, d);
 			Display3.StringSize(p.val, Fonts.Default, w, h, dsr);
 			IF w+25>width THEN width:=w+25 END;
 			INC(nofLines); p:=p.link
@@ -291,7 +291,7 @@ MODULE TextPopups;	(** portable *)	(* tk 6.12.95 *)
 	BEGIN	IF D=NIL THEN RETURN END;
 		h:=fileHistory; WHILE (h#NIL) & (h.filename#D.name) DO h:=h.link END;
 		IF h=NIL THEN
-			NEW(h); COPY(D.name, h.filename); h.link:=fileHistory; fileHistory:=h;
+			NEW(h);  h.filename := D.name; h.link:=fileHistory; fileHistory:=h;
 			i:=0; WHILE (h#NIL) & (i<MaxHistory) DO h:=h.link; INC(i) END;
 			IF h#NIL THEN h.link:=NIL END;
 		END

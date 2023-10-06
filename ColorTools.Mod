@@ -97,15 +97,15 @@ PROCEDURE ColorPickerAttr(F: ColorPicker; VAR M: Objects.AttrMsg);
 VAR n: INTEGER;
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("ColorTools.NewColorPicker", M.s); M.res := 0
-		ELSIF M.name = "Cmd" THEN M.class := Objects.String; COPY(F.cmd, M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "ColorTools.NewColorPicker"; M.res := 0
+		ELSIF M.name = "Cmd" THEN M.class := Objects.String;  M.s := F.cmd; M.res := 0
 		ELSIF M.name = "Col" THEN M.class := Objects.Int; M.i := F.col; M.res := 0
 		ELSIF M.name = "Colors" THEN M.class := Objects.String; Unparse(16, F.colors, M.s); M.res := 0
 		ELSE Gadgets.framehandle(F, M);
 		END;
 	ELSIF M.id = Objects.set THEN
 		IF M.name = "Cmd" THEN
-			IF  (M.class = Objects.String) THEN COPY(M.s, F.cmd); M.res := 0 END;
+			IF  (M.class = Objects.String) THEN  F.cmd := M.s; M.res := 0 END;
 		ELSIF M.name = "Col" THEN
 			IF  (M.class = Objects.Int) THEN F.col := SHORT(M.i); M.res := 0; END
 		ELSIF M.name = "Colors" THEN
@@ -253,7 +253,7 @@ END PrintColorPicker;
 
 PROCEDURE CopyColorPicker*(VAR M: Objects.CopyMsg; from, to: ColorPicker);
 BEGIN
-	Gadgets.CopyFrame(M, from, to); to.col := from.col; COPY(from.cmd, to.cmd); to.colors := from.colors;
+	Gadgets.CopyFrame(M, from, to); to.col := from.col;  to.cmd := from.cmd; to.colors := from.colors;
 END CopyColorPicker;
 
 PROCEDURE ColorPickerHandler*(F: Objects.Object; VAR M: Objects.ObjMsg);

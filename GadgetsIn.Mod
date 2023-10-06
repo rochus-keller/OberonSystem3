@@ -77,7 +77,7 @@ BEGIN
 		a.id := Objects.get;  a.res := -1;  field.handle(field, a);
 		IF a.res = 0 THEN
 			CASE a.class OF
-				Objects.String: COPY(a.s, str)
+				Objects.String:  str := a.s
 				|Objects.Int: Strings.IntToStr(a.i, str)
 				|Objects.Bool: Strings.BoolToStr(a.b, str)
 				|Objects.Real: Strings.RealToStr(a.x, str)
@@ -181,10 +181,10 @@ PROCEDURE Name*(VAR x: ARRAY OF CHAR);
 BEGIN
 	IF done THEN
 		Texts.Scan(s);
-		IF s.class = Texts.Name THEN COPY(s.s, x)
-		ELSE done := FALSE; COPY("", x)
+		IF s.class = Texts.Name THEN  x := s.s
+		ELSE done := FALSE;  x := ""
 		END
-	ELSE COPY("", x)
+	ELSE  x := ""
 	END
 END Name;
 
@@ -194,10 +194,10 @@ PROCEDURE String*(VAR x: ARRAY OF CHAR);
 BEGIN
 	IF done THEN
 		Texts.Scan(s);
-		IF (s.class = Texts.String) OR (s.class = Texts.Name) THEN COPY(s.s, x)
-		ELSE done := FALSE; COPY("", x)
+		IF (s.class = Texts.String) OR (s.class = Texts.Name) THEN  x := s.s
+		ELSE done := FALSE;  x := ""
 		END
-	ELSE COPY("", x)
+	ELSE  x := ""
 	END
 END String;
 

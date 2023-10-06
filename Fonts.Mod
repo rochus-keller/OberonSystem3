@@ -210,15 +210,15 @@ of characters, each character being a pattern and and metric data.
 		WITH L: Font DO
 			f := Files.Old(L.name);
 			IF f = NIL THEN
-				COPY(L.name, name);  name[7] := 0X;
+				 name := L.name;  name[7] := 0X;
 				IF name = "Default" THEN
 					IF TraceAlias THEN Kernel.WriteString(L.name);  Kernel.WriteString(" -> ") END;
-					COPY(default, name);
+					 name := default;
 					i := 0;  WHILE name[i] # 0X DO INC(i) END;
 					j := 7;  WHILE L.name[j] # 0X DO name[i] := L.name[j];  INC(i);  INC(j) END;
 					name[i] := 0X;
 					IF TraceAlias THEN Kernel.WriteString(name);  Kernel.WriteLn END;
-					COPY(name, L.name);
+					 L.name := name;
 					f := Files.Old(name)
 				ELSE
 					name[6] := 0X;
@@ -232,7 +232,7 @@ of characters, each character being a pattern and and metric data.
 						WHILE L.name[i] # 0X DO name[i] := L.name[i];  INC(i) END;
 						name[i] := 0X;
 						IF TraceAlias THEN Kernel.WriteString(name);  Kernel.WriteLn END;
-						COPY(name, L.name);
+						 L.name := name;
 						f := Files.Old(name)
 					END
 				END
@@ -242,7 +242,7 @@ of characters, each character being a pattern and and metric data.
 				IF id = FontId THEN Files.Read(R, L.type);
 					IF (L.type = metric) OR (L.type = font) THEN Internalize(L, R, L.type) ELSE Substitute(L) END
 				ELSE Substitute(L) END
-			ELSE COPY(L.name, name); i := 0;
+			ELSE  name := L.name; i := 0;
 				WHILE name[i] # 0X DO INC(i) END;
 				IF (i >= 8) & (name[i-8] = ".") & (name[i-7] = "M") & (name[i-6] = "d") THEN
 					name[i-7] := "P"; name[i-6] := "r"; f := Files.Old(name);

@@ -560,12 +560,12 @@ BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Attributes.Scan(S);
 	IF S.class = Attributes.String THEN (* where *)
-		COPY(S.s, where)
+		 where := S.s
 	ELSIF S.class = Attributes.Name THEN (* book name *)
-		COPY(S.s, bookname);
+		 bookname := S.s;
 		Attributes.Scan(S);
 		IF S.class = Attributes.String THEN (* where *)
-			COPY(S.s, where)
+			 where := S.s
 		END
 	END;
 	IF where # "" THEN (* found something *)

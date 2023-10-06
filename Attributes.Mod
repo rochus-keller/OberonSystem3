@@ -411,15 +411,15 @@ BEGIN
 		WHILE name # "" DO
 			Files.Read(R, ch);
 			IF ORD(ch) = Sboolean THEN
-				Files.Read(R, ch); NEW(b); COPY(name, b.name); b.b := (ch = 1X); a := b;
+				Files.Read(R, ch); NEW(b);  b.name := name; b.b := (ch = 1X); a := b;
 			ELSIF ORD(ch) = Schar THEN
-				NEW(c); COPY(name, c.name); Files.Read(R, c.c); a := c;
+				NEW(c);  c.name := name; Files.Read(R, c.c); a := c;
 			ELSIF ORD(ch) = Sint THEN
-				NEW(i); COPY(name, i.name); Files.ReadLInt(R, i.i); a := i;
+				NEW(i);  i.name := name; Files.ReadLInt(R, i.i); a := i;
 			ELSIF ORD(ch) = Sreal THEN
-				NEW(r); COPY(name, r.name); Files.ReadLReal(R, r.r); a := r;
+				NEW(r);  r.name := name; Files.ReadLReal(R, r.r); a := r;
 			ELSIF ORD(ch) = Sstring THEN
-				NEW(s); COPY(name, s.name); Files.ReadString(R, s.s); a := s;
+				NEW(s);  s.name := name; Files.ReadString(R, s.s); a := s;
 			ELSE HALT(42)
 			END;
 			IF A = NIL THEN A := a; a0 := A ELSE a0.next := a; a0 := a END;
@@ -428,7 +428,7 @@ BEGIN
 	ELSIF ch = 42X THEN (* just string format *)
 		Files.ReadString(R, name);
 		WHILE name # "" DO
-			NEW(s); COPY(name, s.name); Files.ReadString(R, s.s); a := s;
+			NEW(s);  s.name := name; Files.ReadString(R, s.s); a := s;
 			IF A = NIL THEN A := a; a0 := A ELSE a0.next := a; a0 := a END;
 			Files.ReadString(R, name);
 		END;
@@ -459,7 +459,7 @@ PROCEDURE InsertAttr*(VAR list: Attr; name: ARRAY OF CHAR; val: Attr);
 VAR l, p0: Attr;
 BEGIN
 	IF val # NIL THEN
-		COPY(name, val.name);
+		 val.name := name;
 		val.next := NIL;
 		IF list = NIL THEN
 			list := val
@@ -507,7 +507,7 @@ PROCEDURE WriteAttr*(obj: Objects.Object; attr: ARRAY OF CHAR; VAR W: Texts.Writ
 VAR A: Objects.AttrMsg; s: ARRAY 64 OF CHAR;
 BEGIN
 	IF obj # NIL THEN
-		A.id := Objects.get; COPY(attr, A.name); A.class := 0; A.res := -1; obj.handle(obj, A);
+		A.id := Objects.get;  A.name := attr; A.class := 0; A.res := -1; obj.handle(obj, A);
 		IF A.class # 0 THEN
 			IF A.class = Objects.Bool THEN Strings.BoolToStr(A.b, s); Texts.WriteString(W, s)
 			ELSIF A.class = Objects.Char THEN Texts.Write(W, A.c)
@@ -538,7 +538,7 @@ END WriteAttr;
 		b := FALSE;
 		IF obj # NIL THEN
 			A.id := Objects.get; A.res := -1;
-			COPY(name, A.name);
+			 A.name := name;
 			obj.handle(obj, A);
 			IF A.res = 0 THEN
 				CASE A.class OF
@@ -557,7 +557,7 @@ END WriteAttr;
 		i := 0;
 		IF obj # NIL THEN
 			A.id := Objects.get; A.res := -1;
-			COPY(name, A.name);
+			 A.name := name;
 			obj.handle(obj, A);
 			IF A.res = 0 THEN
 				CASE A.class OF
@@ -577,7 +577,7 @@ END WriteAttr;
 		x := 0.0;
 		IF obj # NIL THEN
 			A.id := Objects.get; A.res := -1;
-			COPY(name, A.name);
+			 A.name := name;
 			obj.handle(obj, A);
 			IF A.res = 0 THEN
 				CASE A.class OF
@@ -597,7 +597,7 @@ END WriteAttr;
 		y := 0.0;
 		IF obj # NIL THEN
 			A.id := Objects.get; A.res := -1;
-			COPY(name, A.name);
+			 A.name := name;
 			obj.handle(obj, A);
 			IF A.res = 0 THEN
 				CASE A.class OF
@@ -614,14 +614,14 @@ END WriteAttr;
 	PROCEDURE GetString*(obj: Objects.Object; name: ARRAY OF CHAR; VAR s: ARRAY OF CHAR);
 		VAR A: Objects.AttrMsg;
 	BEGIN
-		COPY("", s);
+		 s := "";
 		IF obj # NIL THEN
 			A.id := Objects.get; A.res := -1;
-			COPY(name, A.name);
+			 A.name := name;
 			obj.handle(obj, A);
 			IF A.res = 0 THEN
 				CASE A.class OF
-					Objects.String: COPY(A.s, s)
+					Objects.String:  s := A.s
 					|Objects.Int: Strings.IntToStr(A.i, s)
 					|Objects.Bool: Strings.BoolToStr(A.b, s)
 					|Objects.Real: Strings.RealToStr(A.x, s)
@@ -650,7 +650,7 @@ END WriteAttr;
 	BEGIN
 		IF obj # NIL THEN
 			A.id := Objects.set; A.res := -1; A.class := Objects.Bool;
-			COPY(name, A.name); A.b := b;
+			 A.name := name; A.b := b;
 			obj.handle(obj, A);
 			IF A.res # 0 THEN
 				A.id := Objects.get; obj.handle(obj, A);
@@ -670,7 +670,7 @@ END WriteAttr;
 	BEGIN
 		IF obj # NIL THEN
 			A.id := Objects.set; A.res := -1; A.class := Objects.Int;
-			COPY(name, A.name); A.i := i;
+			 A.name := name; A.i := i;
 			obj.handle(obj, A);
 			IF A.res # 0 THEN
 				A.id := Objects.get; obj.handle(obj, A);
@@ -691,7 +691,7 @@ END WriteAttr;
 	BEGIN
 		IF obj # NIL THEN
 			A.id := Objects.set; A.res := -1; A.class := Objects.Real;
-			COPY(name, A.name); A.x := x;
+			 A.name := name; A.x := x;
 			obj.handle(obj, A);
 			IF A.res # 0 THEN
 				A.id := Objects.get; obj.handle(obj, A);
@@ -712,7 +712,7 @@ END WriteAttr;
 	BEGIN
 		IF obj # NIL THEN
 			A.id := Objects.set; A.res := -1; A.class := Objects.LongReal;
-			COPY(name, A.name); A.y := y;
+			 A.name := name; A.y := y;
 			obj.handle(obj, A);
 			IF A.res # 0 THEN
 				A.id := Objects.get; obj.handle(obj, A);
@@ -733,7 +733,7 @@ END WriteAttr;
 	BEGIN
 		IF obj # NIL THEN
 			A.id := Objects.set; A.res := -1; A.class := Objects.String;
-			COPY(name, A.name); COPY(s, A.s);
+			 A.name := name;  A.s := s;
 			obj.handle(obj, A);
 			IF A.res # 0 THEN
 				A.id := Objects.get; obj.handle(obj, A);

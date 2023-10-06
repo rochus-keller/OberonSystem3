@@ -528,7 +528,7 @@ MODULE TextFrames;	(** portable *) (* JG / pjm *)
 
   PROCEDURE GetAttr* (F: Frame; VAR s: ARRAY OF CHAR);
     VAR S: Texts.Scanner;
-  BEGIN Texts.OpenScanner(S, F.text, 0); Texts.Scan(S); COPY(S.s, s)
+  BEGIN Texts.OpenScanner(S, F.text, 0); Texts.Scan(S);  s := S.s
   END GetAttr;
 
   PROCEDURE CallCmd (cmd: ARRAY OF CHAR; F: Frame; pos: LONGINT; new: BOOLEAN);

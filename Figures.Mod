@@ -169,7 +169,7 @@ MODULE Figures;	(** eos   **)
 	PROCEDURE HandleGenAttr* (VAR msg: Objects.AttrMsg; s: ARRAY OF CHAR);
 	BEGIN
 		IF (msg.id = Objects.get) & (msg.name = "Gen") & (msg.res < 0) THEN
-			msg.class := Objects.String; COPY(s, msg.s); msg.res := 0
+			msg.class := Objects.String;  msg.s := s; msg.res := 0
 		END
 	END HandleGenAttr;
 	
@@ -179,9 +179,9 @@ MODULE Figures;	(** eos   **)
 			msg.Enum(name)
 		ELSIF (msg.res < 0) & (msg.name = name) THEN
 			IF msg.id = Objects.get THEN
-				msg.class := Objects.String; COPY(s, msg.s); msg.res := 0
+				msg.class := Objects.String;  msg.s := s; msg.res := 0
 			ELSIF (msg.id = Objects.set) & (msg.class = Objects.String) THEN
-				COPY(msg.s, s); msg.res := 0
+				 s := msg.s; msg.res := 0
 			END
 		END
 	END HandleStringAttr;

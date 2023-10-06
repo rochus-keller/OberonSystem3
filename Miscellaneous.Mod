@@ -173,7 +173,7 @@ MODULE Miscellaneous;	(** portable, except where noted *) (*JG 20.5.94 / NW 22.2
     Texts.Append(Oberon.Log, W.buf);
     Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
     WHILE S.class = Texts.Name DO
-      COPY(S.s, name); Texts.Scan(S);
+       name := S.s; Texts.Scan(S);
       IF (S.class = Texts.Char) & (S.c = "=") THEN Texts.Scan(S);
         IF (S.class = Texts.Char) & (S.c = ">") THEN Texts.Scan(S);
           IF S.class = Texts.Name THEN
@@ -220,7 +220,7 @@ MODULE Miscellaneous;	(** portable, except where noted *) (*JG 20.5.94 / NW 22.2
         Texts.Append(Oberon.Log, W.buf);
     Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
     WHILE S.class = Texts.Name DO
-      COPY(S.s, name); Texts.Scan(S);
+       name := S.s; Texts.Scan(S);
       IF (S.class = Texts.Char) & (S.c = "=") THEN Texts.Scan(S);
         IF (S.class = Texts.Char) & (S.c = ">") THEN Texts.Scan(S);
           IF S.class = Texts.Name THEN
@@ -267,7 +267,7 @@ MODULE Miscellaneous;	(** portable, except where noted *) (*JG 20.5.94 / NW 22.2
     Texts.Append(Oberon.Log, W.buf);
     Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
     WHILE S.class = Texts.Name DO
-      COPY(S.s, name); Texts.Scan(S);
+       name := S.s; Texts.Scan(S);
       IF (S.class = Texts.Char) & (S.c = "=") THEN Texts.Scan(S);
         IF (S.class = Texts.Char) & (S.c = ">") THEN Texts.Scan(S);
           IF S.class = Texts.Name THEN
@@ -322,9 +322,9 @@ MODULE Miscellaneous;	(** portable, except where noted *) (*JG 20.5.94 / NW 22.2
 	BEGIN
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
 		IF (S.class = Texts.Name) OR (S.class = Texts.String) THEN
-			COPY(S.s, Port); Texts.Scan(S);
+			 Port := S.s; Texts.Scan(S);
 			WHILE (S.class = Texts.Name) OR (S.class = Texts.String) DO
-				COPY(S.s, fname); Texts.WriteString(W, fname); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
+				 fname := S.s; Texts.WriteString(W, fname); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
 				IF (Port = "COM1") OR (Port = "COM2") THEN
 					IF Port = "COM1" THEN port := 0 ELSE port := 1 END;
 					V24.Start(port, 9600, 8, V24.ParNo, 1, res);  ASSERT(res = 0);
@@ -413,7 +413,7 @@ MODULE Miscellaneous;	(** portable, except where noted *) (*JG 20.5.94 / NW 22.2
 			i, j: LONGINT;
 		PROCEDURE Try();
 		BEGIN
-			COPY(prefix, file); Strings.Append(file, name);
+			 file := prefix; Strings.Append(file, name);
 			NEW(T); Texts.Open(T, file);
 			IF T.len = 0 THEN
 				T := NIL
@@ -427,10 +427,10 @@ MODULE Miscellaneous;	(** portable, except where noted *) (*JG 20.5.94 / NW 22.2
 				INC(i)
 			END;
 			S.s[i] := 0X; Strings.Append(S.s, ".Mod");
-			COPY(S.s, name);
+			 name := S.s;
 			Oberon.OpenScanner(S, "System.FilePrefixes");
 			IF S.class IN {Texts.Name, Texts.String} THEN
-				COPY(S.s, prefixes)
+				 prefixes := S.s
 			ELSE
 				prefixes := ""
 			END;

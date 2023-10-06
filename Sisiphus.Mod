@@ -204,7 +204,7 @@ MODULE Sisiphus;	(** portable *) (* gri 18.3.91 / 30.1.92 / 27.4.92 / jt/jm 7.11
 	PROCEDURE FrameAttr(F: Frame; VAR M: Objects.AttrMsg);
 	BEGIN
 		IF M.id = Objects.get THEN
-			IF M.name = "Gen" THEN M.class := Objects.String; COPY("Sisiphus.New", M.s); M.res := 0
+			IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Sisiphus.New"; M.res := 0
 			ELSIF M.name = "Color" THEN M.class := Objects.Int; M.i := F.col; M.res := 0 
 			ELSIF M.name = "Age" THEN M.class := Objects.Int; M.i := F.age; M.res := 0 
 			ELSE Gadgets.framehandle(F, M)

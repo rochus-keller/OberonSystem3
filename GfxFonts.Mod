@@ -434,10 +434,10 @@ MODULE GfxFonts;	(** eos   **)
 		END;
 		IF j = 1 THEN
 			CASE CAP(style[0]) OF
-			| "I": COPY("Italic", style)
-			| "B": COPY("Bold", style)
-			| "M": COPY("Medium", style)
-			| "J": COPY("BoldItalic", style)
+			| "I":  style := "Italic"
+			| "B":  style := "Bold"
+			| "M":  style := "Medium"
+			| "J":  style := "BoldItalic"
 			ELSE style[1] := 0X
 			END
 		ELSE
@@ -448,7 +448,7 @@ MODULE GfxFonts;	(** eos   **)
 	(* create font name from family and style *)
 	PROCEDURE BuildName (fam, style: ARRAY OF CHAR; VAR name: ARRAY OF CHAR);
 	BEGIN
-		COPY(fam, name);
+		 name := fam;
 		IF style # "" THEN
 			Strings.AppendCh(name, "-");
 			Strings.Append(name, style)
@@ -459,7 +459,7 @@ MODULE GfxFonts;	(** eos   **)
 	PROCEDURE OpenOutline (VAR family, style: ARRAY OF CHAR): Outline;
 		VAR fname: FontName; file: Files.File; r: Files.Rider; tag: INTEGER; outline: Outline;
 	BEGIN
-		COPY(family, fname); Strings.Append(fname, style); Strings.Append(fname, ".MTF");
+		 fname := family; Strings.Append(fname, style); Strings.Append(fname, ".MTF");
 		file := Files.Old(fname);
 		IF file # NIL THEN
 			Files.Set(r, file, 0);
@@ -540,7 +540,7 @@ MODULE GfxFonts;	(** eos   **)
 		END;
 		fppm := ppm;	(* match is exact if there is one *)
 		Strings.IntToStr(ppm, pstr);
-		COPY(family, name); Strings.Append(name, pstr);
+		 name := family; Strings.Append(name, pstr);
 		IF style = "BoldItalic" THEN Strings.AppendCh(name, "j")
 		ELSIF style # "" THEN Strings.AppendCh(name, CHR(ORD(CAP(style[0])) - ORD("A") + ORD("a")))
 		END;
@@ -641,7 +641,7 @@ MODULE GfxFonts;	(** eos   **)
 		IF cand # NIL THEN
 			font := cand.class.derive(cand, ptsize, mat);
 			IF font # NIL THEN
-				COPY(fname, font.name); font.ptsize := ptsize; font.mat := mat;
+				 font.name := fname; font.ptsize := ptsize; font.mat := mat;
 				CacheFont(font);
 				RETURN font
 			END
@@ -650,11 +650,11 @@ MODULE GfxFonts;	(** eos   **)
 		(* try registered font formats *)
 		Oberon.OpenScanner(s, "FontFormats");
 		WHILE s.class IN {Texts.Name, Texts.String} DO
-			COPY(s.s, cmd); Texts.Scan(s);
+			 cmd := s.s; Texts.Scan(s);
 			IF (s.class = Texts.Char) & (s.c = "=") THEN
 				Texts.Scan(s); cmd := "";
 				IF s.class = Texts.Name THEN
-					COPY(s.s, cmd); Texts.Scan(s)
+					 cmd := s.s; Texts.Scan(s)
 				END
 			END;
 			IF cmd # "" THEN
@@ -663,7 +663,7 @@ MODULE GfxFonts;	(** eos   **)
 				IF OpenProc # NIL THEN
 					font := OpenProc(family, style, ptsize, mat);
 					IF font # NIL THEN
-						COPY(fname, font.name); font.ptsize := ptsize; font.mat := mat;
+						 font.name := fname; font.ptsize := ptsize; font.mat := mat;
 						CacheFont(font);
 						RETURN font
 					END
@@ -674,7 +674,7 @@ MODULE GfxFonts;	(** eos   **)
 		(* try standard raster/outline fonts *)
 		font := OpenRaster(family, style, ptsize, mat, OpenOutline(family, style));
 		IF font # NIL THEN
-			COPY(fname, font.name); font.ptsize := ptsize; font.mat := mat;
+			 font.name := fname; font.ptsize := ptsize; font.mat := mat;
 			CacheFont(font);
 			RETURN font
 		END;

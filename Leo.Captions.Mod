@@ -23,13 +23,13 @@ MODULE Captions;	(** eos   **)
 			Texts.OpenReader(r, text, 0);
 			Texts.Read(r, ch); i := 0;
 			IF ~r.eot THEN
-				COPY(r.lib.name, font); color := r.col;
+				 font := r.lib.name; color := r.col;
 				WHILE (i < LEN(s)-1) & ~r.eot & (ch >= " ") DO
 					s[i] := ch; INC(i);
 					Texts.Read(r, ch)
 				END
 			ELSE
-				COPY(GfxFonts.Default.name, font); color := GfxMaps.BestIndex(GfxMaps.DisplayPal, 0, 0, 0)
+				 font := GfxFonts.Default.name; color := GfxMaps.BestIndex(GfxMaps.DisplayPal, 0, 0, 0)
 			END;
 			s[i] := 0X;
 			LeoText.InitCaption(cap(LeoText.Caption), 0, 0, s);

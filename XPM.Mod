@@ -360,7 +360,7 @@ BEGIN
 		IF msg IS Objects.AttrMsg THEN
 			WITH msg: Objects.AttrMsg DO 
 				IF (msg.id = Objects.get) & (msg.name = "Gen") THEN
-					msg.class:= Objects.String; COPY("Pictures.NewPicture",msg.s); msg.res:=0 
+					msg.class:= Objects.String; msg.s := "Pictures.NewPicture"; msg.res:=0 
 				END;
 			END;
 		ELSIF msg IS Objects.FileMsg THEN
@@ -418,7 +418,7 @@ BEGIN
 		IF In.Done & Valid(r) & Valid(g) & Valid(b) THEN
 			entry:= FindUserColor(col);
 			IF (entry = NIL) THEN
-				NEW(entry); COPY(col,entry.name);
+				NEW(entry); entry.name := col;
 				entry.next:= colorEntry; colorEntry:= entry;
 			END;
 			entry.r:= r; entry.g:= g; entry.b:= b;
@@ -449,7 +449,7 @@ BEGIN
 			IF ok THEN
 				entry:= FindUserColor(col1);
 				IF (entry = NIL) THEN
-					NEW(entry); COPY(col1,entry.name);
+					NEW(entry); entry.name := col1;
 					entry.next:= colorEntry; colorEntry:= entry;
 				END;
 				entry.r:= r; entry.g:= g; entry.b:= b;
@@ -464,7 +464,7 @@ BEGIN
 END CopyColors;
 
 BEGIN
-	COPY(Logo,xpmLogo); COPY(None,noColor);
+	xpmLogo := Logo; noColor := None;
 	colorEntry:= NIL; credit:= FALSE;
 END XPM.
 

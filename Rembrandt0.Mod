@@ -300,7 +300,7 @@ BEGIN
 			WITH M: Objects.AttrMsg DO
 				IF M.id = Objects.get THEN
 					IF M.name = "Gen" THEN
-                      M.class := Objects.String; COPY("Rembrandt0.NewColorObj", M.s); M.res := 0
+                      M.class := Objects.String;  M.s := "Rembrandt0.NewColorObj"; M.res := 0
                     ELSIF M.name = "col" THEN M.class := Objects.Int; M.i := obj.col; M.res := 0
 					ELSIF M.name = "red" THEN Display.GetColor(obj.col, red, green, blue);
                       M.class := Objects.Int; M.i := red; M.res := 0
@@ -368,7 +368,7 @@ BEGIN
 		WITH M: Objects.AttrMsg DO
  		 IF M.id = Objects.get THEN
   		  IF M.name = "Gen" THEN
-   		   M.class := Objects.String; COPY("Rembrandt0.NewColFrame", M.s); M.res := 0
+   		   M.class := Objects.String;  M.s := "Rembrandt0.NewColFrame"; M.res := 0
   		  ELSIF M.name = "Color" THEN
   		    M.class := Objects.Int; M.i := F.col; M.res := 0 
   		  ELSE Gadgets.framehandle(F, M)

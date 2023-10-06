@@ -229,7 +229,7 @@ VAR
 	fn: Objects.Name;
 	fd: INTEGER;
 BEGIN
-	COPY("Oberon",fn);
+	fn := "Oberon";
 	Strings.Append(fn,dim); Strings.Append(fn,".Scn.Fnt");
 	fnt[fdx]:= Fonts.This(fn); Display3.StringSize("X",fnt[fdx],fw[fdx],fh[fdx],fd);
 END FontGeometry;
@@ -313,12 +313,12 @@ PROCEDURE Tag(obj: SpaceObj; VAR tag: Objects.Name);
 	(* string tag for loading/storing *)
 BEGIN
 	WITH
-	  	obj: Asteroid DO COPY("Asteroid",tag);
-	|	obj: EBullet DO COPY("EBullet",tag);
-	|	obj: SBullet DO COPY("SBullet",tag);
-	|	obj: Enemy DO COPY("Enemy",tag);
-	|	obj: Ship DO COPY("Ship",tag);
-	|	obj: Detonation DO COPY("Detonation",tag);
+	  	obj: Asteroid DO tag := "Asteroid";
+	|	obj: EBullet DO tag := "EBullet";
+	|	obj: SBullet DO tag := "SBullet";
+	|	obj: Enemy DO tag := "Enemy";
+	|	obj: Ship DO tag := "Ship";
+	|	obj: Detonation DO tag := "Detonation";
 	END;
 END Tag;
 
@@ -328,7 +328,7 @@ VAR
 	nr: ARRAY 16 OF CHAR;
 BEGIN
 	IF obj.started THEN
-		COPY("Ships: ",status);
+		status := "Ships: ";
 		Strings.IntToStr(obj.ships,nr); Strings.Append(status,nr);
 		Strings.Append(status,"  Warps: ");
 		Strings.IntToStr(obj.ship.warpval,nr); Strings.Append(status,nr);
@@ -341,7 +341,7 @@ BEGIN
 		Strings.Append(status,"  High: ");
 		Strings.IntToStr(obj.high,nr); Strings.Append(status,nr);
 	ELSE
-		COPY("Asteroids for Oberon ",status);
+		status := "Asteroids for Oberon ";
 		Strings.Append(status,Version);
 		Strings.Append(status," by W. Ibl, ");
 		Strings.Append(status,Date);
@@ -704,7 +704,7 @@ BEGIN
 	Oberon.RemoveMarks(F.mask.X,F.mask.Y+5,F.mask.W,fh[F.fdx]);
 	IF (obj.line0 # obj.line) THEN
 		Display3.String(F.mask,F.col,mx+F.X+5,my+F.Y+5,fnt[F.fdx],obj.line0,Display3.paint);
-		COPY(obj.line,obj.line0);
+		obj.line0 := obj.line;
 	END;
 	Display3.String(F.mask,w,mx+F.X+5,my+F.Y+5,fnt[F.fdx],obj.line,Display3.paint);
 END RestoreStatus;		
@@ -1111,7 +1111,7 @@ END UpdateShip;
 PROCEDURE UpdateStatus(obj: Field);
 	(* update score line values after redraw *)
 BEGIN
-	IF obj.changed THEN COPY(obj.line,obj.line0); END;
+	IF obj.changed THEN obj.line0 := obj.line; END;
 	obj.changed:= FALSE;
 END UpdateStatus;
 
@@ -1662,7 +1662,7 @@ PROCEDURE NewField*;
 VAR
 	F: Field;
 BEGIN
-	NEW(F); InitField(F); COPY(F.line,F.line0); F.handle:= FieldHandler;
+	NEW(F); InitField(F); F.line0 := F.line; F.handle:= FieldHandler;
 	Objects.NewObj:= F;
 END NewField;
 

@@ -197,7 +197,7 @@ PROCEDURE Init();
 BEGIN
 	Oberon.OpenScanner(s, "System.Configuration");
 	IF ~(s.class IN {Texts.Name, Texts.String}) THEN
-		COPY(Default, s.s)
+		 s.s := Default
 	END;
 	NEW(T); Texts.Open(T, s.s);
 	IF T.len > 0 THEN

@@ -220,9 +220,9 @@ BEGIN
 	res := 0; i := 0;  ok := FALSE;
 	WHILE (s[i] # 0X) & ~ok DO ok := s[i] = ":";  INC(i) END;
 	IF ok OR (s[0] = 0X) THEN
-		COPY(s, name)
+		 name := s
 	ELSE
-		COPY(defdir, name);  i := 0;
+		 name := defdir;  i := 0;
 		IF (s[0] = "/") OR (s[0] = "\") THEN	(* rel. to default drive root *)
 			j := 3;  i := 1
 		ELSE	(* rel. to default dir *)
@@ -484,7 +484,7 @@ BEGIN
 	(* now j is position of last / *)
 	IF j >= 2 THEN
 		str[j] := 0X;
-		COPY(str, prefix);
+		 prefix := str;
 		(* now prefix is original str without last part *)
 		INC(j);
 		(* convert name to DOS directory format - 11 (name+ext., both zero-padded when shorter than 8,3 resp. *)
@@ -973,7 +973,7 @@ VAR
 	dir: Filename; f: Handle0; d: Drive; firstdircl, t: LONGINT;
 	attr: SET; tmp: DirEntryName;
 BEGIN
-	COPY(old, f.name);
+	 f.name := old;
 	Old0(f, res);
 	IF res = 0 THEN
 		IF ReadOnly IN f.attr THEN
@@ -996,7 +996,7 @@ BEGIN
 						IF d # NIL THEN
 							res := eFileNameAlreadyExists
 						ELSE
-							COPY(new, f.name);
+							 f.name := new;
 							UpdateDirEntry(f, rename, FALSE, res)
 						END
 					END
@@ -1121,7 +1121,7 @@ BEGIN
 	f := NIL;
 	Check(name, namebuf, res);
 	IF res = 0 THEN
-		COPY(namebuf, handle.name);
+		 handle.name := namebuf;
 		New0(handle, res);
 		IF res = 0 THEN
 			NEW(f); f.handle := handle;
@@ -1226,7 +1226,7 @@ BEGIN
 	f := NIL;
 	Check(name, namebuf, res);
 	IF res = 0 THEN
-		COPY(namebuf, handle.name);
+		 handle.name := namebuf;
 		Old0(handle, res);
 		IF res = 0 THEN
 			IF KeepList THEN

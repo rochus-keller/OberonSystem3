@@ -670,27 +670,27 @@ MODULE GfxPS;	(** eos   **)
 	PROCEDURE GetName (ch: LONGINT; VAR s: ARRAY OF CHAR);
 	BEGIN
 		CASE ch OF
-		| 32: COPY("space", s)	| 33: COPY("exclam", s)	| 34: COPY("quotedbl", s)	| 35: COPY("numbersign", s)
-		| 36: COPY("dollar", s)	| 37: COPY("percent", s)	| 38: COPY("ampersand", s)	| 39: COPY("quotesingle", s)
-		| 40: COPY("parenleft", s)	| 41: COPY("parenright", s)	| 42: COPY("asterisk", s)	| 43: COPY("plus", s)
-		| 44: COPY("comma", s)	| 45: COPY("minus", s)	| 46: COPY("period", s)	| 47: COPY("slash", s)
-		| 48: COPY("zero", s)	| 49: COPY("one", s)	| 50: COPY("two", s)	| 51: COPY("three", s)	| 52: COPY("four", s)
-		| 53: COPY("five", s)	| 54: COPY("six", s)	| 55: COPY("seven", s)	| 56: COPY("eight", s)
-		| 57: COPY("nine", s)	| 58: COPY("colon", s)	| 59: COPY("semicolon", s)	| 60: COPY("less", s)
-		| 61: COPY("equal", s)	| 62: COPY("greater", s)	| 63: COPY("question", s)	| 64: COPY("at", s)
+		| 32:  s := "space"	| 33:  s := "exclam"	| 34:  s := "quotedbl"	| 35:  s := "numbersign"
+		| 36:  s := "dollar"	| 37:  s := "percent"	| 38:  s := "ampersand"	| 39:  s := "quotesingle"
+		| 40:  s := "parenleft"	| 41:  s := "parenright"	| 42:  s := "asterisk"	| 43:  s := "plus"
+		| 44:  s := "comma"	| 45:  s := "minus"	| 46:  s := "period"	| 47:  s := "slash"
+		| 48:  s := "zero"	| 49:  s := "one"	| 50:  s := "two"	| 51:  s := "three"	| 52:  s := "four"
+		| 53:  s := "five"	| 54:  s := "six"	| 55:  s := "seven"	| 56:  s := "eight"
+		| 57:  s := "nine"	| 58:  s := "colon"	| 59:  s := "semicolon"	| 60:  s := "less"
+		| 61:  s := "equal"	| 62:  s := "greater"	| 63:  s := "question"	| 64:  s := "at"
 		| 65..90: s[0] := CHR(ch); s[1] := 0X
-		| 91: COPY("bracketleft", s)	| 92:  COPY("backslash", s)	| 93: COPY("bracketright", s)	| 94: COPY("arrowup", s)
-		| 95: COPY("underscore", s) 	| 96: COPY("grave", s)
+		| 91:  s := "bracketleft"	| 92:   s := "backslash"	| 93:  s := "bracketright"	| 94:  s := "arrowup"
+		| 95:  s := "underscore" 	| 96:  s := "grave"
 		| 97..122: s[0] := CHR(ch); s[1] := 0X
-		| 123: COPY("braceleft", s)	| 124: COPY("bar", s)	| 125: COPY("braceright", s)	| 126: COPY("tilde", s)
-		| 128: COPY("Adieresis", s)	| 129: COPY("Odieresis", s)	| 130: COPY("Udieresis", s)	| 131: COPY("adieresis", s)
-		| 132: COPY("odieresis", s)	| 133: COPY("udieresis", s)	| 134: COPY("acircumflex", s)	| 135: COPY("ecircumflex", s)
-		| 136: COPY("icircumflex", s)	| 137: COPY("ocircumflex", s)	| 138: COPY("ucircumflex", s)	| 139: COPY("agrave", s)
-		| 140: COPY("egrave", s)	| 141: COPY("igrave", s)	| 142: COPY("ograve", s)	| 143: COPY("ugrave", s)
-		| 144: COPY("eacute", s)	| 145: COPY("edieresis", s)	| 146: COPY("idieresis", s)	| 147: COPY("ccedilla", s)
-		| 148: COPY("aacute", s)	| 149: COPY("ntilde", s)	| 150: COPY("germandbls", s)	| 155: COPY("endash", s)
-		| 159: COPY("hyphen", s)	| 171: COPY("germandbls", s)
-		ELSE COPY(".notdef", s)
+		| 123:  s := "braceleft"	| 124:  s := "bar"	| 125:  s := "braceright"	| 126:  s := "tilde"
+		| 128:  s := "Adieresis"	| 129:  s := "Odieresis"	| 130:  s := "Udieresis"	| 131:  s := "adieresis"
+		| 132:  s := "odieresis"	| 133:  s := "udieresis"	| 134:  s := "acircumflex"	| 135:  s := "ecircumflex"
+		| 136:  s := "icircumflex"	| 137:  s := "ocircumflex"	| 138:  s := "ucircumflex"	| 139:  s := "agrave"
+		| 140:  s := "egrave"	| 141:  s := "igrave"	| 142:  s := "ograve"	| 143:  s := "ugrave"
+		| 144:  s := "eacute"	| 145:  s := "edieresis"	| 146:  s := "idieresis"	| 147:  s := "ccedilla"
+		| 148:  s := "aacute"	| 149:  s := "ntilde"	| 150:  s := "germandbls"	| 155:  s := "endash"
+		| 159:  s := "hyphen"	| 171:  s := "germandbls"
+		ELSE  s := ".notdef"
 		END
 	END GetName;
 	
@@ -862,7 +862,7 @@ MODULE GfxPS;	(** eos   **)
 			Str(r, "/FontInfo 8 dict dup begin"); Ln(r);
 			Str(r, "/version (001.000) readonly def"); Ln(r);
 			Str(r, "/FullName ("); Str(r, font.name); Str(r, ") readonly def"); Ln(r);
-			COPY(font.name, fam); style := ""; i := 0;
+			 fam := font.name; style := ""; i := 0;
 			WHILE (fam[i] # 0X) & (fam[i] # "-") DO INC(i) END;
 			IF fam[i] = "-" THEN
 				fam[i] := 0X; INC(i); j := 0;
@@ -983,7 +983,7 @@ MODULE GfxPS;	(** eos   **)
 			IF psc.level2 THEN Str(psc.out, " slf") ELSE Str(psc.out, " ssf") END
 		END;
 		Ln(psc.out);
-		COPY(name, psc.fontname);
+		 psc.fontname := name;
 		psc.fontmat := m
 	END SelectFont;
 	
@@ -998,7 +998,7 @@ MODULE GfxPS;	(** eos   **)
 			t1 := psc.t1fonts;
 			WHILE (t1 # NIL) & (t1.name # font.name) DO t1 := t1.next END;
 			IF t1 = NIL THEN
-				NEW(t1); COPY(font.name, t1.name); t1.next := psc.t1fonts; psc.t1fonts := t1
+				NEW(t1);  t1.name := font.name; t1.next := psc.t1fonts; psc.t1fonts := t1
 			END;
 			SelectFont(psc, font.name, m)
 		END
@@ -1644,9 +1644,9 @@ MODULE GfxPS;	(** eos   **)
 		VAR name, s: GfxFonts.FontName; i, n: LONGINT; t3: T3Font; dx, dy, llx, lly, urx, ury: REAL;
 	BEGIN
 		IF font.rfont # NIL THEN
-			COPY(font.rfont.name, name)
+			 name := font.rfont.name
 		ELSE
-			COPY(font.name, name);
+			 name := font.name;
 			Strings.AppendCh(name, ".");
 			Strings.RealToFixStr(Math.sqrt(GfxMatrix.Det(psc.ctm) * GfxMatrix.Det(font.mat)), s, 3, 1, 0);
 			i := 0; WHILE s[i] = " " DO s[i] := "0"; INC(i) END;
@@ -1655,7 +1655,7 @@ MODULE GfxPS;	(** eos   **)
 		t3 := psc.t3fonts; WHILE (t3 # NIL) & (t3.name # name) DO t3 := t3.next END;
 		IF (name # psc.fontname) OR ~GfxMatrix.Equal(m, psc.fontmat) THEN
 			IF t3 = NIL THEN
-				NEW(t3); t3.font := font; COPY(name, t3.name);
+				NEW(t3); t3.font := font;  t3.name := name;
 				t3.next := psc.t3fonts; psc.t3fonts := t3
 			END;
 			font := t3.font;

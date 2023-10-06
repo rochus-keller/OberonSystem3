@@ -207,7 +207,7 @@ MODULE HTTPDocs0;	(** portable *)
 				label[j] := 0X; DEC(j)
 			END
 		ELSE
-			COPY("", label)
+			 label := ""
 		END;
 		key := RegisterHTTPAdr(host, path, label, port);
 		RETURN key
@@ -340,7 +340,7 @@ MODULE HTTPDocs0;	(** portable *)
 				attr := entry.attrs;
 				WHILE attr # NIL DO
 					A.id := Objects.set;
-					COPY(attr.name, A.name);
+					 A.name := attr.name;
 					IF attr IS Attributes.IntAttr THEN
 						A.class := Objects.Int;
 						A.i := attr(Attributes.IntAttr).i
@@ -349,7 +349,7 @@ MODULE HTTPDocs0;	(** portable *)
 						A.b := attr(Attributes.BoolAttr).b
 					ELSIF attr IS Attributes.StringAttr THEN
 						A.class := Objects.String;
-						COPY(attr(Attributes.StringAttr).s, A.s)
+						 A.s := attr(Attributes.StringAttr).s
 					END;
 					entry.doc.dsc.handle(entry.doc.dsc, A);
 					attr := attr.next

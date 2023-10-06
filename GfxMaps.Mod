@@ -257,7 +257,7 @@ MODULE GfxMaps;	(** eos   **)
 		VAR str: ARRAY 64 OF CHAR; res: INTEGER;
 	BEGIN
 		ASSERT(s.class IN {Texts.Name, Texts.String});
-		COPY(s.s, str); Texts.Scan(s);
+		 str := s.s; Texts.Scan(s);
 		IF (s.class = Texts.Char) & (s.c = "=") THEN	(* str contains extension *)
 			IF (ext # "") & (ext # str) THEN
 				str := ""; Texts.Scan(s)	(* don't try if extension doesn't match *)
@@ -265,7 +265,7 @@ MODULE GfxMaps;	(** eos   **)
 				str := "";
 				Texts.Scan(s);
 				IF s.class = Texts.Name THEN
-					COPY(s.s, str); Texts.Scan(s)
+					 str := s.s; Texts.Scan(s)
 				END
 			END
 		END;

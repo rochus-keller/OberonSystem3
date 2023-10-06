@@ -264,7 +264,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO 
 				IF (M.id = Objects.get) & (M.name = "Gen") THEN 
-					M.class := Objects.String; COPY("Pictures.NewPicture", M.s); M.res:=0 
+					M.class := Objects.String;  M.s := "Pictures.NewPicture"; M.res:=0 
 				END;
 			END;
 		ELSIF M IS Objects.FileMsg THEN

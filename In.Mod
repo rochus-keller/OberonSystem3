@@ -101,7 +101,7 @@ PROCEDURE Name* (VAR name: ARRAY OF CHAR);
 BEGIN
 	IF Done THEN
 		Texts.Scan(S);
-		IF S.class = Texts.Name THEN COPY(S.s, name)
+		IF S.class = Texts.Name THEN  name := S.s
 		ELSE Done := FALSE
 		END
 	END
@@ -112,7 +112,7 @@ PROCEDURE String* (VAR str: ARRAY OF CHAR);
 BEGIN
 	IF Done THEN
 		Texts.Scan(S);
-		IF (S.class = Texts.String) OR (S.class = Texts.Name) THEN COPY(S.s, str)
+		IF (S.class = Texts.String) OR (S.class = Texts.Name) THEN  str := S.s
 		ELSE Done := FALSE
 		END
 	END

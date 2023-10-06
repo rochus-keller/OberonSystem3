@@ -133,7 +133,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		IF obj # NIL THEN
 			IF par # "" THEN
 				A.id:= Objects.set; A.name:= "Cmd"; A.class:= Objects.String; A.res:= -1;
-				COPY(cmd, A.s);
+				 A.s := cmd;
 				IF options # "" THEN AppendCh(A.s, Oberon.OptionChar); Append(A.s, options); AppendCh(A.s, " ") END;
 				Append(A.s, par);
 				obj.handle(obj, A)
@@ -331,14 +331,14 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			IF makeLink THEN
 				IF (typ.mno >= 1) THEN	(* definition is in an other module *)
 					cmd:= ObjCmd;
-					COPY(OPT.modules[typ.mno(*-1*)].name, par); AppendCh(par, "."); Append(par, typ.strobj.name)
+					 par := OPT.modules[typ.mno(*-1*)].name; AppendCh(par, "."); Append(par, typ.strobj.name)
 				ELSE
 					IF ~showObj OR (curObj.link = typ.strobj) OR (curObj = typ.strobj) THEN
 						(* type def. is in the same text *)
 						cmd:= GotoCmd; par:= ""
 					ELSE
 						cmd:= ObjCmd;
-						COPY(OPT.modules[typ.mno(*-1*)].name, par); AppendCh(par, ".")
+						 par := OPT.modules[typ.mno(*-1*)].name; AppendCh(par, ".")
 					END;
 					Append(par, typ.strobj.name)
 				END;
@@ -369,7 +369,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		ELSIF (mode = Typ) & (obj.vis > internal) THEN	(* write a type object just if it is vivible *)
 			IF first THEN Indent(1); Str("TYPE"); Ln; first := FALSE END;
 			Indent(2);
-			IF showObj THEN COPY(OPT.modules[obj.typ.mno (*-1*)].name, name); AppendCh(name, ".") 
+			IF showObj THEN  name := OPT.modules[obj.typ.mno (*-1*)].name; AppendCh(name, ".") 
 			ELSE name:= ""
 			END;
 			Append(name, obj.name);
@@ -383,7 +383,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 				h:= obj.link;
 				IF ABS(h^.vis) > internal THEN
 					Indent(2);
-					IF showObj THEN COPY(OPT.modules[h.typ.mno (*-1*)].name, name); AppendCh(name, ".") 
+					IF showObj THEN  name := OPT.modules[h.typ.mno (*-1*)].name; AppendCh(name, ".") 
 					ELSE name:= ""
 					END;
 					Append(name, h.name);
@@ -516,7 +516,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			END;
 			IF ch = symFileId THEN
 				NEW(T); Texts.Open(T, ""); Texts.OpenReader(RR, T, 0); OPM.Init({}, RR, Oberon.Log);
-				COPY(mod, selfname); COPY(fileName, file);
+				 selfname := mod;  file := fileName;
 				OPS.Init; OPT.Init(selfname, {}); OPT.OpenScope(0, NIL);
 				OPT.Import(selfname, selfname, file);
 				GroupTypes(OPT.topScope.right.scope);
@@ -596,10 +596,10 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	PROCEDURE ShowDef*(VAR mod: ARRAY OF CHAR; T: Texts.Text);
 		VAR file: ARRAY 64 OF CHAR;
 	BEGIN
-		COPY(Modules.extension, OPM.extension);
-		SetOptions; COPY(mod, file); Append(file, Modules.extension);
+		 OPM.extension := Modules.extension;
+		SetOptions;  file := mod; Append(file, Modules.extension);
 		Out.String("reading "); Out.String(file); Out.Ln;
-		IF ReadSym(mod, file) THEN COPY(mod, file);
+		IF ReadSym(mod, file) THEN  file := mod;
 			showObj := FALSE;
 			WriteModule; MakeText(T)
 		END
@@ -609,15 +609,15 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	PROCEDURE ShowObj*(VAR mod, objName: ARRAY OF CHAR; T: Texts.Text);
 		VAR obj, pObj: OPT.Object; file: ARRAY 64 OF CHAR;
 	BEGIN
-		COPY(Modules.extension, OPM.extension);
-		SetOptions; COPY(mod, file); Append(file, Modules.extension);
+		 OPM.extension := Modules.extension;
+		SetOptions;  file := mod; Append(file, Modules.extension);
 		Out.String("reading "); Out.String(file); Out.Ln;
 		IF ReadSym(mod, file) THEN
 			Find(objName, obj);
-			IF obj # NIL THEN COPY(mod, file);
+			IF obj # NIL THEN  file := mod;
 				IF obj.vis < 0 THEN (* is a pair of types *)
 					FindPointer(obj.name, pObj);	(* look for a corresponding pointer *)
-					IF pObj # NIL THEN obj:= pObj; COPY(obj.name, objName) END
+					IF pObj # NIL THEN obj:= pObj;  objName := obj.name END
 				END;
 				showObj := TRUE; first := TRUE;
 				WriteObject(obj, obj.mode); MakeText(T)
@@ -630,8 +630,8 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	PROCEDURE ShowCmd*(VAR file: ARRAY OF CHAR;  T: Texts.Text);
 		VAR F: Files.File; fileName: ARRAY 64 OF CHAR;
 	BEGIN
-		COPY(Modules.extension, OPM.extension);
-		SetOptions; COPY(file, fileName); Append(fileName, Modules.extension);
+		 OPM.extension := Modules.extension;
+		SetOptions;  fileName := file; Append(fileName, Modules.extension);
 		F:= Files.Old(fileName);
 		IF F # NIL THEN
 			Out.String("reading "); Out.String(fileName); Out.Ln;

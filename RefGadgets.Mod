@@ -59,7 +59,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF (M.id = Objects.get) & (M.name = "Gen") THEN
-					COPY("RefGadgets.NewReference", M.s); M.class := Objects.String; M.res := 0
+					 M.s := "RefGadgets.NewReference"; M.class := Objects.String; M.res := 0
 				ELSE Gadgets.objecthandle(obj, M)
 				END
 			END
@@ -130,7 +130,7 @@ PROCEDURE FrameAttrs(F: Frame; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
 		IF M.name = "Gen" THEN
-			M.class := Objects.String; COPY("RefGadgets.NewFrame", M.s); M.res := 0
+			M.class := Objects.String;  M.s := "RefGadgets.NewFrame"; M.res := 0
 		ELSIF M.name = "LineupHY" THEN (* makes it appear better in texts *)
 			M.class := Objects.Int; M.i := F.H DIV 2 - 5; M.res := 0
 		ELSIF M.name = "Cmd" THEN

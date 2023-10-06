@@ -258,7 +258,7 @@ END ShowHSV;
 PROCEDURE IntToString*(i : LONGINT; VAR alpha : ARRAY OF CHAR);
 VAR d,p : INTEGER;	tmp : ARRAY 15 OF CHAR; neg:BOOLEAN;
 BEGIN
-	IF i = 0 THEN COPY("0 ",alpha); RETURN; END;
+	IF i = 0 THEN alpha := "0 "; RETURN; END;
 	p := 0; d := 0;
 	IF i < 0 THEN i := -i; neg := TRUE; ELSE neg := FALSE; END;
 	WHILE i > 0 DO tmp[p] := CHR(i MOD 10 + 30H);  i := i DIV 10; INC(p); END;

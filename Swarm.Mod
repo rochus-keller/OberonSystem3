@@ -302,7 +302,7 @@ MODULE Swarm;  (** BES, Oct 16 96 - Oct 25 96 *)
 	
 	BEGIN
 		IF M.id = Objects.get THEN
-			IF M.name = "Gen" THEN M.class := Objects.String; COPY("Swarm.New", M.s); M.res := 0
+			IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Swarm.New"; M.res := 0
 			ELSIF M.name = "Swarm Size" THEN M.class := Objects.Int; M.i := s.size; M.res := 0
 			ELSIF M.name = "Swarm Speed" THEN M.class := Objects.Int; M.i := MaxSpeed-s.speed; M.res := 0
 			ELSIF M.name = "First Color" THEN M.class := Objects.Int; M.i := s.mincol; M.res := 0

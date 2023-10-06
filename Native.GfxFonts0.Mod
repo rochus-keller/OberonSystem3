@@ -44,7 +44,7 @@ MODULE GfxFonts0;	(** eos   **)
 				ELSE ppm := MIN(INTEGER)
 				END;
 				IF ABS(PPM - ppm) < Error THEN
-					Error := ABS(PPM - ppm); COPY(name, Name); FPPM := ppm;
+					Error := ABS(PPM - ppm);  Name := name; FPPM := ppm;
 					IF Error = 0 THEN continue := FALSE END
 				END
 			END
@@ -56,8 +56,8 @@ MODULE GfxFonts0;	(** eos   **)
 		VAR pattern: ARRAY 64 OF CHAR;
 	BEGIN
 		Name := ""; FPPM := 0;
-		COPY(style, Style); PPM := ppm; Len := SHORT(Strings.Length(family)); Error := MAX(INTEGER);
-		COPY(family, pattern); Strings.AppendCh(pattern, "*");
+		 Style := style; PPM := ppm; Len := SHORT(Strings.Length(family)); Error := MAX(INTEGER);
+		 pattern := family; Strings.AppendCh(pattern, "*");
 		IF style = "Bold" THEN Strings.AppendCh(pattern, "b")
 		ELSIF style = "Italic" THEN Strings.AppendCh(pattern, "i")
 		ELSIF style = "Medium" THEN Strings.AppendCh(pattern, "m")
@@ -67,7 +67,7 @@ MODULE GfxFonts0;	(** eos   **)
 
 		FileDir.Enumerate(pattern, FALSE, EnumFile);
 
-		COPY(Name, name); fppm := FPPM
+		 name := Name; fppm := FPPM
 	END Find;
 	
 

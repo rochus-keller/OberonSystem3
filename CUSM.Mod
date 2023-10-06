@@ -166,7 +166,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF (M.id = Objects.get) & (M.name = "Gen") THEN
-					M.class := Objects.String; COPY("CUSM.NewReflAdrStr", M.s);
+					M.class := Objects.String;  M.s := "CUSM.NewReflAdrStr";
 					M.res := 0
 				ELSE BasicGadgets.StringHandler(F, M)
 				END
@@ -189,7 +189,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF (M.id = Objects.get) & (M.name = "Gen") THEN
-					M.class := Objects.String; COPY("CUSM.NewConfID", M.s);
+					M.class := Objects.String;  M.s := "CUSM.NewConfID";
 					M.res := 0
 				ELSE BasicGadgets.IntegerHandler(F, M)
 				END
@@ -212,7 +212,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF (M.id = Objects.get) & (M.name = "Gen") THEN
-					M.class := Objects.String; COPY("CUSM.NewHostName", M.s);
+					M.class := Objects.String;  M.s := "CUSM.NewHostName";
 					M.res := 0
 				ELSE BasicGadgets.StringHandler(F, M)
 				END
@@ -235,7 +235,7 @@ BEGIN
 	IF M IS Objects.AttrMsg THEN
 		WITH M: Objects.AttrMsg DO
 			IF (M.id = Objects.get) & (M.name = "Gen") THEN
-				M.class := Objects.String; COPY("CUSM.NewConnLog", M.s);
+				M.class := Objects.String;  M.s := "CUSM.NewConnLog";
 				M.res := 0
 			ELSE Texts.Handle(F, M)
 			END
@@ -258,7 +258,7 @@ BEGIN
 	IF M IS Objects.AttrMsg THEN
 		WITH M: Objects.AttrMsg DO
 			IF (M.id = Objects.get) & (M.name = "Gen") THEN
-				M.class := Objects.String; COPY("CUSM.NewVideosLog", M.s);
+				M.class := Objects.String;  M.s := "CUSM.NewVideosLog";
 				M.res := 0
 			ELSE Texts.Handle(F, M)
 			END
@@ -1068,7 +1068,7 @@ BEGIN
 		Out.String("Connecting ..."); Out.Ln;
 		NEW(con);
 		con.reflAdr:=reflAdr;
-		COPY(reflAdrStr.val,con.reflAdrStr);
+		con.reflAdrStr := reflAdrStr.val;
 		con.connected:=FALSE;
 		con.timeOut:=0;
 		con.vphSeqNum:=0;
@@ -1141,7 +1141,7 @@ BEGIN
 		NetSystem.GetIP(s.s, adr);
 		IF adr # NetSystem.anyIP THEN
 			SYSTEM.MOVE(SYSTEM.ADR(adr), SYSTEM.ADR(reflAdr), 4);
-			COPY(s.s,reflAdrStr.val);
+			reflAdrStr.val := s.s;
 			Gadgets.Update(reflAdrStr);
 			ConvIpAdrLtoS(reflAdr,ipAdrS);
 			Out.String("Reflector address: "); Out.String(ipAdrS); Out.Ln

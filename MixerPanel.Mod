@@ -54,12 +54,12 @@ PROCEDURE Init;
 BEGIN
 	nofch:= Sound.GetNofChannels();
 	res:= Done;
-	IF nofch = 15 THEN COPY("MixerSB16.", libname)
-	ELSIF nofch = 10 THEN COPY("MixerSBPro.", libname)
-	ELSIF nofch = 4 THEN COPY("MixerSB.", libname)
+	IF nofch = 15 THEN  libname := "MixerSB16."
+	ELSIF nofch = 10 THEN  libname := "MixerSBPro."
+	ELSIF nofch = 4 THEN  libname := "MixerSB."
 	ELSE Out.String("No mixer available on this soundcard !"); Out.Ln
 	END;
-	COPY(libname, name); Concat(name, "Lib");
+	 name := libname; Concat(name, "Lib");
 	Objects.FreeLibrary(name)
 END Init;
 
@@ -79,7 +79,7 @@ PROCEDURE InitLib;
 			lobj, gobj1, gobj2: Objects.Object;
 			name: ARRAY 64 OF CHAR;
 	BEGIN
-		COPY(libname, name); Concat(name, objname);
+		 name := libname; Concat(name, objname);
 		IF subch.maxval = 0 THEN
 			lobj:= Gadgets.CreateObject("BasicGadgets.NewBoolean")
 		ELSE
@@ -111,13 +111,13 @@ BEGIN
 	res:= Done;
 	nofch:= Sound.GetNofChannels();
 	d:= NIL;
-	IF nofch = 15 THEN d:= Documents.Open("MixerSB16.Panel"); COPY("MixerSB16.", libname)
-	ELSIF nofch = 10 THEN d:= Documents.Open("MixerSBPro.Panel"); COPY("MixerSBPro.", libname)
-	ELSIF nofch = 4 THEN d:= Documents.Open("MixerSB.Panel"); COPY("MixerSB.", libname)
+	IF nofch = 15 THEN d:= Documents.Open("MixerSB16.Panel");  libname := "MixerSB16."
+	ELSIF nofch = 10 THEN d:= Documents.Open("MixerSBPro.Panel");  libname := "MixerSBPro."
+	ELSIF nofch = 4 THEN d:= Documents.Open("MixerSB.Panel");  libname := "MixerSB."
 	ELSE Out.String("No mixer available on this soundcard !"); Out.Ln
 	END;
 	IF d # NIL THEN
-		COPY(libname, objname); Concat(objname, "Lib");
+		 objname := libname; Concat(objname, "Lib");
 		lib:= Objects.ThisLibrary(objname);
 		ch.Ch:= 0;
 		WHILE ch.Ch < nofch DO
@@ -146,7 +146,7 @@ BEGIN
 			ELSE
 				WHILE subch.SubCh < ch.nofSubCh DO
 					Sound.GetSubChCapas(subch);
-					COPY(ch.name, objname); Concat(objname, subch.name);
+					 objname := ch.name; Concat(objname, subch.name);
 					InitObj;
 					INC(subch.SubCh)
 				END
@@ -191,7 +191,7 @@ BEGIN
 		IF S.class = Texts.Int THEN
 			subch.SubCh:= S.i;
 			Sound.GetChCapas(ch); Sound.GetSubChCapas(subch);
-			COPY(libname, name); Concat(name, ch.name);
+			 name := libname; Concat(name, ch.name);
 			IF (nofch#10) OR (subch.Ch # 9) THEN Concat(name, subch.name) END;
 			lobj:= Gadgets.FindPublicObj(name);
 			IF lobj = NIL THEN InitLib; lobj:= Gadgets.FindPublicObj(name) END;
@@ -224,7 +224,7 @@ BEGIN
 		ch.Ch:= S.i; Sound.GetChCapas(ch);
 		Texts.Scan(S);
 		IF S.class = Texts.Name THEN
-			COPY(libname, namel); Concat(namel, ch.name); COPY(namel, namer);
+			 namel := libname; Concat(namel, ch.name);  namer := namel;
 			Concat(namel, "Left"); Concat(namer, "Right");
 			lobjleft:= Gadgets.FindPublicObj(namel);
 			IF lobjleft = NIL THEN InitLib; lobjleft:= Gadgets.FindPublicObj(namel) END;
@@ -271,7 +271,7 @@ BEGIN
 				IF lock THEN
 					subch.SubCh:= 1-subch.SubCh;
 					Sound.GetSubChCapas(subch);
-					COPY(libname, name); Concat(name, ch.name); Concat(name, subch.name);
+					 name := libname; Concat(name, ch.name); Concat(name, subch.name);
 					lobj:= Gadgets.FindPublicObj(name);
 					IF lobj = NIL THEN InitLib; lobj:= Gadgets.FindPublicObj(name) END;
 					Sound.SetValue(subch.Ch, subch.SubCh, val);
@@ -281,7 +281,7 @@ BEGIN
 				END;
 				subch.SubCh:= sc;
 				Sound.GetSubChCapas(subch);
-				COPY(libname, name); Concat(name, ch.name); Concat(name, subch.name);
+				 name := libname; Concat(name, ch.name); Concat(name, subch.name);
 				lobj:= Gadgets.FindPublicObj(name);
 				IF lobj = NIL THEN InitLib; lobj:= Gadgets.FindPublicObj(name) END;
 				Sound.SetValue(subch.Ch, subch.SubCh, val);

@@ -480,7 +480,7 @@ BEGIN
 		WHILE b & (j < ScrnRows) DO b:= (pot[i,j+FigRows] # "-"); INC(j); END;
 		IF b THEN
 			j:= i + 1;
-			WHILE (j < k) DO COPY(pot[j],pot[j-1]); INC(j); END;
+			WHILE (j < k) DO pot[j-1] := pot[j]; INC(j); END;
 			DEC(k); INC(full);
 		ELSE
 			INC(i);
@@ -628,7 +628,7 @@ BEGIN
 		ELSIF (M.name[1] = "[") & (M.name[3] = "]") THEN	(* indexed attr. *)
 			IF (M.name[0] = "N") THEN									 (* Name *)
 				M.class:= Objects.String; M.res:= 0;
-				COPY(F.score[ORD(M.name[2])-1].name,M.s);
+				M.s := F.score[ORD(M.name[2])-1].name;
 			ELSIF (M.name[0] = "P") THEN								(* Points *)
 				M.class:= Objects.Int; M.res:= 0;
 				M.i:= F.score[ORD(M.name[2])-1].points;
@@ -653,7 +653,7 @@ BEGIN
 			END;
 		ELSIF (M.name[1] = "[") & (M.name[3] = "]") THEN
 			IF (M.name[0] = "N") THEN
-				M.res:= 0; COPY(M.s,F.score[ORD(M.name[2])-1].name);
+				M.res:= 0; F.score[ORD(M.name[2])-1].name := M.s;
 			END;
 		END;
 	ELSIF (M.id = Objects.enum) THEN
@@ -1252,7 +1252,7 @@ BEGIN
 	obj:= Gadgets.CreateObject("Tetris.NewScoreField");
 	WITH obj: ScoreField DO
 		obj.ndx:= -1; obj.xofs:= ofs;
-		obj.slink:= NIL; INC(obj.W,TextW*len); COPY(txt,obj.val);
+		obj.slink:= NIL; INC(obj.W,TextW*len); obj.val := txt;
 	END;
 	RETURN(obj);
 END NewTop;
@@ -1561,7 +1561,7 @@ BEGIN
 		In.Int(level);
 		IF In.Done THEN In.Name(file); END;
 		IF In.Done & (level > 0) & (level <= Levels) THEN
-			COPY(file,backdrop[level-1]);
+			backdrop[level-1] := file;
 		END;
 	UNTIL ~In.Done;
 END Backdrop;

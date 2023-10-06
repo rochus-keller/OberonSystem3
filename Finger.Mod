@@ -140,7 +140,7 @@ VAR W: Texts.Writer;
 			request[j] := 0X; DEC(j)
 		END;
 		(* normalize url *)
-		COPY("finger://", url);
+		 url := "finger://";
 		Strings.Lower(host, host);
 		Strings.Append(url, host);
 		IF port # DefPort THEN
@@ -332,7 +332,7 @@ END finger0;
 				TextDocs.InitDoc(D);
 				Links.SetLink(D.dsc, "Model", T)
 			END;
-			COPY(request, D.name);
+			 D.name := request;
 			D.W := HyperDocs.docW; D.H := HyperDocs.docH;
 			IF HyperDocs.context # NIL THEN
 				HyperDocs.context.replace := FALSE;

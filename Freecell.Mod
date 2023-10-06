@@ -109,7 +109,7 @@ END GetRowSize;
 PROCEDURE TempAttr(T: Temp; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Freecell.NewTemp", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Freecell.NewTemp"; M.res := 0
 	ELSE Cards.StackHandler(T, M)
 	END
 END TempAttr;
@@ -209,7 +209,7 @@ END NewTemp;
 PROCEDURE DepotAttr(D: Depot; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Freecell.NewDepot", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Freecell.NewDepot"; M.res := 0
 	ELSE Cards.StackHandler(D, M);
 	END
 END DepotAttr;
@@ -276,7 +276,7 @@ END NewDepot;
 PROCEDURE ColumnAttr(C: Column; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Freecell.NewColumn", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Freecell.NewColumn"; M.res := 0
 	ELSE Cards.StackHandler(C, M);
 	END
 END ColumnAttr;
@@ -466,7 +466,7 @@ BEGIN
 		ELSIF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF (M.id = Objects.get) & (M.name = "Gen") THEN
-					M.class := Objects.String; COPY("Freecell.NewPanel", M.s); M.res:= 0
+					M.class := Objects.String;  M.s := "Freecell.NewPanel"; M.res:= 0
 				ELSE Panels.PanelHandler(P, M)
 				END
 			END

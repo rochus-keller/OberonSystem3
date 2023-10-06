@@ -556,10 +556,10 @@ MODULE Sokoban;	(** portable *) (* Copyright (C) 1995 by Emil J. Zeller *)
 		F1.done := F.done;
 		F1.startTime := F.startTime;
 		F1.time := F.time;
-		COPY(F.backPictName, F1.backPictName);
-		COPY(F.wallPictName, F1.wallPictName);
-		COPY(F.parkPictName, F1.parkPictName);
-		COPY(F.userName, F1.userName);
+		 F1.backPictName := F.backPictName;
+		 F1.wallPictName := F.wallPictName;
+		 F1.parkPictName := F.parkPictName;
+		 F1.userName := F.userName;
 		FOR i := 0 TO MaxN+1 DO
 			FOR j := 0 TO MaxM+1 DO
 				F1.world[i, j] := F.world[i, j]
@@ -713,36 +713,36 @@ MODULE Sokoban;	(** portable *) (* Copyright (C) 1995 by Emil J. Zeller *)
 							M.res := 0
 						ELSIF M.name = "BackPicture" THEN
 							M.class := Objects.String;
-							COPY(F.backPictName, M.s);
+							 M.s := F.backPictName;
 							M.res := 0
 						ELSIF M.name = "WallPicture" THEN
 							M.class := Objects.String;
-							COPY(F.wallPictName, M.s);
+							 M.s := F.wallPictName;
 							M.res := 0
 						ELSIF M.name = "ParkPicture" THEN
 							M.class := Objects.String;
-							COPY(F.parkPictName, M.s);
+							 M.s := F.parkPictName;
 							M.res := 0
 						ELSE
 							Gadgets.framehandle(F, M)
 						END
 					ELSIF M.id = Objects.set THEN
 						IF (M.class = Objects.String) & (M.name = "BackPicture") THEN
-							COPY(M.s, F.backPictName);
+							 F.backPictName := M.s;
 							Pictures.Open(F.backPict, F.backPictName, TRUE);
 							IF F.focus THEN
 								Gadgets.Update(F)
 							END;
 							M.res := 0
 						ELSIF (M.class = Objects.String) & (M.name = "WallPicture") THEN
-							COPY(M.s, F.wallPictName);
+							 F.wallPictName := M.s;
 							Pictures.Open(F.wallPict, F.wallPictName, TRUE);
 							IF F.focus THEN
 								Gadgets.Update(F)
 							END;
 							M.res := 0
 						ELSIF (M.class = Objects.String) & (M.name = "ParkPicture") THEN
-							COPY(M.s, F.parkPictName);
+							 F.parkPictName := M.s;
 							Pictures.Open(F.parkPict, F.parkPictName, TRUE);
 							IF F.focus THEN
 								Gadgets.Update(F)

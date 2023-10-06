@@ -137,7 +137,7 @@ PROCEDURE FigureAttr(F: Figure; VAR M: Objects.AttrMsg);
 VAR A: Display.ModifyMsg; possiblechange: BOOLEAN;
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("BasicFigures.NewFigure", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "BasicFigures.NewFigure"; M.res := 0
 		ELSIF M.name = "Color" THEN M.class := Objects.Int; M.i := F.col; M.res := 0 
 		ELSIF M.name = "Width" THEN M.class := Objects.Int; M.i := F.width; M.res := 0
 		ELSIF M.name = "Closed" THEN M.class := Objects.Bool; M.b := closed IN F.state0; M.res := 0
@@ -253,7 +253,7 @@ END ThisFrame;
 PROCEDURE HasCmdAttr(F: Display.Frame; attr: ARRAY OF CHAR): BOOLEAN;
 VAR A: Objects.AttrMsg;
 BEGIN
-	A.id := Objects.get; COPY(attr, A.name); A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
+	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
 	F.handle(F, A);
 	RETURN (A.res >= 0) & (A.class = Objects.String) & (A.s # "") 
 END HasCmdAttr;
@@ -601,7 +601,7 @@ BEGIN
 	WITH F: Figure DO
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
-				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String; COPY("BasicFigures.NewLine", M.s); M.res := 0
+				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String;  M.s := "BasicFigures.NewLine"; M.res := 0
 				ELSE FigureHandler(F, M)
 				END
 			END
@@ -692,7 +692,7 @@ BEGIN
 	WITH F: Figure DO
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
-				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String; COPY("BasicFigures.NewCircle", M.s); M.res := 0
+				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String;  M.s := "BasicFigures.NewCircle"; M.res := 0
 				ELSE FigureHandler(F, M)
 				END
 			END
@@ -779,7 +779,7 @@ BEGIN
 	WITH F: Figure DO
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
-				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String; COPY("BasicFigures.NewRect", M.s); M.res := 0
+				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String;  M.s := "BasicFigures.NewRect"; M.res := 0
 				ELSE FigureHandler(F, M)
 				END
 			END
@@ -845,7 +845,7 @@ BEGIN
 	WITH F: Figure DO
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
-				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String; COPY("BasicFigures.NewRect3D", M.s); M.res := 0
+				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String;  M.s := "BasicFigures.NewRect3D"; M.res := 0
 				ELSE FigureHandler(F, M)
 				END
 			END
@@ -1157,7 +1157,7 @@ BEGIN
 	WITH F: Figure DO
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
-				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String; COPY("BasicFigures.NewSpline", M.s); M.res := 0
+				IF (M.id = Objects.get) & (M.name = "Gen") THEN M.class := Objects.String;  M.s := "BasicFigures.NewSpline"; M.res := 0
 				ELSE FigureHandler(F, M)
 				END
 			END

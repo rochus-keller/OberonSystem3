@@ -58,7 +58,7 @@ MODULE TimeStamps;	(** portable *) (* ejz *)
 
 	PROCEDURE Copy*(VAR M: Objects.CopyMsg; from, to: Frame);
 	BEGIN
-		to.font := from.font; COPY(from.cap, to.cap);
+		to.font := from.font;  to.cap := from.cap;
 		to.col := from.col; to.w := from.w;
 		Gadgets.CopyFrame(M, from, to)
 	END Copy;
@@ -112,7 +112,7 @@ MODULE TimeStamps;	(** portable *) (* ejz *)
 			ELSIF M.name = "Color" THEN
 				M.class := Objects.Int; M.i := F.col; M.res := 0
 			ELSIF M.name = "Font" THEN
-				M.class := Objects.String; COPY(F.font.name, M.s); M.res:= 0
+				M.class := Objects.String;  M.s := F.font.name; M.res:= 0
 			ELSIF M.name = "LineupHY" THEN
 				M.class := Objects.Int; M.i := -F.font.minY; M.res := 0
 			ELSE

@@ -236,16 +236,16 @@ PROCEDURE GetObjName*(obj: Objects.Object; VAR name: ARRAY OF CHAR);
 VAR A: Objects.AttrMsg;
 BEGIN
 	name[0] := 0X;
-	A.id := Objects.get; COPY("Name", A.name); A.res := -1; A.s[0] := 0X;
+	A.id := Objects.get;  A.name := "Name"; A.res := -1; A.s[0] := 0X;
 	obj.handle(obj, A);
-	IF (A.res >= 0) & (A.class = Objects.String) THEN COPY(A.s, name) END
+	IF (A.res >= 0) & (A.class = Objects.String) THEN  name := A.s END
 END GetObjName;
 
 (** Name object obj. Sends an Objects.AttrMsg behind the scenes. *)
 PROCEDURE NameObj*(obj: Objects.Object; name: ARRAY OF CHAR);
 VAR A: Objects.AttrMsg;
 BEGIN
-	A.id := Objects.set; COPY("Name", A.name); Objects.Stamp(A); A.class := Objects.String; A.res := -1; COPY(name, A.s);
+	A.id := Objects.set;  A.name := "Name"; Objects.Stamp(A); A.class := Objects.String; A.res := -1;  A.s := name;
 	obj.handle(obj, A);
 END NameObj;
 
@@ -274,7 +274,7 @@ VAR obj: Objects.Object; M: Objects.FindMsg;
 BEGIN
 	obj := NIL;
 	IF context # NIL THEN (* search by find message *)
-		M.obj := NIL; COPY(name, M.name); context.handle(context, M);
+		M.obj := NIL;  M.name := name; context.handle(context, M);
 		obj := M.obj
 	END;
 	RETURN obj
@@ -529,7 +529,7 @@ BEGIN
 	ELSE
 		Files.ReadInt(r, l);
 		Objects.GetName(lib.dict, l, name);
-		IF name[0] = 0X THEN F := lib; COPY(lib.name, name); ELSE F := Objects.ThisLibrary(name); END;
+		IF name[0] = 0X THEN F := lib;  name := lib.name; ELSE F := Objects.ThisLibrary(name); END;
 		IF F # NIL THEN
 			F.GetObj(F, i, obj);
 			IF (name # lib.name) & (obj # NIL) THEN
@@ -981,7 +981,7 @@ BEGIN
 			ELSIF a IS Attributes.CharAttr THEN M.class := Objects.Char; M.c := a(Attributes.CharAttr).c;
 			ELSIF a IS Attributes.IntAttr THEN M.class := Objects.Int; M.i := a(Attributes.IntAttr).i;
 			ELSIF a IS Attributes.RealAttr THEN M.class := Objects.LongReal; M.y := a(Attributes.RealAttr).r;
-			ELSIF a IS Attributes.StringAttr THEN M.class := Objects.String; COPY(a(Attributes.StringAttr).s, M.s);
+			ELSIF a IS Attributes.StringAttr THEN M.class := Objects.String;  M.s := a(Attributes.StringAttr).s;
 			ELSE HALT(42)
 			END;
 			M.res := 0;
@@ -1001,9 +1001,9 @@ BEGIN
 			f := Attributes.FindAttr(M.name, F.attr); (* Search attribute *)
 			IF M.s[0] # 0X THEN (* Insert name *)
 				IF (f = NIL) OR ~(f IS Attributes.StringAttr) THEN (* Does not exist, insert *)
-					NEW(s); COPY(M.s, s.s); Attributes.InsertAttr(F.attr, M.name, s) 
+					NEW(s);  s.s := M.s; Attributes.InsertAttr(F.attr, M.name, s) 
 				ELSE (* Does exist, overwrite *)
-					COPY(M.s, f(Attributes.StringAttr).s)
+					f(Attributes.StringAttr).s := M.s
 				END;
 			ELSE (* Delete name *)
 				IF f # NIL THEN (* Name in list, has to be deleted *)
@@ -1027,7 +1027,7 @@ BEGIN
 				IF (f = NIL) OR ~(f IS Attributes.RealAttr) THEN NEW(r); r.r := M.y; a := r ELSE f(Attributes.RealAttr).r := M.y END;
 			ELSIF (M.class = Objects.String) THEN
 				IF (f = NIL) OR ~(f IS Attributes.StringAttr) THEN
-					NEW(s); COPY(M.s, s.s); a:= s ELSE COPY(M.s, f(Attributes.StringAttr).s)
+					NEW(s);  s.s := M.s; a:= s ELSE f(Attributes.StringAttr).s := M.s
 				END;
 			ELSE RETURN
 			END;
@@ -1054,7 +1054,7 @@ BEGIN
 			ELSIF a IS Attributes.CharAttr THEN M.class := Objects.Char; M.c := a(Attributes.CharAttr).c;
 			ELSIF a IS Attributes.IntAttr THEN M.class := Objects.Int; M.i := a(Attributes.IntAttr).i;
 			ELSIF a IS Attributes.RealAttr THEN M.class := Objects.LongReal; M.y := a(Attributes.RealAttr).r;
-			ELSIF a IS Attributes.StringAttr THEN M.class := Objects.String; COPY(a(Attributes.StringAttr).s, M.s);
+			ELSIF a IS Attributes.StringAttr THEN M.class := Objects.String;  M.s := a(Attributes.StringAttr).s;
 			ELSE HALT(42)
 			END;
 			M.res := 0;
@@ -1078,9 +1078,9 @@ BEGIN
 			f := Attributes.FindAttr(M.name, obj.attr); (* Search attribute *)
 			IF M.s[0] # 0X THEN (* Insert name *)
 				IF (f = NIL) OR ~(f IS Attributes.StringAttr) THEN (* Does not exist, insert *)
-					NEW(s); COPY(M.s, s.s); Attributes.InsertAttr(obj.attr, M.name, s) 
+					NEW(s);  s.s := M.s; Attributes.InsertAttr(obj.attr, M.name, s) 
 				ELSE (* Does exist, overwrite *)
-					COPY(M.s, f(Attributes.StringAttr).s)
+					f(Attributes.StringAttr).s := M.s
 				END;
 			ELSE (* Delete name *)
 				IF f # NIL THEN (* Name in list, has to be deleted *)
@@ -1104,7 +1104,7 @@ BEGIN
 				IF (f = NIL) OR ~(f IS Attributes.RealAttr) THEN NEW(r); r.r := M.y; a := r ELSE f(Attributes.RealAttr).r := M.y END;
 			ELSIF (M.class = Objects.String) THEN
 				IF (f = NIL) OR ~(f IS Attributes.StringAttr) THEN
-					NEW(s); COPY(M.s, s.s); a:= s ELSE COPY(M.s, f(Attributes.StringAttr).s)
+					NEW(s);  s.s := M.s; a:= s ELSE f(Attributes.StringAttr).s := M.s
 				END;
 			ELSE RETURN
 			END;
@@ -1199,7 +1199,7 @@ END ObjectHandler;
 PROCEDURE HasCmdAttr(F: Frame; attr: ARRAY OF CHAR): BOOLEAN;
 VAR A: Objects.AttrMsg;
 BEGIN
-	A.id := Objects.get; COPY(attr, A.name); A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
+	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
 	F.handle(F, A);
 	RETURN (A.res >= 0) & (A.class = Objects.String) & (A.s # "") 
 END HasCmdAttr;
@@ -1208,7 +1208,7 @@ END HasCmdAttr;
 PROCEDURE ExecuteAttr*(F: Frame; attr: ARRAY OF CHAR; dlink, sender, receiver: Objects.Object);
 VAR A: Objects.AttrMsg;
 BEGIN
-	A.id := Objects.get; COPY(attr, A.name); A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
+	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
 	F.handle(F, A);
 	IF (A.res >= 0) & (A.class = Objects.String) & (A.s # "") THEN Execute(A.s, F, dlink, sender, receiver) END
 END ExecuteAttr;
@@ -1398,7 +1398,7 @@ BEGIN
 	a := aliases; value[0] := 0X; 
 	WHILE (a # NIL) & (a.name # name) DO a := a.next END;
 	IF a # NIL THEN
-		COPY(a.value, value);
+		 value := a.value;
 	END;
 END GetAlias;
 
@@ -1408,7 +1408,7 @@ VAR genproc: ARRAY 64 OF CHAR; res: INTEGER;
 BEGIN
 	Objects.NewObj := NIL;
 	GetAlias(objname, genproc);	(* ps 20.5.96 *)
-	IF genproc = "" THEN COPY(objname, genproc) END;
+	IF genproc = "" THEN  genproc := objname END;
 	Oberon.Call(genproc, Oberon.Par, FALSE, res);
 	IF res # 0 THEN
 		Texts.WriteString(W, "Call error: "); Texts.WriteString(W, Modules.resMsg);
@@ -1458,15 +1458,15 @@ PROCEDURE AddAlias*(name, value: ARRAY OF CHAR);
 VAR a, b: Alias;
 BEGIN
 	IF aliases = NIL THEN
-		NEW(a); aliases := a; COPY(name, a.name);
+		NEW(a); aliases := a;  a.name := name;
 	ELSE
 		a := aliases; b := NIL;
 		WHILE (a # NIL) & (a.name # name) DO b := a; a := a.next END;
 		IF a = NIL THEN
-			NEW(a); b.next := a; COPY(name, a.name)
+			NEW(a); b.next := a;  a.name := name
 		END;
 	END;
-	COPY(value, a.value);
+	 a.value := value;
 END AddAlias;
 
 (** Command to insert a newly allocated gadget at the caret. Used in the form:
@@ -1483,10 +1483,10 @@ BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Attributes.Scan(S);
 	IF S.class = Attributes.Name THEN
-		COPY(S.s, fname);
+		 fname := S.s;
 		Attributes.Scan(S);
 		IF S.class = Attributes.Name THEN
-			COPY(S.s, tname);
+			 tname := S.s;
 			F := CreateViewModel(fname, tname);
 			IF F # NIL THEN
 				Integrate(F);
@@ -1546,7 +1546,7 @@ BEGIN
 		Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 		Attributes.Scan(S);
 		IF S.class = Attributes.Name THEN
-			COPY(S.s, fname);
+			 fname := S.s;
 			nF := CreateViewModel(fname, "");
 			IF (nF # NIL) & (SM.obj IS Display.Frame) THEN
 				obj := SM.obj;
@@ -1604,11 +1604,11 @@ BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Attributes.Scan(S);
 	IF (S.class = Attributes.Name) OR (S.class = Attributes.String) THEN
-		A.id := Objects.set; COPY(S.s, A.name);
+		A.id := Objects.set;  A.name := S.s;
 		Attributes.Scan(S); A.class := Objects.Inval; A.s := "";
 		IF S.class = Attributes.Int THEN A.class := Objects.Int; A.i := S.i;
-		ELSIF S.class = Attributes.Name THEN A.class := Objects.String; COPY(S.s, A.s);
-		ELSIF S.class = Attributes.String THEN A.class := Objects.String; COPY(S.s, A.s);
+		ELSIF S.class = Attributes.Name THEN A.class := Objects.String;  A.s := S.s;
+		ELSIF S.class = Attributes.String THEN A.class := Objects.String;  A.s := S.s;
 		END;
 		IF (A.s = "Yes") OR (A.s = "No") THEN Strings.StrToBool(A.s, A.b); A.class := Objects.Bool END;
 		IF A.class # Objects.Inval THEN
@@ -1642,8 +1642,8 @@ BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Attributes.Scan(S);
 	name := "";
-	IF S.class = Attributes.String THEN COPY(S.s, name)
-	ELSIF S.class = Attributes.Name THEN COPY(S.s, name)
+	IF S.class = Attributes.String THEN  name := S.s
+	ELSIF S.class = Attributes.Name THEN  name := S.s
 	END;
 	WHILE name[0] = "." DO
 		i := 0;
@@ -1659,8 +1659,8 @@ BEGIN
 	IF S.class = Attributes.Int THEN A.class := Objects.Int; A.i := S.i;
 	ELSIF S.class = Attributes.Real THEN A.class := Objects.Real; A.x := S.x;
 	ELSIF S.class = Attributes.LongReal THEN A.class := Objects.LongReal; A.y := S.x;
-	ELSIF S.class = Attributes.Name THEN A.class := Objects.String; COPY(S.s, A.s);
-	ELSIF S.class = Attributes.String THEN A.class := Objects.String; COPY(S.s, A.s);
+	ELSIF S.class = Attributes.Name THEN A.class := Objects.String;  A.s := S.s;
+	ELSIF S.class = Attributes.String THEN A.class := Objects.String;  A.s := S.s;
 	END;
 	IF (A.s = "Yes") OR (A.s = "No") THEN Strings.StrToBool(A.s, A.b); A.class := Objects.Bool END;
 	
@@ -1670,7 +1670,7 @@ BEGIN
 		IF name[i] = "." THEN
 			name[i] := 0X; INC(i); j := 0;
 			WHILE name[i] # 0X DO attr[j] := name[i]; INC(i); INC(j); END;
-			attr[j] := 0X; COPY(attr, A.name);
+			attr[j] := 0X;  A.name := attr;
 			obj := FindObj(context, name);
 			IF obj # NIL THEN
 				obj.handle(obj, A);
@@ -1697,7 +1697,7 @@ BEGIN
 	Attributes.Scan(S);
 	IF (S.class = Attributes.Name) OR (S.class = Attributes.String) THEN
 		M.id := Display.get; M.F := NIL; M.sel := NIL; M.obj := NIL; M.time := 0; Display.Broadcast(M);
-		COPY(S.s, oname);
+		 oname := S.s;
 		obj := CreateObject(oname);
 		IF (obj # NIL) & (M.time > 0) THEN
 			o := M.obj;
@@ -1725,20 +1725,20 @@ VAR sname: ARRAY 32 OF CHAR; i: Attributes.IntAttr; r: Attributes.RealAttr; s: A
 BEGIN
 	A := NIL; errpos := -1;
 	WHILE S.class IN {Texts.Name, Texts.String} DO
-		COPY(S.s, sname);
+		 sname := S.s;
 		Texts.Scan(S);
 		IF (S.class =  Texts.Char) & (S.c = "=") THEN
 			Texts.Scan(S);
 			IF S.class =  Texts.Name THEN
-				NEW(s); COPY(sname, s.name); COPY(S.s, s.s); a := s;
+				NEW(s);  s.name := sname;  s.s := S.s; a := s;
 			ELSIF S.class =  Texts.Int THEN
-				NEW(i); COPY(sname, i.name); i.i := S.i; a := i;
+				NEW(i);  i.name := sname; i.i := S.i; a := i;
 			ELSIF S.class =  Texts.String THEN
-				NEW(s); COPY(sname, s.name); COPY(S.s, s.s); a := s;
+				NEW(s);  s.name := sname;  s.s := S.s; a := s;
 			ELSIF S.class =  Texts.Real THEN
-				NEW(r); COPY(sname, r.name); r.r := S.x; a := r
+				NEW(r);  r.name := sname; r.r := S.x; a := r
 			ELSIF S.class =  Texts.LongReal THEN
-				NEW(r); COPY(sname, r.name); r.r := S.y; a := r
+				NEW(r);  r.name := sname; r.r := S.y; a := r
 			ELSE errpos :=  0; RETURN
 			END;
 			IF A = NIL THEN A := a; a0 := A ELSE a0.next := a; a0 := a END

@@ -125,7 +125,7 @@ MODULE LeoPens;	(** eos   **)
 				UNTIL ch = 0X
 			END
 		ELSE
-			COPY("NIL", s)
+			 s := "NIL"
 		END
 	END GetGenerator;
 	
@@ -194,7 +194,7 @@ MODULE LeoPens;	(** eos   **)
 					IF msg.name = "Gen" THEN
 						msg.class := Objects.String; msg.s := "LeoPens.NewGen"; msg.res := 0
 					ELSIF msg.name = "Font" THEN
-						msg.class := Objects.String; COPY(gen.font.name, msg.s); msg.res := 0
+						msg.class := Objects.String;  msg.s := gen.font.name; msg.res := 0
 					ELSE
 						Gadgets.framehandle(gen, msg)
 					END
@@ -257,7 +257,7 @@ MODULE LeoPens;	(** eos   **)
 	PROCEDURE NewItem (name: ARRAY OF CHAR; key: LONGINT; pen: GfxPens.Pen): Item;
 		VAR item: Item;
 	BEGIN
-		NEW(item); COPY(name, item.name); item.key := key; item.stamp := -1; item.pen := pen;
+		NEW(item);  item.name := name; item.key := key; item.stamp := -1; item.pen := pen;
 		RETURN item
 	END NewItem;
 	
@@ -287,7 +287,7 @@ MODULE LeoPens;	(** eos   **)
 	PROCEDURE EnumLink (name: ARRAY OF CHAR);
 		VAR lm: Objects.LinkMsg; item: Item;
 	BEGIN
-		lm.id := Objects.get; COPY(name, lm.name); lm.res := -1;
+		lm.id := Objects.get;  lm.name := name; lm.res := -1;
 		EnumTail.pen.handle(EnumTail.pen, lm);
 		IF (lm.res >= 0) & ((lm.obj = NIL) OR (lm.obj IS GfxPens.Pen)) THEN
 			item := NewItem(name, NewKey(), EnumTail.pen);
@@ -612,7 +612,7 @@ MODULE LeoPens;	(** eos   **)
 		ELSE
 			IF item.dsc # NIL THEN
 				IF item.obj = NIL THEN
-					lm.id := Objects.get; COPY(item.name, lm.name); lm.obj := NIL; lm.res := -1;
+					lm.id := Objects.get;  lm.name := item.name; lm.obj := NIL; lm.res := -1;
 					item.pen.handle(item.pen, lm);
 					item.obj := lm.obj
 				END;
@@ -620,7 +620,7 @@ MODULE LeoPens;	(** eos   **)
 				Attributes.SetString(gen, "Constraints", "0 -20 0 0");
 				Integrate(gen, ctxt)
 			ELSE
-				am.id := Objects.get; COPY(item.name, am.name); am.class := Objects.Inval; am.res := -1;
+				am.id := Objects.get;  am.name := item.name; am.class := Objects.Inval; am.res := -1;
 				item.pen.handle(item.pen, am);
 				CASE am.class OF
 				| Objects.Int:
@@ -845,7 +845,7 @@ MODULE LeoPens;	(** eos   **)
 		IF fig # NIL THEN
 			Figures.GetSelection(fig, sel);
 			IF sel # NIL THEN
-				lm.id := Objects.get; COPY(link, lm.name);
+				lm.id := Objects.get;  lm.name := link;
 				obj := sel;
 				WHILE obj # NIL DO
 					lm.res := -1; obj.handle(obj, lm);
@@ -924,7 +924,7 @@ MODULE LeoPens;	(** eos   **)
 						item.obj.handle(item.obj, am);
 						IF am.res >= 0 THEN
 							IF am.class = Objects.LongReal THEN am.class := Objects.Real; am.x := SHORT(am.y) END;
-							am.id := Objects.set; COPY(item.name, am.name); am.res := -1;
+							am.id := Objects.set;  am.name := item.name; am.res := -1;
 							pen.handle(pen, am)
 						END
 					END
@@ -936,7 +936,7 @@ MODULE LeoPens;	(** eos   **)
 							changed := TRUE
 						END;
 						item.obj := item.dsc.pen; changed := TRUE;
-						lm.id := Objects.set; COPY(item.name, lm.name); lm.obj := item.obj; lm.res := -1;
+						lm.id := Objects.set;  lm.name := item.name; lm.obj := item.obj; lm.res := -1;
 						pen.handle(pen, lm)
 					END
 				END;
@@ -953,7 +953,7 @@ MODULE LeoPens;	(** eos   **)
 		VAR a: PenAction; lm: Objects.LinkMsg; old: Objects.Object;
 	BEGIN
 		a := act(PenAction);
-		lm.id := Objects.get; COPY(a.name, lm.name); lm.res := -1; lm.obj := NIL;
+		lm.id := Objects.get;  lm.name := a.name; lm.res := -1; lm.obj := NIL;
 		a.shape.handle(a.shape, lm);
 		old := lm.obj; lm.obj := a.pen; a.pen := old;
 		lm.id := Objects.set; lm.res := -1;

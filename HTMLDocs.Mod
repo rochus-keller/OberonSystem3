@@ -228,7 +228,7 @@ MODULE HTMLDocs;	(** portable *) (* ejz, Greek & Math support by afi *)
 		WHILE (f.name[i] # 0X) & ~Strings.IsDigit(f.name[i]) DO
 			INC(i)
 		END;
-		COPY(f.name, family); family[i] := 0X;
+		 family := f.name; family[i] := 0X;
 		Strings.StrToIntPos(f.name, val, i); size := SHORT(val);
 		IF Strings.IsAlpha(f.name[i]) THEN
 			attr := f.name[i]
@@ -482,8 +482,8 @@ MODULE HTMLDocs;	(** portable *) (* ejz, Greek & Math support by afi *)
 	PROCEDURE HasA(obj: Objects.Object; name : ARRAY OF CHAR): BOOLEAN;
 		VAR A: Objects.AttrMsg;
 	BEGIN
-		found := FALSE; COPY(name, searchAttr);
-		A.id := Objects.enum; COPY(name, A.name); A.res := -1;
+		found := FALSE;  searchAttr := name;
+		A.id := Objects.enum;  A.name := name; A.res := -1;
 		A.Enum := FindA;
 		obj.handle(obj, A);
 		RETURN found
@@ -977,7 +977,7 @@ to.elems := from.elems
 			IF (attr = "GET") OR (attr = "POST") THEN
 				NEW(cont);
 				cont.query := query;
-				COPY(attr, cont.method);
+				 cont.method := attr;
 				cont.user := ""; cont.passwd := "";
 				IF clearCache THEN
 					HyperDocs.CacheDoc(key, NIL);
@@ -1025,12 +1025,12 @@ to.elems := from.elems
 	PROCEDURE HREF(P: Page; VAR href, cmd: ARRAY OF CHAR; VAR key: LONGINT);
 		VAR i, j: LONGINT;
 	BEGIN
-		key := -1; COPY("", cmd); i := 0;
+		key := -1;  cmd := ""; i := 0;
 		WHILE (href[i] # 0X) & (href[i] <= " ") DO
 			INC(i)
 		END;
 		IF href[i] = "#" THEN
-			COPY("HTMLDocs.Locate ", cmd); href[0] := " ";
+			 cmd := "HTMLDocs.Locate "; href[0] := " ";
 			Strings.Append(cmd, href); cmd[16] := 022X;
 			Strings.AppendCh(cmd, 022X)
 		ELSE
@@ -1046,7 +1046,7 @@ to.elems := from.elems
 					DEC(i); DEC(j)
 				END;
 				IF i = 0 THEN
-					COPY("HTMLDocs.Locate ", cmd);
+					 cmd := "HTMLDocs.Locate ";
 					j := 0;
 					WHILE cmd[j] # 0X DO
 						INC(j)
@@ -1102,7 +1102,7 @@ to.elems := from.elems
 	BEGIN
 		SplitFontName(f, family, size, attr);
 		IF family # newfamily THEN
-			COPY(newfamily, family);
+			 family := newfamily;
 			Strings.IntToStr(size, str); Strings.Append(family, str);
 			IF attr # 0X THEN
 				Strings.AppendCh(family, attr)
@@ -1324,7 +1324,7 @@ to.elems := from.elems
 			i, j: LONGINT;
 			entity: ARRAY 64 OF CHAR;
 	BEGIN
-		COPY("", str);
+		 str := "";
 		IF S.ch = "#" THEN
 			Read(S);
 			IF Strings.IsDigit(S.ch) THEN
@@ -1380,7 +1380,7 @@ to.elems := from.elems
 				Read(S)
 			END
 		ELSE
-			COPY("&", str)
+			 str := "&"
 		END
 	END CharRefStr;
 
@@ -1530,11 +1530,11 @@ END
 				END;
 				S.value[i] := 0X
 			ELSE
-				COPY("", S.value)
+				 S.value := ""
 			END;
 			S.class := Value; RETURN TRUE
 		END;
-		COPY("", name); COPY("", S.value); RETURN FALSE
+		 name := "";  S.value := ""; RETURN FALSE
 	END NextAttr;
 
 	PROCEDURE GetAttrs*(VAR S: Scanner; VAR attrs: TagAttr);
@@ -1543,7 +1543,7 @@ END
 		attrs := NIL; NEW(attr);
 		WHILE NextAttr(S, attr.name) DO
 			attr.next := attrs; attrs := attr;
-			COPY(S.value, attr.value);
+			 attr.value := S.value;
 			NEW(attr)
 		END
 	END GetAttrs;
@@ -1681,7 +1681,7 @@ END
 					IF s = NIL THEN
 						s := HyperDocs.LinkSchemeByPrefix("file")
 					END;
-					COPY(s.prefix, P.base.prefix);
+					 P.base.prefix := s.prefix;
 					HyperDocs.RetrieveLink(P.base.key, S.value);
 					IF P.base.prefix = "http" THEN
 						P.base.key := HTTPDocs0.SplitHTTPAdr(S.value, P.base.host, P.base.path, label, P.base.port)
@@ -2334,14 +2334,14 @@ END
 					END
 				ELSIF attr = "REV" THEN
 					IF caption = "" THEN
-						COPY(S.value, caption)
+						 caption := S.value
 					END
 				ELSIF attr = "REL" THEN
 					IF caption = "" THEN
-						COPY(S.value, caption)
+						 caption := S.value
 					END
 				ELSIF attr = "TITLE" THEN
-					COPY(S.value, caption)
+					 caption := S.value
 				END
 			END;
 			IF cmd # "" THEN
@@ -2384,7 +2384,7 @@ END
 			prompt := "This is a searchable index. Enter search keywords: ";
 			WHILE NextAttr(S, attr) DO
 				IF attr = "PROMPT" THEN
-					COPY(S.value, prompt)
+					 prompt := S.value
 				ELSIF attr = "HREF" THEN
 					key := HyperDocs.BuildKey(P.base, S.value)
 				END
@@ -2946,7 +2946,7 @@ ELSIF ~on THEN
 						gen := "HTMLTags.";  Strings.Append(gen, S.value);
 						Oberon.OpenScanner(Ss, gen);
 						IF Ss.class IN {Texts.Name, Texts.String} THEN
-							COPY(Ss.s, gen);
+							 gen := Ss.s;
 							newTag := NIL; Oberon.Call(gen, Oberon.Par, FALSE, i);
 							IF i # 0 THEN
 								Texts.WriteString(Wr, gen);
@@ -2954,7 +2954,7 @@ ELSIF ~on THEN
 								Texts.Append(Oberon.Log, Wr.buf)
 							END;
 							IF newTag # NIL THEN
-								e := newTag; COPY(S.value, e.tag);
+								e := newTag;  e.tag := S.value;
 								e.next := extTags; extTags := e;
 								e.start(S.page)
 							END
@@ -3141,9 +3141,9 @@ ELSIF ~on THEN
 		lKey := "NetSystem."; Strings.Append(lKey, key);
 		Oberon.OpenScanner(S, lKey);
 		IF S.class IN {Texts.Name, Texts.String} THEN
-			COPY(S.s, s)
+			 s := S.s
 		ELSE
-			COPY("", s)
+			 s := ""
 		END;
 		RETURN s # ""
 	END QueryString;
@@ -3196,7 +3196,7 @@ ELSIF ~on THEN
 		IF s = NIL THEN
 			s := HyperDocs.LinkSchemeByPrefix("file")
 		END;
-		COPY(s.prefix, me.P.base.prefix);
+		 me.P.base.prefix := s.prefix;
 		HyperDocs.RetrieveLink(me.P.base.key, me.S.value);
 		IF me.P.base.prefix = "http" THEN
 			me.P.base.key := HTTPDocs0.SplitHTTPAdr(me.S.value, me.P.base.host, me.P.base.path, me.P.orgLabel, me.P.base.port);
@@ -3518,7 +3518,7 @@ BEGIN
 END Check;
 
 BEGIN
-	COPY(GreekCap, GreekTab);
+	 GreekTab := GreekCap;
 	Strings.Append(GreekTab, GreekMin);
 	InitEntities(); mono := Fonts.This("Courier10.Scn.Fnt");
 	bullets[0].f := Fonts.This("Default10.Scn.Fnt"); bullets[0].c := CHR(29);

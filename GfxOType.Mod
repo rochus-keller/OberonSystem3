@@ -61,7 +61,7 @@ MODULE GfxOType;	(** eos   **)
 		VAR font: Font; name: GfxFonts.FontName; fam: OType.Font; glyph: OType.Glyph;
 	BEGIN
 		font := NIL;
-		COPY(family, name); Strings.Append(name, style);
+		 name := family; Strings.Append(name, style);
 		fam := OType.Open(family);
 		IF fam # NIL THEN
 			NEW(glyph); OType.InitGlyph(glyph, fam);

@@ -49,7 +49,7 @@ MODULE HTMLForms;	(** portable *)
 					ELSIF CAP(S.value[0]) = "M" THEN
 						method := "MAILTO"
 					ELSE
-						COPY(S.value, method)
+						 method := S.value
 					END
 				ELSIF attr = "ACTION" THEN
 					IF method = "Authorization" THEN
@@ -82,7 +82,7 @@ MODULE HTMLForms;	(** portable *)
 		attr := HTMLDocs.FindAttr(attrs, "ALT");
 		IF attr # NIL THEN
 			Attributes.SetString(obj, "Caption", attr.value);
-			COPY(attr.value, cap)
+			 cap := attr.value
 		ELSE
 			Attributes.SetString(obj, "Caption", cap)
 		END;
@@ -123,13 +123,13 @@ MODULE HTMLForms;	(** portable *)
 				END;
 				attr := HTMLDocs.FindAttr(attrs, "NAME");
 				IF attr # NIL THEN
-					COPY(attr.value, name)
+					 name := attr.value
 				ELSE
 					name := ""
 				END;
 				attr := HTMLDocs.FindAttr(attrs, "VALUE");
 				IF attr # NIL THEN
-					COPY(attr.value, value)
+					 value := attr.value
 				ELSE
 					value := ""
 				END;
@@ -358,7 +358,7 @@ END;
 						litem.oldSel := litem.sel;
 						attrs := HTMLDocs.FindAttr(attrs, "VALUE");
 						IF attrs # NIL THEN
-							COPY(attrs.value, litem.value); litem.hasVal := TRUE
+							 litem.value := attrs.value; litem.hasVal := TRUE
 						ELSE
 							litem.value := ""; litem.hasVal := FALSE
 						END;

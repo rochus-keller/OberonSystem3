@@ -82,7 +82,7 @@ MODULE LPRPrinter;	(** portable *)  (* ejz  , LPR Version of PSPrinter, RFC 1179
 			END;
 			host[j] := 0X
 		ELSE
-			COPY("", host)
+			 host := ""
 		END
 	END ScanDest;
 
@@ -153,7 +153,7 @@ MODULE LPRPrinter;	(** portable *)  (* ejz  , LPR Version of PSPrinter, RFC 1179
 			S: Texts.Scanner;
 	BEGIN
 		Oberon.OpenScanner(S, "NetSystem.EMail");
-		IF S.class IN {Texts.Name, Texts.String} THEN COPY(S.s, email) ELSE email := "" END;
+		IF S.class IN {Texts.Name, Texts.String} THEN  email := S.s ELSE email := "" END;
 		INC(jobNr);
 		IF jobNr >= 1000 THEN
 			jobNr := 100
@@ -278,7 +278,7 @@ MODULE LPRPrinter;	(** portable *)  (* ejz  , LPR Version of PSPrinter, RFC 1179
 
 	PROCEDURE Open*(P: Printer.Printer; printer, options: ARRAY OF CHAR);
 	BEGIN
-		COPY(options, opts);
+		 opts := options;
 		ScanDest(printer, host, queue);
 		IF host # "" THEN	(* remote *)
 			PSPrinter.Open(P, "", options)
@@ -328,7 +328,7 @@ MODULE LPRPrinter;	(** portable *)  (* ejz  , LPR Version of PSPrinter, RFC 1179
 		Texts.OpenScanner(S, Oberon.Par.text, Texts.Pos(R));
 		Texts.Scan(S);
 		IF (S.class = Texts.Char) & (S.c = Oberon.OptionChar) THEN
-			Texts.Scan(S); COPY(S.s, options);
+			Texts.Scan(S);  options := S.s;
 			Texts.Scan(S)
 		ELSE
 			options := ""
@@ -448,7 +448,7 @@ MODULE LPRPrinter;	(** portable *)  (* ejz  , LPR Version of PSPrinter, RFC 1179
 			ch, open: CHAR;
 	BEGIN
 		Oberon.OpenScanner(S, "NetSystem.EMail");
-		IF S.class IN {Texts.Name, Texts.String} THEN COPY(S.s, email) ELSE email := "" END;
+		IF S.class IN {Texts.Name, Texts.String} THEN  email := S.s ELSE email := "" END;
 		Texts.OpenReader(R, Oberon.Par.text, Oberon.Par.pos);
 		Texts.Read(R, ch);
 		WHILE ~R.eot & (ch <= " ") DO
@@ -470,10 +470,10 @@ MODULE LPRPrinter;	(** portable *)  (* ejz  , LPR Version of PSPrinter, RFC 1179
 			Texts.OpenScanner(S, Oberon.Par.text, Texts.Pos(R));
 			Texts.Scan(S);
 			IF S.class IN {Texts.String, Texts.Name} THEN
-				COPY(S.s, job)
+				 job := S.s
 			ELSIF S.class = Texts.Int THEN
 				IntToStr(S.i, S.s);
-				COPY(S.s, job)
+				 job := S.s
 			ELSE
 				job := ""
 			END;

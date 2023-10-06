@@ -194,7 +194,7 @@ END PrintFrame;
 PROCEDURE FrameAttr(F: Frame; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Gages.NewFrame", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Gages.NewFrame"; M.res := 0
 		ELSE Gadgets.framehandle(F, M)
 		END
 	ELSIF M.id = Objects.set THEN

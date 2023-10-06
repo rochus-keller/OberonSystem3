@@ -66,7 +66,7 @@ MODULE HyperDocTools;	(** portable *) (* ejz,   *)
 		IF key # HyperDocs.UndefKey THEN
 			NEW(T); Texts.Open(T, "");
 			Texts.Append(T, W.buf);
-			COPY(curDoc.name, title);
+			 title := curDoc.name;
 			Strings.ChangeSuffix(title, "History");
 			TextDocs.ShowText(title, T, HyperDocs.docW, HyperDocs.docH)
 		END
@@ -175,7 +175,7 @@ MODULE HyperDocTools;	(** portable *) (* ejz,   *)
 		Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 		Attributes.Scan(S);
 		IF S.class IN {Attributes.Name, Attributes.String} THEN
-			COPY(S.s, link);
+			 link := S.s;
 			Attributes.Scan(S);
 			IF (S.class = Attributes.Char) & (S.c = "=") THEN
 				LOOP
@@ -191,7 +191,7 @@ MODULE HyperDocTools;	(** portable *) (* ejz,   *)
 						FetchF();
 						Attributes.Scan(S);
 						IF S.class IN {Attributes.Name, Attributes.String} THEN
-							COPY(S.s, link);
+							 link := S.s;
 							Attributes.Scan(S)
 						ELSE
 							EXIT
@@ -237,7 +237,7 @@ MODULE HyperDocTools;	(** portable *) (* ejz,   *)
 			s.handle(s, I);
 			obj := Gadgets.FindObj(Gadgets.context, "Doc-Type");
 			IF obj # NIL THEN
-				COPY(I.contType.typ, val); Strings.AppendCh(val, "/");
+				 val := I.contType.typ; Strings.AppendCh(val, "/");
 				Strings.Append(val, I.contType.subTyp);
 				Attributes.SetString(obj, "Value", val);
 				Gadgets.Update(obj)

@@ -523,11 +523,11 @@ BEGIN
 	DspWrite(GETVER); DspRead(V1); DspRead(V2);
 	B.DspVersion:= V1*256 + V2;	(* build the version-word *)
 	IF (V1>=1)&(V1<=4) THEN
-		IF B.DspVersion=512 THEN COPY(Names[1], B.DspName)
-		ELSE COPY(Names[V1], B.DspName)
+		IF B.DspVersion=512 THEN  B.DspName := Names[1]
+		ELSE  B.DspName := Names[V1]
 		END
 	ELSE
-		COPY(Names[SBNONE], B.DspName)
+		 B.DspName := Names[SBNONE]
 	END
 END GetVersion;
 

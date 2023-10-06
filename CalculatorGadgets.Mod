@@ -455,7 +455,7 @@ BEGIN
 	ELSE
 		NEW(nE); M.obj:= nE;
 		nE.expr:= E.expr; nE.op:= E.op; nE.mem:= E.mem;
-		COPY(E.tag,nE.tag);
+		nE.tag := E.tag;
 	END;
 END EngineCopy;
 
@@ -506,7 +506,7 @@ END EngineHandler;
 
 PROCEDURE CopyButton*(VAR M: Objects.CopyMsg; from,to: Button);
 BEGIN
-	BasicGadgets.CopyButton(M,from,to); COPY(from.tag,to.tag);
+	BasicGadgets.CopyButton(M,from,to); to.tag := from.tag;
 END CopyButton;
 
 PROCEDURE ButtonAttr(B: Button; VAR M: Objects.AttrMsg);
@@ -522,7 +522,7 @@ BEGIN
 			END;
 		END;
 	ELSIF (M.id = Objects.set) & (M.name = "Field") & (M.class = Objects.String) THEN
-		COPY(M.s,B.tag);
+		B.tag := M.s;
 		IF Strings.CAPPrefix(CalcPrefix,M.s) THEN GetSuffix(M.s,B.tag); END;
 	END;
 	IF (M.res = -1) THEN BasicGadgets.ButtonHandler(B,M); END;

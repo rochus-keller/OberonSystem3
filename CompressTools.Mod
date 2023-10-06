@@ -558,11 +558,11 @@ MODULE CompressTools;	(** non-portable *) (* (c) ejz, first version: 14.1.92, th
 			D := Desktops.CurDoc(Gadgets.context);
 			IF D # NIL THEN
 				cmdSource := Menu;
-				COPY(D.name, name);
+				 name := D.name;
 				RETURN
 			END
 		END;
-		cmdSource := Cmd; COPY(EOFName, name)
+		cmdSource := Cmd;  name := EOFName
 	END GetArcName;
 TextDocs *)
 
@@ -578,11 +578,11 @@ TextDocs *)
 			Texts.Scan(S);
 			IF S.class = Texts.Name THEN
 				cmdSource := Menu;
-				COPY(S.s, name);
+				 name := S.s;
 				RETURN
 			END
 		END;
-		cmdSource := Cmd; COPY(EOFName, name)
+		cmdSource := Cmd;  name := EOFName
 	END GetArcName;
 (* TextFrames *)
 
@@ -641,7 +641,7 @@ TextDocs *)
 			arrow := TRUE;
 			NEW(h);
 			h.next := NIL;
-			COPY(mn, h.name);
+			 h.name := mn;
 			nameList := h;
 			last := nameList;
 			Oberon.GetSelection(T, beg, end, time);
@@ -673,7 +673,7 @@ TextDocs *)
 							((cmdSource = Cmd) & (S.class = Texts.Name) & (~arrow OR (arrow & (pos <= end+StringLen(S.s))))) DO
 			NEW(h);
 			h.next := NIL;
-			COPY(S.s, h.name);
+			 h.name := S.s;
 			IF Search(nameList, h.name) = NIL THEN
 				IF last = NIL THEN
 					nameList := h
@@ -711,7 +711,7 @@ TextDocs *)
 			INC(i)
 		END;
 		IF j >= 0 THEN
-			COPY(name, back);
+			 back := name;
 			j := j+1;
 			i := 0;
 			WHILE (j < l) & (back[j] # 0X) DO
@@ -830,10 +830,10 @@ TextDocs *)
 			ReadHeader(Ra, h, err);
 			WHILE (h.name # EOFName) & ~err DO
 				IF addL = NIL THEN
-					NEW(addL); COPY(h.name, addL.name);
+					NEW(addL);  addL.name := h.name;
 					addL.next := NIL
 				ELSE
-					NEW(ha); COPY(h.name, ha.name);
+					NEW(ha);  ha.name := h.name;
 					ha.next := addL;
 					addL := ha
 				END;
@@ -850,7 +850,7 @@ TextDocs *)
 				NextName(file)
 			END;
 			pos := Files.Pos(Ra);
-			COPY(file, h.name);
+			 h.name := file;
 			h.length := 0;
 			h.check := 0;
 			h.date := 0;
@@ -1178,7 +1178,7 @@ TextDocs *)
 		ELSE
 			D := Gadgets.CreateObject("Compress.NewDoc");
 			WITH D: Documents.Document DO
-				COPY(nameList.name, D.name);
+				 D.name := nameList.name;
 				LoadDoc(D);
 				Desktops.ShowDoc(D)
 			END
@@ -1296,10 +1296,10 @@ TextDocs *)
 		ReadHeader(R, h, err);
 		WHILE (h.name # EOFName) & ~err DO
 			IF addL = NIL THEN
-				NEW(addL); COPY(h.name, addL.name);
+				NEW(addL);  addL.name := h.name;
 				addL.next := NIL
 			ELSE
-				NEW(ha); COPY(h.name, ha.name);
+				NEW(ha);  ha.name := h.name;
 				ha.next := addL;
 				addL := ha
 			END;
@@ -1331,7 +1331,7 @@ TextDocs *)
 				END;
 				Files.Set(R, ArcF, Files.Length(ArcF));
 				pos := Files.Pos(R);
-				COPY(nl.name, h.name);
+				 h.name := nl.name;
 				Texts.WriteString(W, "    ");
 				Texts.WriteString(W, nl.name);
 				Texts.WriteLn(W);
@@ -1525,7 +1525,7 @@ TextDocs *)
 		WHILE (h.name # EOFName) &  ~err & (AddF = NIL) DO
 			pos := Files.Pos(R);
 			IF h.name = nameList.next.name THEN
-				COPY(Temp, temp);
+				 temp := Temp;
 				res := 0;
 				WHILE temp[res] # 0X DO
 					INC(res)
@@ -1564,7 +1564,7 @@ TextDocs *)
 		IF AddF # NIL THEN
 			(* TextDocs
 			D := Documents.Open(temp);
-			COPY(h.name, D.name);
+			 D.name := h.name;
 			Desktops.ShowDoc(D);
 			TextDocs *)
 			(* TextFrames *)
@@ -1690,7 +1690,7 @@ TextDocs *)
 			IF res = Done THEN
 				Texts.Scan(S);
 				WHILE (S.class IN {Texts.Name, Texts.String}) & (res = Done) DO
-					COPY(S.s, name); res := -1;
+					 name := S.s; res := -1;
 					Texts.WriteLn(W); Texts.WriteString(W, "    ");
 					Texts.WriteString(W, name);
 					Texts.Scan(S);
@@ -1708,7 +1708,7 @@ TextDocs *)
 									END;
 									IF h = NIL THEN
 										Texts.WriteString(W, " => "); Texts.WriteString(W, S.s);
-										COPY(S.s, hn.header.name); res := Done
+										 hn.header.name := S.s; res := Done
 									ELSE
 										Texts.WriteString(W, " name conflict")
 									END
@@ -1817,7 +1817,7 @@ BEGIN
 	IF j = -1 THEN j := 0 END;
 	bname[j] := 0X;
 	IF (bname = "Text") OR (bname = "Tool") OR (bname = "Mod") & (i+4 < MaxName) THEN
-		COPY(name, bname);
+		 bname := name;
 		bname[i] := ".";  INC(i);  bname[i] := "B";  INC(i);  bname[i] := "a";  INC(i);
 		bname[i] := "k";  INC(i);  bname[i] := 0X;
 		RETURN TRUE

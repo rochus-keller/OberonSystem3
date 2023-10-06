@@ -402,7 +402,7 @@ MODULE LeoFrames;	(** eos   **)
 	BEGIN
 		Figures.InitContainer(layer);
 		layer.handle := HandleLayer;
-		COPY(name, layer.name);
+		 layer.name := name;
 		layer.display := display; layer.print := print; layer.align := align; layer.edit := edit
 	END InitLayer;
 	

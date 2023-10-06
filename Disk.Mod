@@ -405,13 +405,13 @@ BEGIN
 			m := -1;  dir := NextCluster(b, m, fatb, dir);
 			IF dir <= 0 THEN
 				IF dir = 0 THEN EXIT	(* last cluster *)
-				ELSE COPY(file, error); RETURN FALSE	(* error *)
+				ELSE  error := file; RETURN FALSE	(* error *)
 				END
 			END
 		END
 	END;
 	IF found & (file[k] = 0X) & (attr * {3,4} = {}) THEN RETURN TRUE
-	ELSE COPY(file, error); RETURN FALSE
+	ELSE  error := file; RETURN FALSE
 	END
 END FindFile;
 

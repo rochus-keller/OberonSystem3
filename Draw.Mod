@@ -194,12 +194,12 @@ MODULE Draw;	(** portable *) (*NW 29.6.88 / 2.12.93 / JG 14.6.94 ported to Syste
 	BEGIN Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
 		Graphics.scale := SHORT((Display.Unit DIV Printer.Unit * 6 + 5) DIV 5);
 		IF S.class = Texts.Name THEN
-			COPY(S.s, printer);
+			 printer := S.s;
 			IF S.nextCh = Oberon.OptionChar THEN
 				Texts.Scan(S);	(* option char *)
 				Texts.Scan(S);	(* options *)
 				IF (S.class # Texts.Name) & (S.class # Texts.String) THEN options := ""
-				ELSE COPY(S.s, options)
+				ELSE  options := S.s
 				END
 			ELSE options := ""
 			END;
@@ -257,7 +257,7 @@ MODULE Draw;	(** portable *) (*NW 29.6.88 / 2.12.93 / JG 14.6.94 ported to Syste
 			Lname: ARRAY 32 OF CHAR;
 	BEGIN Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
 		IF S.class = Texts.Name THEN
-			COPY(S.s, Lname); Texts.Scan(S);
+			 Lname := S.s; Texts.Scan(S);
 			IF (S.class = Texts.Char) & (S.c = "^") THEN
 				Oberon.GetSelection(T, beg, end, time);
 				IF time >= 0 THEN Texts.OpenScanner(S, T, beg); Texts.Scan(S) END
@@ -306,7 +306,7 @@ MODULE Draw;	(** portable *) (*NW 29.6.88 / 2.12.93 / JG 14.6.94 ported to Syste
 
 	BEGIN Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
 		IF S.class = Texts.Name THEN
-			COPY(S.s, Lname); Texts.Scan(S);
+			 Lname := S.s; Texts.Scan(S);
 			IF (S.class  = Texts.Name) OR (S.class = Texts.String) & (S.len <= 8) THEN
 				F := GraphicFrames.Focus();
 				IF (F # NIL) & (F.graph.sel # NIL) THEN

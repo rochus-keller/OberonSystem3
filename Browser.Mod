@@ -247,7 +247,7 @@ MODULE Browser;	(** portable, except where noted *)
 	PROCEDURE GetModule(name: OPS.Name): OPT.Object;
 	VAR  found: BOOLEAN; i, j: LONGINT; ch0, ch1: CHAR; iname: OPS.Name; F: Files.File; R: Files.Rider;
 	BEGIN
-		COPY(Modules.extension, OPM.extension);
+		 OPM.extension := Modules.extension;
 		found:=FALSE; i:=0; ch0:=name[0];
 		WHILE	(ch0#0X) & (i < 32)	DO	iname[i]:=ch0; INC(i); ch0:=name[i]	END;
 		j := 0;
@@ -289,7 +289,7 @@ MODULE Browser;	(** portable, except where noted *)
 			END;
 			theMod:=GetModule(name);
 			IF	theMod#NIL	THEN
-				COPY(name, vname); Append(vname, ".Def"); NEW(T); Texts.Open(T, "");
+				 vname := name; Append(vname, ".Def"); NEW(T); Texts.Open(T, "");
 				Oberon.OpenText(vname, T, Display.Width DIV 2, 200);
 				Str("DEFINITION "); Title; Str(name); Normal; Ch(";"); Ln; Ln; Texts.Append(T, W.buf);
 				Scope; Ln; Str("END "); Str(name); Ch("."); Texts.Append(T, W.buf)

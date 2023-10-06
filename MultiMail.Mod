@@ -45,7 +45,7 @@ MODULE MultiMail;	(** portable *) (* ejz,   *)
 			END
 		END CalcDispVec;
 	BEGIN
-		COPY(pat, sPat);
+		 sPat := pat;
 		sPatLen := SHORT(Strings.Length(sPat));
 		CalcDispVec();
 		IF sPatLen > 0 THEN

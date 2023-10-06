@@ -126,7 +126,7 @@ MODULE Gopher;	(** portable *) (* ejz,   *)
 			portS: ARRAY 8 OF CHAR;
 			key: LONGINT;
 	BEGIN
-		COPY("gopher://", url);
+		 url := "gopher://";
 		Strings.Lower(host, host);
 		Strings.Append(url, host);
 		IF port # GopherDefPort THEN
@@ -348,11 +348,11 @@ MODULE Gopher;	(** portable *) (* ejz,   *)
 			D2: Documents.Document;
 	BEGIN
 		IF (typ = "g") OR (typ = "I") THEN
-			COPY(TempGifFile, fname)
+			 fname := TempGifFile
 		ELSIF typ = "h" THEN
-			COPY(TempHTMLFile, fname)
+			 fname := TempHTMLFile
 		ELSE
-			COPY(TempFile, fname)
+			 fname := TempFile
 		END;
 		F := Files.New(fname);
 		Files.Set(R, F, 0);
@@ -534,7 +534,7 @@ MODULE Gopher;	(** portable *) (* ejz,   *)
 		CASE type OF
 			"0", "i": IF Connect(C, host, selector, port, 0X, TRUE) THEN
 						TextDoc(D, C);
-						COPY(selector, D.name)
+						 D.name := selector
 					END
 			|0X, "1": IF Connect(C, host, selector, port, 0X, TRUE) THEN
 						MenuDoc(D, C, key);
@@ -544,7 +544,7 @@ MODULE Gopher;	(** portable *) (* ejz,   *)
 					END
 			|"4" .. "6", "9", "g", "I", "s", "M", "h", "S", ":", ";", "<": IF Connect(C, host, selector, port, 0X, TRUE) THEN
 						BinDoc(D, C, type);
-						COPY(selector, D.name)
+						 D.name := selector
 					END
 			|"2", "7": IF search = "" THEN
 						obj := Gadgets.FindObj(Gadgets.context, "Search");
@@ -569,12 +569,12 @@ MODULE Gopher;	(** portable *) (* ejz,   *)
 							NetSystem.WriteString(C, search);
 							NetTools.SendString(C, Strings.CRLF);
 							CSODoc(D, C);
-							COPY(search, D.name)
+							 D.name := search
 						END
 					END
 			|MimeType: IF Connect(C, host, selector, port, 0X, TRUE) THEN
 						MimeDoc(D, C, selector);
-						COPY(selector, D.name)
+						 D.name := selector
 					END
 		ELSE
 			Texts.WriteString(W, " Gopher ");
@@ -706,12 +706,12 @@ MODULE Gopher;	(** portable *) (* ejz,   *)
 				END;
 				search[j] := 0X
 			ELSE
-				COPY("", search)
+				 search := ""
 			END
 		ELSE
 			type := 0X;
-			COPY("", selector);
-			COPY("", search)
+			 selector := "";
+			 search := ""
 		END;
 		key := RegisterGopherAdr(host, selector, search, type, port);
 		RETURN key
@@ -795,7 +795,7 @@ MODULE Gopher;	(** portable *) (* ejz,   *)
 							IF (cont.typ.typ = "application") & (cont.typ.subTyp = "gopher") THEN
 								key := WriteMenuLink(OutT, type, selector, host, port, login, FALSE)
 							ELSE
-								COPY(selector, line);
+								 line := selector;
 								Strings.AppendCh(line, Strings.Tab);
 								Strings.AppendCh(line, "+");
 								Strings.Append(line, mime);
@@ -1007,7 +1007,7 @@ MODULE Gopher;	(** portable *) (* ejz,   *)
 		IF (host # "") & (key # HyperDocs.UndefKey) THEN
 			IF proxy & NetTools.UseProxy(host) THEN
 				P.key := key; P.res := -1; P.D := D;
-				COPY(proxyHost, P.host); P.port := proxyPort;
+				 P.host := proxyHost; P.port := proxyPort;
 				S := HyperDocs.LinkSchemeByPrefix("http");
 				S.handle(S, P)
 			ELSE

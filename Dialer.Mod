@@ -85,7 +85,7 @@ END SendStr;
 
 PROCEDURE WaitStr(str: ARRAY OF CHAR; timeOut: LONGINT);
 BEGIN
-	COPY(str, waitStr);
+	 waitStr := str;
 	waitPos := 0;  waitTime := Input.Time() + timeOut
 END WaitStr;
 
@@ -227,7 +227,7 @@ VAR S0: Texts.Scanner;  prefix, path: ARRAY 64 OF CHAR;  err: BOOLEAN;  devnum: 
 BEGIN err := FALSE;
 	Texts.OpenScanner(S0, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S0);
 	IF S0.class = Texts.Name THEN
-		COPY(S0.s, prefix);  COPY(prefix, host);
+		 prefix := S0.s;   host := prefix;
 		Texts.Scan(S0);
 		IF S0.class = Texts.Name THEN
 			GetDevice(S0.s, devnum);
@@ -239,7 +239,7 @@ BEGIN err := FALSE;
 					Texts.WriteString(W, " device is already open");  Texts.WriteLn(W);
 					Texts.Append(Oberon.Log, W.buf)
 				END;
-				COPY(prefix, path); Strings.Append(path, ".Init");
+				 path := prefix; Strings.Append(path, ".Init");
 				Oberon.OpenScanner(S, path);
 				IF S.class = Texts.Name THEN
 					IF S.s = "COM1" THEN port := V24.COM1
@@ -250,7 +250,7 @@ BEGIN err := FALSE;
 					END;
 					Texts.Scan(S);
 					IF S.class = Texts.Int THEN InitComPort(port, S.i);
-						COPY(prefix, path); Strings.Append(path, ".Dial");
+						 path := prefix; Strings.Append(path, ".Dial");
 						Oberon.OpenScanner(S, path);
 						IF script # NIL THEN Oberon.Remove(script)
 						ELSE NEW(script)

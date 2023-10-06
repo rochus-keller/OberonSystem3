@@ -1332,7 +1332,7 @@ VAR
 	BEGIN
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
 		IF S.class # Texts.Name THEN RETURN END;	(* ### *)
-		COPY(S.s, cmd);
+		 cmd := S.s;
 		IF para.len > 0 THEN Texts.Delete(para, 0, para.len) END;	(* clear parameter text *)
 		text := NIL; time := 0; Oberon.GetSelection(text, beg, end, time);
 		IF (text = NIL) OR (time <= 0) THEN beg := end END;

@@ -147,7 +147,7 @@ VAR L: Lockrec; old: BOOLEAN;
 BEGIN
   IF M.id = Objects.get THEN
     IF M.name = "Gen" THEN
-      M.class := Objects.String; COPY("Rembrandt.New", M.s); M.res := 0
+      M.class := Objects.String;  M.s := "Rembrandt.New"; M.res := 0
     ELSIF M.name = "Color" THEN
       M.class := Objects.Int; M.i := F.col; M.res := 0 
 	ELSIF M.name = "Locked" THEN
@@ -1963,7 +1963,7 @@ END GetLocked;
 PROCEDURE SetLocked*(F: Frame; locked: BOOLEAN);
 VAR M: Objects.AttrMsg;
 BEGIN
-	M.id:= Objects.set; M.class:= Objects.Bool; COPY("Locked", M.name); M.b:= locked; M.res:= -1; 
+	M.id:= Objects.set; M.class:= Objects.Bool;  M.name := "Locked"; M.b:= locked; M.res:= -1; 
 	F.handle(F, M);
 END SetLocked;
 
@@ -1976,7 +1976,7 @@ END GetBorder;
 PROCEDURE SetBorder*(F: Frame; border: BOOLEAN);
 VAR M: Objects.AttrMsg;
 BEGIN
-	M.id:= Objects.set; M.class:= Objects.Bool; COPY("Border", M.name); M.b:= border; M.res:= -1; 
+	M.id:= Objects.set; M.class:= Objects.Bool;  M.name := "Border"; M.b:= border; M.res:= -1; 
 	F.handle(F, M);
 END SetBorder;
 
@@ -2300,7 +2300,7 @@ VAR F: Frame;
 BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Attributes.Scan(S);
-	IF S.class = Attributes.Name THEN COPY(S.s, name) ELSE COPY("Default.Pict", name) END;
+	IF S.class = Attributes.Name THEN  name := S.s ELSE  name := "Default.Pict" END;
 	NEW(F);
 	F.col := 14; F.px:=0; F.py:= 0;
 	F.handle := Handle;

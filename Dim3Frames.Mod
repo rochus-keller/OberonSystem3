@@ -341,7 +341,7 @@ VAR w: Dim3Engine.World;
 BEGIN
 	(* let frame handle message *)
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Dim3Frames.NewFrame", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Dim3Frames.NewFrame"; M.res := 0
 	
 	(* pass message on to selected object if still unhandled*)
 	ELSIF (F.obj # NIL) & ~(Gadgets.selected IN F.state) THEN

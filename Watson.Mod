@@ -268,7 +268,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		VAR i, j: INTEGER;
 	BEGIN
 		IF h # NIL THEN
-			COPY(cmd, h.cmd);
+			 h.cmd := cmd;
 			i:= 0; WHILE h.cmd[i] # 0X DO INC(i) END;
 			h.cmd[i]:= " "; h.cmd[i+1]:= Oberon.OptionChar; INC(i, 2);
 			j:= 0; WHILE order[j] # 0X DO h.cmd[i]:= order[j]; INC(j); INC(i) END;
@@ -351,7 +351,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 	PROCEDURE OpenTut(this: ARRAY OF CHAR);	(* opens given tutorial at given label (this = Tutorial.html Label) *)
 		VAR cmd: ARRAY 64 OF CHAR;
-	BEGIN COPY("Desktops.OpenDoc ", cmd); Append(cmd, this);
+	BEGIN  cmd := "Desktops.OpenDoc "; Append(cmd, this);
 		Str("reading "); Str(this); Ln; ToLog;
 		Gadgets.Execute(cmd, NIL, NIL, NIL, NIL)
 	END OpenTut;
@@ -381,7 +381,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		IF level = 0 THEN
 			obj:= localIds.next; WHILE (obj # NIL) & (obj.name # name) DO obj:= obj.next END;
 			IF obj = NIL THEN NEW(obj);
-				COPY(name, obj.name); obj.class:= class; obj.beg:= 0; obj.end:= 0;
+				 obj.name := name; obj.class:= class; obj.beg:= 0; obj.end:= 0;
 				obj.next:= localIds.next; localIds.next:= obj
 			ELSE err(errIdent)
 			END
@@ -460,7 +460,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		IF obj # NIL THEN
 			IF par # "" THEN	(* set cmd-attribute *)
 				A.id:= Objects.set; A.name:= "Cmd"; A.class:= Objects.String; A.res:= -1;
-				COPY(cmd, A.s);
+				 A.s := cmd;
 				IF (options # "") & (cmd # BookCmd)  THEN
 					AppendCh(A.s, Oberon.OptionChar); Append(A.s, options); AppendCh(A.s, " ")
 				END;
@@ -685,7 +685,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			REPEAT GetCh UNTIL (ch = "*") OR (("A" <= CAP(ch)) & (CAP(ch) <= "Z"));
 			IF ch # "*" THEN Ident;
 				IF (ch = ".") & (id # "") THEN GetCh;
-					COPY(id, label); AppendCh(label, ".");
+					 label := id; AppendCh(label, ".");
 					Ident;
 					IF id # "" THEN Append(label, id)
 					ELSE label:= ""
@@ -801,7 +801,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		REPEAT
 			IF mod[i].alias = name THEN
 				mod[i].exp:= TRUE;
-				COPY(mod[i].real, name);	(* substitute real name for alias name *)
+				 name := mod[i].real;	(* substitute real name for alias name *)
 				RETURN TRUE
 			END;
 			INC(i)
@@ -832,7 +832,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE qualident(VAR end: LONGINT);	(* writes a (qualified) ident *)
 		VAR qualifier: Name;
 	BEGIN end:= Pos();
-		COPY(id, qualifier); Sym; 
+		 qualifier := id; Sym; 
 		IF sym = period THEN Sym; end:= Pos();
 			IF ~FindMod(qualifier) THEN err(curErr) END;
 			IF sym = ident THEN
@@ -1000,7 +1000,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		IF sym < lparen THEN REPEAT Sym UNTIL sym >= lparen END;
 		IF sym = ident THEN	(* remeber type so we can fix it later *)
 			NEW(fix); fix.insert:= W.buf.len;
-			COPY(id, fix.name); Sym; fix.qualified:= (sym = period);
+			 fix.name := id; Sym; fix.qualified:= (sym = period);
 			IF fix.qualified THEN Sym;	(* qulified identifier *)
 				IF ~FindMod(fix.name) THEN err(errTypeDef) END;
 				AppendCh(fix.name, ".");
@@ -1136,7 +1136,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			Sym; varPar:= (sym = var); IF varPar THEN Sym END;
 			COPY (id, self); CheckSym(ident); CheckSym(colon);
 			COPY (id, typId); CheckSym(ident); CheckSym(rparen);
-			IF sym = ident THEN COPY(id, procId);
+			IF sym = ident THEN  procId := id;
 				Sym; CheckMark(vis);
 				INC(level);
 				IF FindIdent(typId) # NIL THEN vis:= internal END;
@@ -1154,7 +1154,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				DEC(level)
 			ELSE err(errProc)
 			END
-		ELSIF (sym = ident) OR (sym = string) THEN COPY(id, procId);
+		ELSIF (sym = ident) OR (sym = string) THEN  procId := id;
 			Sym; CheckMark(vis);
 			IF (vis # internal) & (mode = LProc) & ~fwd THEN mode:= XProc END;
 			IF (level > 0) & (mode # LProc) THEN err(errProc); vis:= internal END;
@@ -1281,12 +1281,12 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	BEGIN  Sym; 
 		LOOP
 			IF sym = ident THEN
-				COPY(id, mod[mods].alias); COPY(id, mod[mods].real);
+				 mod[mods].alias := id;  mod[mods].real := id;
 				mod[mods].exp:= FALSE; mod[mods].ln:= newLine;
 				mod[mods-1].cmnts:= cmnts.next; cmnts.next:= NIL;
 				Sym;
 				IF sym = becomes THEN Sym;
-					IF sym = ident THEN COPY(id, mod[mods].real); Sym ELSE err(errImp) END
+					IF sym = ident THEN  mod[mods].real := id; Sym ELSE err(errImp) END
 				END;
 				INC(mods)
 			ELSE err(errImp)
@@ -1304,7 +1304,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		localIds.next:= NIL; fixups.next:= NIL; cmnts.next:= NIL;
 		IF sym = module THEN Sym ELSE err(errMod) END ;
 		IF sym = ident THEN
-			COPY(id, modName);
+			 modName := id;
 			Str("DEFINITION "); Str(modName); Char(";");
 			Sym; CheckSym(semicolon);
 			mod[0].ln:= NeedsLn();
@@ -1359,7 +1359,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			mT:= GetText(); NEW(B); Texts.OpenBuf(B);
 			Texts.Save(mT, 0, mT.len, B); Texts.Append(ModT, B)
 		ELSE
-			COPY(mod, name); Str(name);
+			 name := mod; Str(name);
 			Texts.Open(ModT, name)
 		END;
 		ToLog;
@@ -1379,7 +1379,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		(* finish *)
 		IF noerr THEN
 			IF doPlain THEN Texts.ChangeLooks(T, 0, T.len, {0}, Fonts.Default, 0, 0)  END;
-			COPY(newName, mod)
+			 mod := newName
 		ELSE Texts.Delete(T, 0, T.len)
 		END;
 		Ln; ToLog
@@ -1585,7 +1585,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
 		IF (S.class = Texts.Char) & (S.c = Oberon.OptionChar) THEN Texts.Scan(S);	(* read in options *)
 			IF S.class= Texts.Name THEN
-				COPY(S.s, options); COPY(S.s, Watson0.options);	(* copy options to add them to Control-cmd *)
+				 options := S.s;  Watson0.options := S.s;	(* copy options to add them to Control-cmd *)
 				SetOrder(S.s);
 				Texts.Scan(S)
 			END
@@ -1593,7 +1593,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		(* set default order *)
 		A.id:= Objects.get; A.res:= -1; A.name:= "Value"; A.class:= Objects.Inval; oObj.handle(oObj, A);
 		SetOrder(A.s);
-		order[k]:= 0X; IF order = "" THEN COPY(DefaultOrder, order) END;
+		order[k]:= 0X; IF order = "" THEN  order := DefaultOrder END;
 
 		(* now get name *)
 		IF S.class = Texts.Char THEN
@@ -1606,7 +1606,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				S.class:= Texts.Name; S.s[0]:= "*"; S.s[1]:= 0X
 			END
 		END;
-		IF S.class = Texts.Name THEN COPY(S.s, name) ELSE name[0]:= 0X END;
+		IF S.class = Texts.Name THEN  name := S.s ELSE name[0]:= 0X END;
 		IF ~msgPrinted THEN PrintMsg END
 	END GetArgs;
 
@@ -1627,7 +1627,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			(* check in archive, if there is one *)
 			A.id:= Objects.get; A.name:= "Value"; A.class:= Objects.Inval; A.res:= -1; aObj.handle(aObj, A);
 			IF A.res >= 0 THEN
-				defFound:= FALSE; COPY(mod, defName);
+				defFound:= FALSE;  defName := mod;
 				Compress.Enumerate(A.s, CheckDefName, FALSE, res);
 				IF defFound THEN typ:= DefCTyp; F:= Files.Old(A.s) END
 			END	(* IF *)
@@ -1640,14 +1640,14 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			Texts.OpenScanner(S, linkText, 0); Texts.Scan(S); Texts.Scan(S);
 			REPEAT
 				IF S.class = Texts.Name THEN
-					IF S.s = mod THEN Texts.Scan(S); COPY(S.s, tutName);
+					IF S.s = mod THEN Texts.Scan(S);  tutName := S.s;
 						i:= 0; j:= 0;
 						WHILE tutName[i] # 0X DO IF tutName[i] = "." THEN j:= i END; INC(i) END;
 						IF j = 0 THEN j:= i END;
 						REPEAT DEC(i) UNTIL (i = 0) OR (tutName[i] = ".");
 						tutName[j]:= 0X; Append(tutName, tutFileExt);
 						F:= Files.Old(tutName);
-						IF F # NIL THEN S.eot:= TRUE; COPY(tutName, mod);
+						IF F # NIL THEN S.eot:= TRUE;  mod := tutName;
 							IF S.s[j] # 0X THEN
 								i:= 0; REPEAT INC(i) UNTIL mod[i] = 0X; mod[i]:= tutDelimiter;
 								REPEAT INC(j); INC(i); mod[i]:= S.s[j] UNTIL S.s[j] = 0X; 
@@ -1677,13 +1677,13 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			(* append postfix to file name *)
 			WHILE (A.s[i] # 0X) DO fileName[j]:= A.s[i]; INC(i); INC(j) END; fileName[j]:= 0X;
 			(* try to open prefix+mod+postfix *)
-			F:= Files.Old(fileName); IF F #NIL THEN COPY(fileName, mod); RETURN END;
+			F:= Files.Old(fileName); IF F #NIL THEN  mod := fileName; RETURN END;
 			(* if there was a prefix, try to open mod+'.Mod' *)
 			IF A.s[0] # "*" THEN i:= 0;
 				WHILE mod[i] # 0X DO fileName[i]:= mod[i]; INC(i) END;
 				fileName[i]:= "."; fileName[i+1]:= "M"; fileName[i+2]:= "o";
 				fileName[i+3]:= "d"; fileName[i+4]:= 0X;
-				F:= Files.Old(fileName); IF F #NIL THEN COPY(fileName, mod) END
+				F:= Files.Old(fileName); IF F #NIL THEN  mod := fileName END
 			END
 		END OpenMod;
 		
@@ -1777,7 +1777,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				D.handle(D, A); 
 				NEW(F); TextGadgets.Init(F(TextGadgets.Frame), T, FALSE);
 				D.W:= 600; Documents.Init(D, F); D.handle:= DocHandler;
-				COPY(mod, D.name);
+				 D.name := mod;
 				IF (oldD # NIL) & IsWatsonDoc(oldD(Documents.Document)) THEN Desktops.ReplaceCurrentDoc(D)
 				ELSE Desktops.ShowDoc(D)
 				END;
@@ -1911,7 +1911,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		NEW(T); Texts.Open(T, "");
 		WHILE S.class = Texts.Name DO
 			Oberon.Collect;
-			COPY(S.s, mod); MakeDef(mod, T);
+			 mod := S.s; MakeDef(mod, T);
 			IF T.len > 0 THEN
 				IF conv THEN NEW(HT); Texts.Open(HT, "");
 					Convert2HTML(T, HT); T:= HT; Append(mod, htmlExt);
@@ -1934,7 +1934,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	BEGIN
 		GetArgs(S, text); NEW(T); NEW(outT);
 		WHILE S.class = Texts.Name DO
-			COPY(S.s, text); 
+			 text := S.s; 
 			F:= Files.Old(text);
 			l:= 3; REPEAT INC(l) UNTIL text[l] = 0X; text[l-4]:= 0X;
 			OpenDef(T, text, F = NIL);

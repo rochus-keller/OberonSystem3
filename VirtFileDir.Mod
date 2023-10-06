@@ -121,7 +121,7 @@ be set to FALSE to stop the Enumerate operation mid-way. *)
 			a: DirPage; n: FileName; first: BOOLEAN;
 	BEGIN IF ~init THEN HALT(99) END; first := TRUE;
 		LOOP
-			IF first THEN AddStr(prefix, name, n) ELSE COPY(name, n) END;
+			IF first THEN AddStr(prefix, name, n) ELSE  n := name END;
 			dadr := DirRootAdr;
 			LOOP Disk.GetSector(dadr, a);
 				L := 0; R := a.m; (*binary search*)
@@ -399,7 +399,7 @@ be set to FALSE to stop the Enumerate operation mid-way. *)
 		VAR b: BOOLEAN;
 	BEGIN
 		IF ~init THEN HALT(99) END;
-		COPY(prefix, pat);
+		 pat := prefix;
 		pos := 0;  WHILE (pat[pos] # 0X) & (pat[pos] # "*") DO INC(pos) END;
 		IF pat[pos] # "*" THEN	(* no * found *)
 			pos := -1

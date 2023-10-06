@@ -329,7 +329,7 @@ PROCEDURE Spool*(f: Files.File);	(** non-portable *)
 VAR name: ARRAY 32 OF CHAR;  pre: ARRAY 4 OF CHAR;  p: INTEGER;
 BEGIN
 	Files.GetName(f, name);
-	COPY(name, pre);
+	 pre := name;
 	IF name = "" THEN
 		res := 0
 	ELSIF (pre = "LPT") & (name[3] >= "1") & (name[3] <= "3") & (name[4] = 0X) THEN	(* centronics *)

@@ -263,7 +263,7 @@ MODULE Menu;	(** portable *)	(* rs/uh, Wed, 7-Jul-1993 *)
 			NEW(T); Texts.Open(T, S.s);
 			IF T.len > 0 THEN
 				cache[this].count := 0; cache[this].cmd := -1; cache[this].text := T;
-				COPY(S.s, cache[this].name);
+				 cache[this].name := S.s;
 				CmdMenu(T, x, y, cache[this].cmd)
 			ELSE
 				WaitRelease

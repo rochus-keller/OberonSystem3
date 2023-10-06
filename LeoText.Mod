@@ -164,7 +164,7 @@ MODULE LeoText;	(** eos   **)
 		IF (cap.text = NIL) OR (size > LEN(cap.text^)) THEN
 			NEW(cap.text, -((-size) DIV BaseAlloc) * BaseAlloc)	(* rounds up to next multiple of BaseAlloc *)
 		END;
-		COPY(text, cap.text^); cap.len := len
+		 cap.text^ := text; cap.len := len
 	END SetCaption;
 	
 	PROCEDURE LocateCaption (cap: Caption; VAR lm: Figures.LocateMsg);
@@ -355,7 +355,7 @@ MODULE LeoText;	(** eos   **)
 		ELSIF (" " <= ch) & (ch < 7FX) OR (80X <= ch) & (ch < 9AX) THEN
 			IF cap.len MOD BaseAlloc = BaseAlloc-1 THEN
 				NEW(text, cap.len + 1 + BaseAlloc);
-				COPY(cap.text^, text^);
+				 text^ := cap.text^;
 				cap.text := text
 			END;
 			INC(cap.caret);
@@ -426,9 +426,9 @@ MODULE LeoText;	(** eos   **)
 			IF am.name = "Gen" THEN
 				am.class := Objects.String; am.s := "LeoText.NewCaption"; am.res := 0
 			ELSIF am.name = "Text" THEN
-				am.class := Objects.String; COPY(cap.text^, am.s); am.res := 0
+				am.class := Objects.String;  am.s := cap.text^; am.res := 0
 			ELSIF am.name = "Font" THEN
-				am.class := Objects.String; COPY(cap.font.name, am.s); am.res := 0
+				am.class := Objects.String;  am.s := cap.font.name; am.res := 0
 			ELSIF am.name = "Size" THEN
 				am.class := Objects.Real; am.x := cap.size; am.res := 0
 			ELSIF am.name = "Color" THEN
@@ -584,9 +584,9 @@ MODULE LeoText;	(** eos   **)
 		VAR act: StyleAction; cap: Caption; font: ARRAY 64 OF CHAR; size: REAL; color: Gfx.Color; sm: Figures.SelectMsg;
 	BEGIN
 		act := fact(StyleAction); cap := act.cap;
-		COPY(cap.font.name, font); size := cap.size; color := cap.color;
+		 font := cap.font.name; size := cap.size; color := cap.color;
 		cap.font := GfxFonts.OpenSize(act.font, SHORT(ENTIER(act.size))); cap.size := act.size; cap.color := act.color;
-		COPY(font, act.font); act.size := size; act.color := color;
+		 act.font := font; act.size := size; act.color := color;
 		cap.mfont := cap.font; cap.mmat := cap.mat;
 		cap.stamp := stamp;
 		sm.fig := fig; sm.id := Figures.Set;
@@ -597,7 +597,7 @@ MODULE LeoText;	(** eos   **)
 		VAR act: StyleAction;
 	BEGIN
 		Figures.BeginCommand(fig);
-		NEW(act); act.cap := cap; COPY(font, act.font); act.size := size; act.color := color;
+		NEW(act); act.cap := cap;  act.font := font; act.size := size; act.color := color;
 		Figures.AddAction(fig, act, DoStyleAction);
 		Figures.EndCommand(fig)
 	END ChangeStyle;
@@ -635,7 +635,7 @@ MODULE LeoText;	(** eos   **)
 	PROCEDURE SetCaptionStyle (cap: Objects.Object);
 		VAR name: ARRAY 64 OF CHAR; size: LONGINT;
 	BEGIN
-		COPY(FontFamily.val, name);
+		 name := FontFamily.val;
 		IF FontStyle.val # "" THEN
 			Strings.AppendCh(name, "-");
 			Strings.Append(name, FontStyle.val)
@@ -883,7 +883,7 @@ MODULE LeoText;	(** eos   **)
 	BEGIN
 		Leonardo.FindFigure(fig);
 		IF fig # NIL THEN
-			COPY(FontFamily.val, name);
+			 name := FontFamily.val;
 			IF FontStyle.val # "" THEN
 				Strings.AppendCh(name, "-");
 				Strings.Append(name, FontStyle.val)

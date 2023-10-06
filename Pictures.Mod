@@ -438,7 +438,7 @@ BEGIN
 		IF s.s = ext THEN
 			Texts.Scan(s);  Texts.Scan(s);
 			IF s.class = Texts.Name THEN
-				COPY(s.s, newproc);  s.class := Texts.Inval
+				 newproc := s.s;  s.class := Texts.Inval
 			END
 		ELSE
 			Texts.Scan(s);  Texts.Scan(s);  Texts.Scan(s)
@@ -470,7 +470,7 @@ BEGIN
 		END;
 		IF x = PictFileId THEN Load(P, F, Files.Pos(R), len); P.handle := handler
 		ELSE 
-			cP := P; COPY(name, cName); ConverterOpen;
+			cP := P;  cName := name; ConverterOpen;
 			IF cRes # 0 THEN P.width := 0; P.height := 0; P.depth := 0 END;
 			cP := NIL; P.handle := handler
 		END;
@@ -492,7 +492,7 @@ BEGIN
 		IF msg IS Objects.AttrMsg THEN
 			WITH msg: Objects.AttrMsg DO 
 				IF (msg.id = Objects.get) & (msg.name = "Gen") THEN 
-					msg.class := Objects.String; COPY("Pictures.NewPicture", msg.s); msg.res := 0 
+					msg.class := Objects.String;  msg.s := "Pictures.NewPicture"; msg.res := 0 
 				END;
 			END;
 		ELSIF msg IS Objects.FileMsg THEN

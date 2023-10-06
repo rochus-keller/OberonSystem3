@@ -36,7 +36,7 @@ MODULE UUDecoder;	(** portable *) (* ejz, 5.7.95 *)
 			END;
 			IF S.class = Texts.Name THEN
 				beg := Texts.Pos(S);
-				COPY(S.s, name);
+				 name := S.s;
 				RETURN TRUE
 			END
 		END;

@@ -179,7 +179,7 @@ VAR
 		styleOk := FALSE; bak := FALSE;
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
 		WHILE S.class = Texts.Name DO
-			COPY(S.s, name); Texts.Scan(S); styleOk := FALSE;
+			 name := S.s; Texts.Scan(S); styleOk := FALSE;
 			IF (S.class = Texts.Char) & (S.c = Oberon.OptionChar) THEN Texts.Scan(S);
 				IF S.class = Texts.Name THEN
 					i := 0;

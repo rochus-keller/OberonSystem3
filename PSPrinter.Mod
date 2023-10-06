@@ -143,7 +143,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 
 	PROCEDURE Error(s0, s1: ARRAY OF CHAR);
 		VAR error, f: ARRAY 32 OF CHAR;
-	BEGIN COPY(s0, error); COPY(s1, f); HALT(99)
+	BEGIN  error := s0;  f := s1; HALT(99)
 	END Error;
 
 	(* -- Bounding Box -- *)
@@ -166,7 +166,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 	PROCEDURE SetMappedFont(VAR fontR: Files.Rider; fname: ARRAY OF CHAR);
 		VAR family: ARRAY 7 OF CHAR;
 	BEGIN
-		COPY(fname, family);
+		 family := fname;
 		Ch(fontR, "/"); Str(fontR, fname); 
 		IF (family = "Syntax") OR (family = "Oberon") OR (family = "Default") THEN Str(fontR, " DefineSMapFont")
 		ELSE Str(fontR, " DefineMapFont") END;
@@ -382,7 +382,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 			attr: CHAR;
 	BEGIN
 		dpi := SHORT(914400 DIV Printer.current.Unit);
-		COPY(fd.name, name); i := 0; size := 0;
+		 name := fd.name; i := 0; size := 0;
 		WHILE (name[i] # 0X) & (name[i] # ".") & ((name[i] < "0") OR (name[i] > "9")) DO
 			family[i] := name[i]; INC(i)
 		END;
@@ -397,7 +397,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 		END;
 		IF fontDef = NIL THEN
 			NEW(fontDef); fontDef.next := fontMapDict; fontMapDict := fontDef; INC(fontMapDictN);
-			COPY(name, fontDef.name); COPY(family, fontDef.family);
+			 fontDef.name := name;  fontDef.family := family;
 			fontDef.size := size; fontDef.attr := attr
 		END;
 		IF ~echo THEN RETURN END;
@@ -556,11 +556,11 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 		WITH L: Fonts.Font DO
 			ParseName(L.name, family, size, style, class);	(* take name apart *)
 			IF family = "Default" THEN
-				COPY(default, family); BuildName(family, size, style, class, L.name)
+				 family := default; BuildName(family, size, style, class, L.name)
 			END;
 			IF (class[0] # "M") OR (class[1] # "d") THEN Substitute(L)
 			ELSE
-				COPY(class, prClass); prClass[0] := "P"; prClass[1] := "r";
+				 prClass := class; prClass[0] := "P"; prClass[1] := "r";
 				BuildName(family, size, style, prClass, tmp);
 				f := Files.Old(tmp);
 				IF f # NIL THEN
@@ -731,7 +731,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 	
 	PROCEDURE UseListFont*(P: Printer.Printer; name: ARRAY OF CHAR);
 	BEGIN
-		COPY(name, listFont); curFont := -1
+		 listFont := name; curFont := -1
 	END UseListFont;
 
 	(** Don't forget to update the bounding box of eps files by calling procedure Box. *)
@@ -795,7 +795,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 			Box(P, P.sx - dsr, P.sy, w, h);
 			INC(P.sx, w);
 			IF (curFont < 0) OR (fontTable[curFont].name # fnt.name) THEN
-				COPY(fnt.name, fontTable[fontIndex+1].name);
+				 fontTable[fontIndex+1].name := fnt.name;
 				i := 0; WHILE i < 8 DO fontTable[fontIndex+1].used[i] := {}; INC(i) END;		
 				fNo := 0;
 				WHILE fontTable[fNo].name # fnt.name DO INC(fNo) END;
@@ -817,7 +817,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 				| 80X..95X, 0ABX:
 					Str(bodyR, "\2"); n := ORD(ch)-128;
 					Ch(bodyR, CHR(n DIV 8 + 48)); Ch(bodyR, CHR(n MOD 8 + 48)); Use(ch)
-				| 9FX: COPY(fontTable[curFont].name, family);
+				| 9FX:  family := fontTable[curFont].name;
 					IF family = "Courie" THEN Ch(bodyR, " ") ELSE Str(bodyR, "  ") END; Use(" ");
 				ELSE
 					Ch(bodyR, ch); Use(ch);
@@ -1247,7 +1247,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 						buffer := "PSPrinter."; Strings.Append(buffer, fontDef.family);
 						Oberon.OpenScanner (S, buffer);
 						IF S.class IN {Texts.Name, Texts.String} THEN
-							COPY(S.s, alias); Str(printR, alias)
+							 alias := S.s; Str(printR, alias)
 						ELSE
 							Str(printR, fontDef.family)
 						END;
@@ -1304,7 +1304,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 	PROCEDURE GetMetric* (P: Printer.Printer; fnt: Fonts.Font): Fonts.Font;
 	VAR name: ARRAY 32 OF CHAR; i: INTEGER; metric: Fonts.Font;
 	BEGIN
-		COPY(fnt.name, name);
+		 name := fnt.name;
 		i := 0; WHILE (name[i] # ".") & (name[i] # 0X) DO INC(i) END;
 		(* look for Mdx *)
 		name[i] := "."; name[i+1] := "M"; name[i+2] := "d";

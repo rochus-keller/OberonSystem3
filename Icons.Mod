@@ -152,7 +152,7 @@ BEGIN
 	WITH F: View DO
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
-				IF (M.id = Objects.get) & (M.name = "Gen") THEN COPY("Icons.NewView", M.s); M.res := 0 END
+				IF (M.id = Objects.get) & (M.name = "Gen") THEN  M.s := "Icons.NewView"; M.res := 0 END
 			END
 		ELSIF M IS Objects.FileMsg THEN
 			WITH M: Objects.FileMsg DO
@@ -306,8 +306,8 @@ PROCEDURE IconAttr(F: Icon; VAR M: Objects.AttrMsg);
 VAR obj: Objects.Object;
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class :=Objects.String; COPY("Icons.NewIcon", M.s); M.res := 0
-		ELSIF M.name = "Caption" THEN M.class := Objects.String; COPY(F.caption, M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class :=Objects.String;  M.s := "Icons.NewIcon"; M.res := 0
+		ELSIF M.name = "Caption" THEN M.class := Objects.String;  M.s := F.caption; M.res := 0
 		ELSIF M.name = "Icon" THEN ForceString(F, M)
 		ELSIF M.name = "Cmd" THEN ForceString(F, M)
 		ELSIF M.name = "ConsumeCmd" THEN ForceString(F, M)
@@ -316,7 +316,7 @@ BEGIN
 	ELSIF M.id = Objects.set THEN
 		IF M.name = "Caption" THEN
 			IF M.class = Objects.String THEN
-				IF M.s # F.caption THEN COPY(M.s, F.caption); Change(F) END;
+				IF M.s # F.caption THEN  F.caption := M.s; Change(F) END;
 				M.res := 0
 			END
 		ELSIF M.name = "Icon" THEN
@@ -457,7 +457,7 @@ PROCEDURE CopyIcon*(VAR M: Objects.CopyMsg; from, to: Icon);
 VAR id: INTEGER;
 BEGIN
 	id := M.id; M.id := Objects.deep; Gadgets.CopyFrame(M, from, to); M.id := id;
-	COPY(from.caption, to.caption); to.h := from.h; to.col := from.col
+	 to.caption := from.caption; to.h := from.h; to.col := from.col
 END CopyIcon;
 
 PROCEDURE Size(F: Icon; VAR x, y, w, h: INTEGER);
@@ -512,7 +512,7 @@ END IconTrack;
 PROCEDURE HasCmdAttr(F: Display.Frame; attr: ARRAY OF CHAR): BOOLEAN;
 VAR A: Objects.AttrMsg;
 BEGIN
-	A.id := Objects.get; COPY(attr, A.name); A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
+	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
 	F.handle(F, A);
 	RETURN (A.res >= 0) & (A.class = Objects.String) & (A.s # "") 
 END HasCmdAttr;
@@ -659,7 +659,7 @@ END IconHandler;
 PROCEDURE MakeIcon*(F: Icon; name: ARRAY OF CHAR; icon: Objects.Object);
 BEGIN
 	F.handle := IconHandler; F.obj := icon; F.col := Display3.groupC;
-	COPY(name, F.caption); IconSize(F, F.W, F.H); F.state := {Gadgets.lockedsize, Gadgets.transparent}
+	 F.caption := name; IconSize(F, F.W, F.H); F.state := {Gadgets.lockedsize, Gadgets.transparent}
 END MakeIcon;
 
 PROCEDURE NewIcon*;
@@ -793,7 +793,7 @@ END SetLinkObject;
 PROCEDURE IconizerAttr(F: Iconizer; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Icons.NewIconizer", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Icons.NewIconizer"; M.res := 0
 		ELSIF M.name = "Popup" THEN M.class := Objects.Bool; M.b := F.popup; M.res := 0
 		ELSIF M.name = "Menu" THEN M.class := Objects.Bool; M.b := F.sel; M.res := 0
 		ELSIF M.name = "FixedViews" THEN M.class := Objects.Bool; M.b := ~F.pos; M.res := 0
@@ -1497,7 +1497,7 @@ BEGIN
 		iconname := "Icons.Moon";
 		A.id := Objects.get; A.name := "Icon"; A.class := Objects.Inval; A.s := ""; A.res := -1;
 		D.handle(D, A);
-		IF (A.res >= 0) & (A.class = Objects.String) THEN COPY(A.s, iconname) END;
+		IF (A.res >= 0) & (A.class = Objects.String) THEN  iconname := A.s END;
 		NEW(F); CreateIcon(F, D.name, iconname);
 		Gadgets.Integrate(F)
 	END

@@ -97,7 +97,7 @@ MODULE MIME; (** portable *)
 				IF bufPos >= (bufLen-3) THEN
 					h.fields[bufPos] := 0X;
 					INC(bufLen, 1024); NEW(buf, bufLen);
-					COPY(h.fields^, buf^); h.fields := buf
+					 buf^ := h.fields^; h.fields := buf
 				END;
 IF (ch = ":") & ~field THEN
 					end := FALSE; field := ~white; anyField := anyField OR field
@@ -247,7 +247,7 @@ END
 	PROCEDURE ExtractValue*(h: Header; pos: LONGINT; VAR val: ARRAY OF CHAR);
 		VAR len, i, vlen: LONGINT;
 	BEGIN
-		COPY("", val);
+		 val := "";
 		len := LEN(h.fields^);
 		IF (pos < 0) OR (pos >= len) THEN
 			RETURN
@@ -269,7 +269,7 @@ END
 	PROCEDURE FindParam*(h: Header; pos: LONGINT; param: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
 		VAR len, i, vlen: LONGINT;
 	BEGIN
-		COPY("", val);
+		 val := "";
 		len := LEN(h.fields^);
 		IF (pos < 0) OR (pos >= len) THEN
 			RETURN
@@ -315,7 +315,7 @@ END
 			len, i, len2: LONGINT;
 			end: CHAR;
 	BEGIN
-		COPY("", email);
+		 email := "";
 		len := LEN(h.fields^);
 		IF (pos < 0) OR (pos >= len) THEN
 			RETURN
@@ -582,7 +582,7 @@ END
 		END;
 		IF contType = NIL THEN
 			NEW(contType); contType.next := contTypes; contTypes := contType; contType.support := FALSE;
-			COPY(typ, contType.typ); COPY(subTyp, contType.subTyp);
+			 contType.typ := typ;  contType.subTyp := subTyp;
 			contType.prefix := ""; contType.suffix := ""
 		END;
 		RETURN contType
@@ -597,7 +597,7 @@ END
 			Out.String("Oberon.Text - MIME not found");  Out.Ln
 		END;
 		WHILE S.class IN {Texts.Name, Texts.String} DO
-			COPY(S.s, key); Texts.Scan(S);
+			 key := S.s; Texts.Scan(S);
 			IF (S.class = Texts.Char) & (S.c = "=") THEN
 				Texts.Scan(S);
 				IF S.class IN {Texts.Name, Texts.String} THEN
@@ -612,7 +612,7 @@ END
 (** Create a temporary file name for contType. *)
 	PROCEDURE MakeTempName*(contType: ContentType; VAR tempName: ARRAY OF CHAR);
 	BEGIN
-		COPY(contType.prefix, tempName);
+		 tempName := contType.prefix;
 		Strings.Append(tempName, "Temp.");
 		Strings.Append(tempName, contType.suffix)
 	END MakeTempName;
@@ -744,7 +744,7 @@ END
 			END
 		END CalcDispVec;
 	BEGIN
-		COPY(boundary, sPat);
+		 sPat := boundary;
 		sPatLen := Strings.Length(sPat);
 		CalcDispVec(); prev := 0X;
 		IF sPatLen > 0 THEN
@@ -850,7 +850,7 @@ END
 					pos := FindField(h, "Content-Disposition");
 					FindParam(h, pos, "filename", val);
 					IF part.name = "" THEN
-						COPY(val, part.name)
+						 part.name := val
 					END;
 					Texts.WriteString(W, val); Texts.WriteString(W, " ~"); Texts.WriteLn(W);
 					Texts.Append(T, W.buf); cont.encoding := EncBase64
@@ -861,7 +861,7 @@ END
 					pos := FindField(h, "Content-Disposition");
 					FindParam(h, pos, "filename", val);
 					IF part.name = "" THEN
-						COPY(val, part.name)
+						 part.name := val
 					END;
 					Texts.WriteString(W, val); Texts.WriteString(W, " ~"); Texts.WriteLn(W);
 					Texts.Append(T, W.buf); cont.encoding := EncBin
@@ -876,7 +876,7 @@ END
 			TextEncoding(h, pos, cont)
 		END;
 		IF part.name = "" THEN
-			COPY(cont.typ.typ, part.name);
+			 part.name := cont.typ.typ;
 			Strings.AppendCh(part.name, "/");
 			Strings.Append(part.name, cont.typ.subTyp)
 		END;

@@ -104,13 +104,13 @@ VAR
 BEGIN
 	Texts.Scan(s);  bi0 := SYSTEM.ADR(a[i])+8;  bi1 := bi0;
 	WHILE s.class = Texts.Name DO
-		COPY(s.s, name);
+		 name := s.s;
 		Texts.Scan(s);	(* "=" *)
 		IF (s.class # Texts.Char) OR (s.c # "=") THEN error := "config: syntax error";  HALT(99) END;
 		Texts.Scan(s);	(* val *)
 		IF s.class = Texts.Int THEN s.s[0] := CHR(s.i); s.s[1] := 0X; s.class := Texts.String END;
 		IF (s.class # Texts.Name) & (s.class # Texts.String) THEN error := "config: syntax error";  HALT(99) END;
-		COPY(s.s, val);
+		 val := s.s;
 		j := 0;  WHILE val[j] # 0X DO INC(j) END;	(* j = length of val *)
 		IF j >= 63 THEN error := "config: string too long; use +";  HALT(99) END;
 		Texts.Scan(s);	(* next name, or "+" *)
@@ -393,7 +393,7 @@ VAR
 		p := list;
 		WHILE (p.next # NIL) & (p.next.dst < n.dst) DO p := p.next END;
 		IF p.next # NIL THEN
-			IF p.next.dst = n.dst THEN COPY(n.dst, duplicate); error := "Duplicate file"; HALT(99) END;	(* duplicate *)
+			IF p.next.dst = n.dst THEN  duplicate := n.dst; error := "Duplicate file"; HALT(99) END;	(* duplicate *)
 			n.next := p.next;  p.next := n
 		ELSE
 			n.next := NIL;  p.next := n
@@ -426,16 +426,16 @@ BEGIN
 	NEW(list);  list.next := NIL;
 	Texts.OpenScanner(s, Oberon.Par.text, Oberon.Par.pos);  Texts.Scan(s);
 	IF s.class = Texts.Name THEN
-		COPY(s.s, label);  Texts.Scan(s);  ok := TRUE;
+		 label := s.s;  Texts.Scan(s);  ok := TRUE;
 		WHILE (s.class = Texts.Name) & ok DO
-			NEW(n);  COPY(s.s, n.src);
+			NEW(n);   n.src := s.s;
 			Texts.Scan(s);
 			IF (s.class = Texts.Char) & (s.c = "=") THEN
 				Texts.Scan(s);
 				IF (s.class = Texts.Char) & (s.c = ">") THEN
 					Texts.Scan(s);
 					IF s.class = Texts.Name THEN
-						COPY(s.s, n.dst);  Texts.Scan(s)
+						 n.dst := s.s;  Texts.Scan(s)
 					ELSE ok := FALSE
 					END
 				ELSE ok := FALSE
@@ -445,7 +445,7 @@ BEGIN
 			IF ok THEN
 				n.f := Files.Old(n.src);
 				IF n.f = NIL THEN
-					COPY(n.src, notfound);  HALT(99)
+					 notfound := n.src;  HALT(99)
 				END;
 				Insert(n)
 			END

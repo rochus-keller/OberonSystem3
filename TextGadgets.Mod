@@ -998,7 +998,7 @@ END HandleStyleAdjust;
 PROCEDURE FrameAttr(F: Frame; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("TextGadgets.New", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "TextGadgets.New"; M.res := 0
 		ELSIF M.name = "Color" THEN M.class := Objects.Int; M.i := F.col; M.res := 0
 		ELSIF M.name = "Locked" THEN M.class := Objects.Bool; M.b := TextGadgets0.locked IN F.state0; M.res := 0
 		ELSIF M.name = "Flat" THEN M.class := Objects.Bool; M.b := TextGadgets0.flat IN F.state0; M.res := 0
@@ -1211,7 +1211,7 @@ PROCEDURE StyleAttr(F: Style; VAR M: Objects.AttrMsg);
 VAR i, j, k: INTEGER; val: LONGINT; nr: ARRAY 6 OF CHAR;
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("TextGadgets.NewStyleProc", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "TextGadgets.NewStyleProc"; M.res := 0
 		ELSIF M.name = "Pagebreak" THEN M.class := Objects.Bool; M.b := pagebreak IN F.mode; M.res := 0
 		ELSIF M.name = "WYSIWYG" THEN M.class := Objects.Bool; M.b := wysiwyg IN F.mode; M.res := 0
 		ELSIF M.name = "Tabs" THEN	(* ps - 27.6.96 *)
@@ -1320,7 +1320,7 @@ BEGIN
 	IF (F.lib # NIL) & (F.lib.name # "") THEN (* style is in public library *)
 		Objects.GetName(F.lib.dict, F.ref, s);
 		IF s # "" THEN
-			COPY(F.lib.name, name);
+			 name := F.lib.name;
 			i := 0; WHILE (name[i] # 0X) & (name[i] # ".") DO INC(i) END;
 			name[i] := "."; INC(i);
 			j := 0; WHILE s[j] # 0X DO name[i] := s[j]; INC(i); INC(j) END;
@@ -1575,7 +1575,7 @@ END NewStyle;
 PROCEDURE ControlAttr(F: Control; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("TextGadgets.NewControl", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "TextGadgets.NewControl"; M.res := 0
 		ELSIF M.name = "Cmd" THEN ForceString(F, M)
 		ELSE Gadgets.framehandle(F, M)
 		END

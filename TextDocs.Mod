@@ -119,7 +119,7 @@ BEGIN
 		IF D.name # "" THEN
 			f := Files.New(D.name);
 			IF f # NIL THEN
-				COPY(D.name, new); i := 0; WHILE new[i] # 0X DO INC(i) END;
+				 new := D.name; i := 0; WHILE new[i] # 0X DO INC(i) END;
 				new[i] := "."; new[i+1] := "B"; new[i+2] := "a"; new[i+3] := "k"; new[i+4] := 0X;
 				Files.Rename(D.name, new, i);
 	
@@ -415,7 +415,7 @@ BEGIN
 		InitDoc(D)
 	END;	(* make document wrapper *)
 	IF log OR (T = Oberon.Log) THEN INCL(f.state0, TextGadgets0.autoscroll) END;
-	COPY(title, D.name);
+	 D.name := title;
 	Documents.Init(D, f); (* and merge together *)
 	D.W := W; D.H := H;
 	Desktops.ShowDoc(D)
@@ -536,7 +536,7 @@ END Controls;
 		Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 		Attributes.Scan(S);
 		IF S.class = Attributes.String THEN
-			COPY(S.s, sPat); sPatLen := S.len; CalcDispVec(Oberon.Time())	(* calculate displacement vector *)
+			 sPat := S.s; sPatLen := S.len; CalcDispVec(Oberon.Time())	(* calculate displacement vector *)
 		ELSE
 			text := NIL; Oberon.GetSelection(text, beg, end, time);
 			IF (text # NIL) & (time - lTime > 0) THEN	(* set search pattern *)

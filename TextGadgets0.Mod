@@ -948,7 +948,7 @@ END GetSelectedFrames;
 PROCEDURE HasCmdAttr(F: Frame; attr: ARRAY OF CHAR): BOOLEAN;
 VAR A: Objects.AttrMsg;
 BEGIN
-	A.id := Objects.get; COPY(attr, A.name); A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
+	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
 	F.handle(F, A);
 	RETURN (A.res >= 0) & (A.class = Objects.String) & (A.s # "") 
 END HasCmdAttr;
@@ -970,7 +970,7 @@ END HasCmdAttr;
     		 WHILE (i < LEN(cmd) - 1) & (ch > " ") DO cmd[i] := ch; INC(i); Texts.Read(R, ch) END; cmd[i] := 0X;
     		 IF cmd # "" THEN
     		 	A.id := Objects.set; A.name := "Point"; A.class := Objects.String; A.dlink := NIL; Objects.Stamp(A);
-				COPY(cmd, A.s); A.res := -1; F.handle(F, A);
+				 A.s := cmd; A.res := -1; F.handle(F, A);
 				Gadgets.ExecuteAttr(F, "Cmd", dlink, NIL, NIL);
 				RETURN
     		 END
@@ -979,7 +979,7 @@ END HasCmdAttr;
     	Texts.OpenReader(R, F.text, pos);
     	Texts.Read(R, ch); WHILE ~R.eot & (ch <= " ") DO Texts.Read(R, ch) END;
     	IF ~R.eot THEN
-    		 COPY("Desktops.OpenDoc ", cmd);
+    		  cmd := "Desktops.OpenDoc ";
     		 i := 0; WHILE cmd[i] # 0X DO INC(i) END;
     		 WHILE (i < LEN(cmd) - 1) & (ch > " ") DO cmd[i] := ch; INC(i); Texts.Read(R, ch) END;
     		 cmd[i] := 0X;

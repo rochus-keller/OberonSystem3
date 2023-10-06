@@ -35,7 +35,7 @@ TYPE
 PROCEDURE FrameAttr(F: Frame; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Navigators.NewNavigator", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Navigators.NewNavigator"; M.res := 0
 		ELSE Gadgets.framehandle(F, M)
 		END
 	ELSE Gadgets.framehandle(F, M)

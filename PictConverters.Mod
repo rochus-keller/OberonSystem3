@@ -469,7 +469,7 @@ MODULE PictConverters;	(** portable *) (* rm 1.9.1996, ejz 8.12.96, afi 11.02.19
 			END
 		END;
 		WHILE ~S.eot & (S.class IN {Texts.Name, Texts.String}) DO
-			Texts.WriteString(W, S.s); COPY(S.s, any);
+			Texts.WriteString(W, S.s);  any := S.s;
 			Fi := Files.Old(any); Texts.Scan(S);
 			IF (S.class = Texts.Char) & (S.c = "=") THEN
 				Texts.Scan(S);

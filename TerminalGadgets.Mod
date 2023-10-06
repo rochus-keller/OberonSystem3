@@ -753,13 +753,13 @@ BEGIN
 	IF M.id = Objects.get THEN
 		IF M.name = "Gen" THEN
 			M.class := Objects.String;
-			COPY("TerminalGadgets.NewFrame", M.s);
+			 M.s := "TerminalGadgets.NewFrame";
 			M.res := 0
 		ELSIF M.name = "Color" THEN
 			M.class := Objects.Int;
 			M.i := F.col;
 			M.res := 0
-		ELSIF M.name = "Font" THEN M.class := Objects.String; COPY(F.fnt.name, M.s); M.res := 0
+		ELSIF M.name = "Font" THEN M.class := Objects.String;  M.s := F.fnt.name; M.res := 0
 		ELSIF M.name = "TextCol" THEN M.class := Objects.Int; M.i := F.textcol; M.res := 0
 		ELSIF M.name = "Profile" THEN M.class := Objects.Int; M.i := F.profile; M.res := 0
 		ELSE

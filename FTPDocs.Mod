@@ -89,8 +89,8 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			line: ARRAY NetTools.MaxLine OF CHAR;
 	BEGIN
 		IF ~NetTools.Connected(S.C, NetSystem.in) THEN
-			COPY("Connection closed by server.", sline);
-			COPY(sline, S.reply);
+			 sline := "Connection closed by server.";
+			 S.reply := sline;
 			S.status := 0; S.res := Disconnected;
 			RETURN
 		END;
@@ -192,10 +192,10 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 	BEGIN
 		IF (usr = "ftp") OR (usr = "anonymous") OR (usr = "") THEN
 			IF ~NetTools.QueryString("EMail", passw) OR (passw[0] = "<") THEN
-				COPY("anonymous@host.nowhere", passw)
+				 passw := "anonymous@host.nowhere"
 			END;
 			IF usr = "" THEN
-				COPY("anonymous", usr)
+				 usr := "anonymous"
 			END
 		ELSIF passw = "" THEN
 			NetSystem.GetPassword("ftp", host, usr, passw)
@@ -219,8 +219,8 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 	BEGIN
 		GetLogin(server, user, passwd);
 		NEW(S); S.dataC := NIL;
-		COPY(server, S.host); S.port := port; S.dataPort := -1;
-		COPY(user, S.usr); COPY(passwd, S.passw);
+		 S.host := server; S.port := port; S.dataPort := -1;
+		 S.usr := user;  S.passw := passwd;
 		IF NetSystem.hostIP = NetSystem.anyIP THEN
 			S.C := NIL;
 			S.reply := "invalid NetSystem.hostIP";
@@ -248,11 +248,11 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 					IF (S.status = 230) OR (S.status= 330) THEN
 						S.res := Done
 					ELSE
-						S.res := WrongPassword; COPY(line, S.reply);
+						S.res := WrongPassword;  S.reply := line;
 						Close2(S)
 					END
 				ELSIF S.status # 230 THEN
-					S.res := WrongUser; COPY(line, S.reply);
+					S.res := WrongUser;  S.reply := line;
 					Close2(S)
 				ELSE
 					S.res := Done
@@ -473,7 +473,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			Strings.Append(line, remName);
 			SendCmd(S, line);
 			ReadResponse(S, line);
-			COPY(line, S.reply);
+			 S.reply := line;
 			IF (S.status = 150) OR (S.status = 250) THEN
 				IF S.dataIP = NetSystem.anyIP THEN C := WaitDataCon(S) END;
 				IF S.res = Done THEN
@@ -536,7 +536,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			Strings.Append(line, remName);
 			SendCmd(S, line);
 			ReadResponse(S, line);
-			COPY(line, S.reply);
+			 S.reply := line;
 			IF (S.status = 150) OR (S.status = 250) THEN
 				IF S.dataIP = NetSystem.anyIP THEN C := WaitDataCon(S) END;
 				IF S.res = Done THEN
@@ -600,7 +600,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 				END
 			END
 		ELSE
-			COPY(locName, S.reply);
+			 S.reply := locName;
 			Strings.Append(S.reply, " not found");
 			S.res := LocFileNotFound
 		END;
@@ -683,7 +683,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 		ReadResponse(S, S.reply);
 		IF S.status = 257 THEN
 			IF S.system = VMS THEN
-				COPY(S.reply, curdir);
+				 curdir := S.reply;
 				i := 0;
 				WHILE curdir[i] > " " DO
 					INC(i)
@@ -706,7 +706,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			END;
 			S.res := Done
 		ELSE
-			COPY("", curdir);
+			 curdir := "";
 			S.res := Failed
 		END
 	END GetCurDir;
@@ -782,7 +782,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			portS: ARRAY 8 OF CHAR;
 			key: LONGINT;
 	BEGIN
-		COPY("ftp://", line);
+		 line := "ftp://";
 		IF user # "" THEN
 			HyperDocs.ESC(user, "@");
 			Strings.Append(line, user);
@@ -821,7 +821,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 	BEGIN
 		(* Pre: url must be a ftp url *)
 		type := 0X; port := DefConPort;
-		COPY("", user); COPY("", passwd);
+		 user := "";  passwd := "";
 		i := 0; Blanks();
 		(* skip ftp *)
 		WHILE (url[i] # 0X) & (url[i] # ":") DO
@@ -1086,7 +1086,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			NEW(T); Texts.Open(T, "");
 			Texts.Append(T, tW.buf)
 		ELSE
-			COPY(TempFile, tempName);
+			 tempName := TempFile;
 			IF j > 0 THEN
 				i := 0;
 				WHILE tempName[i] # 0X DO
@@ -1111,7 +1111,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 				NEW(D); TextDocs.InitDoc(D);
 				D.W := HyperDocs.docW; D.H := HyperDocs.docH;
 				Links.SetLink(D.dsc, "Model", T);
-				COPY(name, D.name)
+				 D.name := name
 			ELSE
 				D := Documents.Open(tempName)
 			END
@@ -1166,14 +1166,14 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 					message := TRUE
 				END;
 				IF name[0] # "/" THEN
-					COPY(curS.curDir, line);
+					 line := curS.curDir;
 					IF curS.curDir # "/" THEN Strings.AppendCh(line, "/") END;
 					Strings.Append(line, name);
 					IF entry[0] = "d" THEN
 						Strings.AppendCh(line, "/")
 					END
 				ELSE
-					COPY(name, line)
+					 line := name
 				END;
 				key := RegisterFTPAdr(curS.host, line, "", "", 0X, curS.port);
 				IF HyperDocs.Visited(key) THEN
@@ -1199,7 +1199,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 				END;
 				Texts.SetColor(dirW, SHORT(Display3.textC));
 				beg1 := i; entry[beg1] := 0X;
-				COPY(curS.curDir, line); line[0] := "/";
+				 line := curS.curDir; line[0] := "/";
 				i := 0;
 				WHILE (line[i] # 0X) & (line[i] # "]") DO
 					INC(i)
@@ -1223,7 +1223,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 					END;
 					name[j] := 0X; beg1 := i; 
 					Texts.SetColor(dirW, SHORT(Display3.textC));
-					COPY(curS.curDir, line); line[0] := "/";
+					 line := curS.curDir; line[0] := "/";
 					i := 0;
 					WHILE (line[i] # 0X) & (line[i] # "]") DO
 						INC(i)
@@ -1344,7 +1344,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			i, beg, end, time: LONGINT;
 			ch: CHAR;
 	BEGIN
-		bin := TRUE; COPY("", name);
+		bin := TRUE;  name := "";
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 		Texts.Scan(S);
 		IF (S.class = Texts.Char) & (S.c = Oberon.OptionChar) THEN
@@ -1369,7 +1369,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 					Texts.Read(R, ch)
 				END
 			ELSE
-				COPY("", name);
+				 name := "";
 				RETURN
 			END;
 			IF ~R.eot & (R.lib IS Fonts.Font) & (ch = 22X) THEN
@@ -1382,7 +1382,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			END;
 			name[i] := 0X
 		ELSIF S.class IN {Texts.Name, Texts.String} THEN
-			COPY(S.s, name)
+			 name := S.s
 		END
 	END ScanName;
 
@@ -1403,7 +1403,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 		IF F # NIL THEN
 			ScanName(D.dsc, name, bin);
 			IF name # "" THEN
-				COPY(name, lname);
+				 lname := name;
 				IF F.S.system = VMS THEN
 					TrimmVMS(lname)
 				END;
@@ -1639,7 +1639,7 @@ MODULE FTPDocs; (** portable *)	(* ejz,  , some tips by bh & pm *)
 			END;
 			P.key := RegisterFTPAdr(host, path, usr, pass, type, port);
 			P.res := -1;
-			COPY(proxyHost, P.host); P.port := proxyPort;
+			 P.host := proxyHost; P.port := proxyPort;
 			P.D := D;
 			S := HyperDocs.LinkSchemeByPrefix("http");
 			S.handle(S, P);

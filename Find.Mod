@@ -112,7 +112,7 @@ MODULE Find;	(** portable *)	(* tk 12.12.95 / pr 12.12.95 *)
 	BEGIN
 		IF progress # NIL THEN
 			A.id:=Objects.set; A.name:="Value"; A.class:=Objects.String; 
-			COPY(name, A.s); progress.handle(progress, A); Gadgets.Update(progress)
+			 A.s := name; progress.handle(progress, A); Gadgets.Update(progress)
 		END;
 		BrowseFile(name);
 		continue := Input.Available() = 0
@@ -125,9 +125,9 @@ MODULE Find;	(** portable *)	(* tk 12.12.95 / pr 12.12.95 *)
 	BEGIN
 		A.id := Objects.get;
 		A.s := "";
-		COPY(name, A.name);
+		 A.name := name;
 		obj.handle(obj, A);
-		COPY(A.s, str)
+		 str := A.s
 	END GetStrAttr;
 
 	PROCEDURE Search*;	(* "listname" "progressname" "pattern" "path" *)
@@ -144,7 +144,7 @@ MODULE Find;	(** portable *)	(* tk 12.12.95 / pr 12.12.95 *)
 					search := Gadgets.FindObj(Gadgets.context, S.s);
 					GetStrAttr(search, "Value", spat);
 					Attributes.Scan(S);
-					COPY(S.s, pat); Attributes.Scan(S);
+					 pat := S.s; Attributes.Scan(S);
 					CommandLine:=FALSE;
 					IF	Output	THEN	NEW(out); Texts.Open(out, ""); OpenViewer(spat, out)	END;
 					FileDir.Enumerate(pat, FALSE, ListFiles);
@@ -175,7 +175,7 @@ MODULE Find;	(** portable *)	(* tk 12.12.95 / pr 12.12.95 *)
 			NEW(f); f.next := NIL;
 			IF last = NIL THEN file := f ELSE last.next := f END;
 			last := f;
-			COPY(s.s, f.name);
+			 f.name := s.s;
 			Texts.Scan(s);
 			WHILE (s.class = Texts.Char) & (s.c = Oberon.OptionChar) DO Texts.Scan(s); Texts.Scan(s) END
 		END

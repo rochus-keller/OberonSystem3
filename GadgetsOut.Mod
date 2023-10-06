@@ -49,7 +49,7 @@ BEGIN
 			text := m.obj(Texts.Text);  outobj := NIL
 		ELSE
 			IF outattr = "" THEN outattr := "Value" END;	(* default attr *)
-			a.id := Objects.get;  a.res := -1;  COPY(outattr, a.name);
+			a.id := Objects.get;  a.res := -1;   a.name := outattr;
 			obj.handle(obj, a);  ASSERT((a.res = 0) & (a.class = Objects.String));
 			text := NIL;  outobj := obj
 		END
@@ -63,7 +63,7 @@ VAR a: Objects.AttrMsg;
 BEGIN
 	IF text = NIL THEN
 		ASSERT(outobj # NIL);
-		Objects.Stamp(a);  a.id := Objects.set;  a.res := -1;  COPY(outattr, a.name);  
+		Objects.Stamp(a);  a.id := Objects.set;  a.res := -1;   a.name := outattr;  
 		a.class := Objects.String;  a.s := "";  outobj.handle(outobj, a);
 		Gadgets.Update(outobj)
 	ELSE
@@ -79,7 +79,7 @@ VAR a: Objects.AttrMsg;  r: Texts.Reader;  i, pos: LONGINT;
 BEGIN
 	IF text = NIL THEN
 		ASSERT(outobj # NIL);
-		Objects.Stamp(a);  a.id := Objects.set;  a.res := -1;  COPY(outattr, a.name);
+		Objects.Stamp(a);  a.id := Objects.set;  a.res := -1;   a.name := outattr;
 		a.class := Objects.String;
 		pos := temp.len;  Texts.Append(temp, w.buf);
 		Texts.OpenReader(r, temp, pos);  i := 0;  Texts.Read(r, a.s[i]);

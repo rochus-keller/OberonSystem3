@@ -75,7 +75,7 @@ MODULE LeoDraw;	(** eos   **)
 		IF file # NIL THEN
 			Files.Set(r, file, 0); Files.Read(r, ch);
 			IF ch = LibFileId THEN
-				NEW(lib); COPY(lname, lib.name); lib.first := NIL;
+				NEW(lib);  lib.name := lname; lib.first := NIL;
 				InitContext(ctxt);
 				LoadElems(r, ctxt, shapes);
 				WHILE shapes # NIL DO

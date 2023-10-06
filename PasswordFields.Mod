@@ -33,7 +33,7 @@ MODULE PasswordFields;	(** portable *) (* ejz,   *)
 
 	PROCEDURE Copy*(VAR M: Objects.CopyMsg; from, to: Frame);
 	BEGIN
-		COPY(from.passWord, to.passWord);
+		 to.passWord := from.passWord;
 		to.len := from.len;
 		TextFields.CopyTextField(M, from, to)
 	END Copy;
@@ -120,7 +120,7 @@ MODULE PasswordFields;	(** portable *) (* ejz,   *)
 						ELSIF M.name = "Value" THEN
 							M.class := Objects.String;
 							F.passWord[F.len] := 0X;
-							COPY(F.passWord, M.s);
+							 M.s := F.passWord;
 							M.res := 0
 						ELSE
 							TextFields.TextFieldHandler(F, M)
@@ -128,7 +128,7 @@ MODULE PasswordFields;	(** portable *) (* ejz,   *)
 					ELSIF M.id = Objects.set THEN
 						IF M.name = "Value" THEN
 							IF M.class = Objects.String THEN
-								COPY(M.s, F.passWord);
+								 F.passWord := M.s;
 								i := 0;
 								WHILE F.passWord[i] # 0X DO
 									M.s[i] := "*"; INC(i)

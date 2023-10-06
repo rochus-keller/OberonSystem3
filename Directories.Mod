@@ -119,7 +119,7 @@ END GetKey;
 PROCEDURE NewItem (name: ARRAY OF CHAR; key: LONGINT): Item;
 VAR n: Item;
 BEGIN
-	NEW(n); COPY(name, n.s); n.key := key; n.stamp := -1;
+	NEW(n);  n.s := name; n.key := key; n.stamp := -1;
 	n.next := n; n.prev := n; n.dsc := NIL; n.asc := NIL;
 	RETURN n
 END NewItem;
@@ -179,7 +179,7 @@ VAR d: Data; res: LONGINT;
 BEGIN
 	R.item := item; R.eol := item.key < 0; R.dsc := item.dsc # NIL;
 	IF (R.d = NIL) OR ~(R.d IS Data) THEN NEW(d); R.d := d ELSE d := R.d(Data) END;
-	COPY(item.s, d.s);
+	 d.s := item.s;
 	IF IsOnlyDrive(item.s) THEN	(* item is a drive *)
 		IF CAP(item.s[0]) = "C" THEN res := Fixed
 		ELSIF CAP(item.s[0]) < "C" THEN res := Floppy
@@ -323,23 +323,23 @@ END UpdateModel;
 PROCEDURE ModelAttr (obj: Model; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN COPY("Directories.New", M.s); M.class := Objects.String; M.res := 0
-		ELSIF M.name = "Mask" THEN COPY(obj.mask, M.s); M.class := Objects.String; M.res := 0
-		ELSIF M.name = "RootDir" THEN COPY(obj.rootDir, M.s); M.class := Objects.String; M.res := 0
+		IF M.name = "Gen" THEN  M.s := "Directories.New"; M.class := Objects.String; M.res := 0
+		ELSIF M.name = "Mask" THEN  M.s := obj.mask; M.class := Objects.String; M.res := 0
+		ELSIF M.name = "RootDir" THEN  M.s := obj.rootDir; M.class := Objects.String; M.res := 0
 		ELSE Gadgets.objecthandle(obj, M)
 		END
 	ELSIF M.id = Objects.set THEN
 		IF M.name = "Mask" THEN
 			IF (M.class = Objects.String) THEN
 				IF M.s # obj.mask THEN
-					COPY(M.s, obj.mask); UpdateModel(obj)
+					 obj.mask := M.s; UpdateModel(obj)
 				END;
 				M.res := 0
 			END
 		ELSIF M.name = "RootDir" THEN
 			IF M.class = Objects.String THEN
 				IF ~Strings.CAPCompare(M.s, obj.rootDir) THEN
-					COPY(M.s, obj.rootDir); UpdateModel(obj)
+					 obj.rootDir := M.s; UpdateModel(obj)
 				END;
 				M.res := 0
 			END
@@ -394,12 +394,12 @@ VAR tail: Item; i: LONGINT; drvName: ARRAY 4 OF CHAR;
 
 BEGIN
 	obj.handle := ModelHandler; obj.key := 0;
-	COPY(rootDir, obj.rootDir); CheckPath(obj.rootDir);
-	COPY(mask, obj.mask);
+	 obj.rootDir := rootDir; CheckPath(obj.rootDir);
+	 obj.mask := mask;
 	tail := NewItem("", -1); tail.pos := -1; obj.tail := tail;
 	IF obj.rootDir = "" THEN
 (*
-		COPY("A:", drvName);
+		 drvName := "A:";
 		FOR i := 0 TO 25 DO
 			drvName[0] := CHR(ORD("A") + i);
 			IF IsDriveAvailable(drvName) THEN NewDrv(drvName) END
@@ -446,7 +446,7 @@ BEGIN
 			pict := drvPicts[d.pictNr-1];
 			Display3.Pict(Q, pict, 0, 0, pict.width, pict.height, x, y + 2, Display.replace)
 		END;
-		COPY(d.s, str)
+		 str := d.s
 	ELSE str := NoDataStr
 	END;
 	INC(x, maxW + 2);
@@ -485,7 +485,7 @@ BEGIN
 			pict := drvPicts[d.pictNr-1];
 			Printer3.Pict(Q, pict, x, y+2, P(pict.width), P(pict.height), Display.replace)
 		END;
-		COPY(d.s, str)
+		 str := d.s
 	ELSE str := NoDataStr
 	END;
 	INC(x, P(maxW + 2));
@@ -565,7 +565,7 @@ BEGIN
 			full[i] := 0X;
 			FileDir.RelFileName(full, d.s)
 		ELSE
-			COPY(name, d.s)
+			 d.s := name
 		END;
 		R.do.Write(R, d)
 	END
@@ -576,7 +576,7 @@ PROCEDURE * EnumForList (name: ARRAY OF CHAR; time, date, size: LONGINT; VAR con
 VAR d: ListRiders.String;
 BEGIN
 	NEW(d);
-	COPY(name, d.s);
+	 d.s := name;
 	R.do.Write(R, d)
 END EnumForList;
 
@@ -598,7 +598,7 @@ BEGIN
 		Texts.Scan(S)
 	END;
 	IF S.class IN {Texts.Name, Texts.String}  THEN
-		COPY(S.s, mask); Texts.Scan(S);
+		 mask := S.s; Texts.Scan(S);
 		IF S.class IN {Texts.Name, Texts.String}  THEN
 			obj := Gadgets.FindObj(Gadgets.context, S.s);
 			IF obj # NIL THEN

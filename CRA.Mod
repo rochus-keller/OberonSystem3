@@ -888,7 +888,7 @@ VAR
 BEGIN
 	FillStartTab;
 	CRT.GetNode(CRT.root, gn); CRT.GetSym(gn.p1, sn);
-	COPY(sn.name, scanner); l := Length(scanner); scanner[l] := "S"; scanner[l+1] := 0X;
+	 scanner := sn.name; l := Length(scanner); scanner[l] := "S"; scanner[l+1] := 0X;
 	NEW(t); Texts.Open(t, "Scanner.FRM"); Texts.OpenReader(fram, t, 0);
 	IF t.len = 0 THEN
 		Texts.WriteString(out, "Scanner.FRM not found"); Texts.WriteLn(out);

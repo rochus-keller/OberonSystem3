@@ -325,7 +325,7 @@ END Memory;
 				IF lib IS Fonts.Font THEN
 					Texts.Read(r, ch);
 					IF r.lib # lib THEN
-						COPY(lib.name, s);  s[6] := 0X;
+						 s := lib.name;  s[6] := 0X;
 						IF s # "Oberon" THEN Texts.SetColor(W, 3) END;
 						Texts.WriteString(W, "  ");  Texts.WriteString(W, lib.name);  Texts.WriteString(W, "  ");
 						Texts.WriteInt(W, beg, 1);  Texts.WriteLn(W);

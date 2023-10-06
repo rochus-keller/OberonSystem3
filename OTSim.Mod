@@ -1436,7 +1436,7 @@ MODULE OTSim;	(** eos   **)
 				Reset(model);
 				Str("loading '"); Str(s.s); Str("'"); Log(model);
 				model.state := Loading;
-				COPY(s.s, model.fileName);
+				 model.fileName := s.s;
 				model.xMin := 0; model.yMin := 0; model.xMax := 0; model.yMax := 0;
 				context := Gadgets.context;
 				REPEAT

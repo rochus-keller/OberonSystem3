@@ -234,7 +234,7 @@ MODULE BooksHelp;	(** portable *)
 	BEGIN
 		A.id := Objects.set;
 		A.name := "Tutorial";
-		COPY(val, A.s);
+		 A.s := val;
 		A.class := Objects.String;
 		A.res := -1;
 		Objects.Stamp(A);

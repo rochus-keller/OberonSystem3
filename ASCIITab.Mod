@@ -234,7 +234,7 @@ MODULE ASCIITab;	(** portable *) (* EJZ,   *)
 							M.res := 0
 						ELSIF M.name = "Font" THEN
 							M.class := Objects.String;
-							COPY(F.font.name, M.s);
+							 M.s := F.font.name;
 							M.res := 0
 						ELSE
 							Gadgets.framehandle(F, M)

@@ -108,19 +108,19 @@ MODULE Backup;	(** portable, except where noted *) (*JG 20.5.94/pm 16.6.94*)
 	VAR ok: BOOLEAN;
 	BEGIN
 		ASSERT(S.class IN {Texts.Name, Texts.String});
-		COPY(S.s, name1);  COPY(S.s, name2);  ok := TRUE;
+		 name1 := S.s;   name2 := S.s;  ok := TRUE;
 		Texts.Scan(S);
 		IF (S.class = Texts.Char) & (S.c = "=") THEN
 			Texts.Scan(S);
 			IF (S.class = Texts.Char) & (S.c = ">") THEN
 				Texts.Scan(S);
-				IF S.class IN {Texts.Name, Texts.String} THEN COPY(S.s, name2);  Texts.Scan(S)
+				IF S.class IN {Texts.Name, Texts.String} THEN  name2 := S.s;  Texts.Scan(S)
 				ELSE ok := FALSE
 				END
 			ELSE ok := FALSE
 			END
 		END;
-		IF ~ok THEN COPY("", name1);  COPY("", name2); S.class := Texts.Inval END
+		IF ~ok THEN  name1 := "";   name2 := ""; S.class := Texts.Inval END
 	END ScanName;
 	
 	PROCEDURE ReadFiles*;

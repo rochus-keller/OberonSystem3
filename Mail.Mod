@@ -209,7 +209,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 		MD5.WriteBytes(cont, passwd, Strings.Length(passwd));
 		MD5.Close(cont, digest);
 		MD5.ToString(digest, stamp);
-		COPY(user, login); Strings.AppendCh(login, " "); Strings.Append(login, stamp);
+		 login := user; Strings.AppendCh(login, " "); Strings.Append(login, stamp);
 		SendCmd(S, "APOP", login)
 	END APOP;
 
@@ -367,7 +367,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			F: Files.File;
 			name: FileDir.FileName;
 	BEGIN
-		COPY(pop, name);
+		 name := pop;
 		Strings.AppendCh(name, ".");
 		Strings.Append(name, user);
 		Strings.Append(name, ".UIDLs");
@@ -394,7 +394,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 		END;
 		IF set = NIL THEN
 			NEW(set); set.next := uidls; uidls := set;
-			COPY(pop, set.pop); COPY(user, set.user);
+			 set.pop := pop;  set.user := user;
 			NEW(set.uidls, 128); l := 128;
 			set.F := UIDLFile(pop, user, FALSE);
 			IF Files.Length(set.F) <= 0 THEN
@@ -426,7 +426,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 		VAR set: UIDLSet;
 	BEGIN
 		NEW(set); set.next := NIL;
-		COPY(pop, set.pop); COPY(user, set.user);
+		 set.pop := pop;  set.user := user;
 		NEW(set.uidls, 128); set.nouidls := 0;
 		set.F := UIDLFile(pop, user, TRUE);
 		RETURN set
@@ -448,7 +448,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			END;
 			set.uidls := uidll
 		END;
-		(*COPY(uidl, set.uidls[set.nouidls]);*)
+		(* set.uidls[set.nouidls] := uidl;*)
 		set.uidls[set.nouidls] := uidl;
 		INC(set.nouidls)
 	END AddUIDL;
@@ -496,7 +496,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 		IF pos > 0 THEN
 			MIME.ExtractContentType(h, pos, cont);
 			IF cont.typ.typ = "application" THEN
-				COPY(cont.typ.subTyp, val);
+				 val := cont.typ.subTyp;
 				IF Strings.CAPPrefix("oberon", val) THEN
 					cont.encoding := MIME.EncAsciiCoder
 				ELSIF Strings.CAPPrefix("compressed/oberon", val) THEN
@@ -618,11 +618,11 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 		IF obj # NIL THEN
 			Attributes.GetString(obj, "Value", value)
 		ELSE
-			COPY("", value)
+			 value := ""
 		END;
 		IF (value = "") & ~local THEN
 			IF ~NetTools.QueryString(name, value) THEN
-				COPY("", value)
+				 value := ""
 			END
 		END
 	END GetSetting;
@@ -892,7 +892,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			caption, value: ARRAY 128 OF CHAR;
 			pos: LONGINT; first: BOOLEAN;
 	BEGIN
-		COPY(field, caption);
+		 caption := field;
 		pos := MIME.FindField(h, field);
 		first := empty;
 		WHILE (pos > 0) OR first DO
@@ -1083,7 +1083,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 	BEGIN
 		NEW(D); TextDocs.InitDoc(D);
 		NEW(F); TextGadgets.Init(F, T, FALSE);
-		Documents.Init(D, F); COPY(title, D.name);
+		Documents.Init(D, F);  D.name := title;
 		IF reply THEN D.handle := DocHandler END;
 		Desktops.ShowDoc(D)
 	END ShowText;
@@ -1154,7 +1154,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 		END Copy;
 	BEGIN
 		ShowStatus("shrinking message file");
-		COPY(MsgFile, bak); Strings.Append(bak, ".Bak");
+		 bak := MsgFile; Strings.Append(bak, ".Bak");
 		Files.Rename(MsgFile, bak, res); ASSERT(res = 0);
 		F := Files.New(MsgFile); i := 0;
 		msgsF := Files.Old(bak); Files.Set(R, msgsF, 0);
@@ -1621,7 +1621,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			Strings.Append(key, value);
 			IF NetTools.QueryString(key, value) THEN
 				NEW(topic); topic.next := topics; topics := topic; topic.no := i; INC(i);
-				NEW(topic.topic); COPY(value, topic.topic.s)
+				NEW(topic.topic);  topic.topic.s := value
 			ELSE
 				EXIT
 			END
@@ -1911,7 +1911,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 				END;
 				Next();
 				IF sym IN {name, string} THEN
-					COPY(str, cond.val); Next();
+					 cond.val := str; Next();
 					IF cond.field = topic THEN
 						topicp := topics;
 						WHILE (topicp # NIL) & ~Strings.CAPCompare(cond.val, topicp.topic.s) DO
@@ -1982,10 +1982,10 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 				END
 			ELSIF sym IN {read, unread} THEN
 				cond.field := readFlag; cond.op := eq;
-				COPY(keyw, cond.val); Next()
+				 cond.val := keyw; Next()
 			ELSIF sym IN {name, string} THEN
 				cond.field := text; cond.op := eq;
-				COPY(str, cond.val); ToISO(cond.val);
+				 cond.val := str; ToISO(cond.val);
 				Next()
 			ELSE
 				Q.error := TRUE
@@ -2056,7 +2056,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			END
 		END CalcDispVec;
 	BEGIN
-		COPY(cond.val, sPat);
+		 sPat := cond.val;
 		sPatLen := Strings.Length(sPat);
 		CalcDispVec();
 		IF sPatLen > 0 THEN
@@ -2185,7 +2185,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 						R.sort[i] := i
 					END;
 					IF M.query # "" THEN
-						COPY(M.query, Q.query);
+						 Q.query := M.query;
 						CompileQuery(Q);
 						IF ~Q.error THEN
 							R.noMsgs := 0;
@@ -2617,7 +2617,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 				END;
 				rcpt[k] := 0X
 			ELSE
-				COPY(candidate, rcpt)
+				 rcpt := candidate
 			END;
 			WHILE (s[end] # 0X) & (s[end] # ",") DO
 				INC(end)
@@ -2660,7 +2660,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
 		END;
 		Strings.StrToInt(S.reply, l); S.status := SHORT(l);
-		COPY(S.reply, reply);
+		 reply := S.reply;
 		WHILE reply[3] = "-" DO
 			NetSystem.ReadString(S.C, reply);
 			IF trace THEN
@@ -2700,7 +2700,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 					SendCmd(S, "HELO", NetSystem.hostName);
 					ReadResponse(S);
 					IF S.reply[0] = "2" THEN
-						COPY(from, S.from); S.res := NetTools.Done;
+						 S.from := from; S.res := NetTools.Done;
 						RETURN
 					END
 				END;
@@ -3098,7 +3098,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 				key := HyperDocs.UndefKey
 			END
 		ELSE
-			COPY("mailto:", url);
+			 url := "mailto:";
 			Strings.Append(url, mailadr);
 			key := HyperDocs.RegisterLink(url)
 		END;
@@ -3214,7 +3214,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			INC(i)
 		END;
 		body[j] := 0X;
-		COPY("mailserver:", url);
+		 url := "mailserver:";
 		Strings.Append(url, mailadr);
 		Strings.AppendCh(url, "/");
 		Strings.Append(url, subject);
@@ -3311,7 +3311,7 @@ MODULE Mail; (** portable *)	(* ejz,   *)
 			END
 		END;
 		Texts.Append(T, W.buf);
-		COPY(mailadr, D.name); Links.SetLink(D.dsc, "Model", T);
+		 D.name := mailadr; Links.SetLink(D.dsc, "Model", T);
 		IF HyperDocs.context # NIL THEN
 			HyperDocs.context.replace := FALSE; HyperDocs.context.history := FALSE
 		END

@@ -115,10 +115,10 @@ PROCEDURE WriteHeader(VAR fd: Sound.AudioDef);
 	VAR s: ARRAY 5 OF CHAR; i: INTEGER;
 BEGIN
 	res:= Done;
-	COPY("RIFF", s); Files.WriteBytes(rider, s, 4);
+	 s := "RIFF"; Files.WriteBytes(rider, s, 4);
 	Files.WriteLInt(rider, 0);
-	COPY("WAVE", s); Files.WriteBytes(rider, s, 4);
-	COPY("fmt ", s); Files.WriteBytes(rider, s, 4);
+	 s := "WAVE"; Files.WriteBytes(rider, s, 4);
+	 s := "fmt "; Files.WriteBytes(rider, s, 4);
 	Files.WriteLInt(rider, 16); Files.WriteInt(rider, 1);
 	IF fd.stereo THEN i:= 2 ELSE i:= 1 END;
 	Files.WriteInt(rider, i);
@@ -126,7 +126,7 @@ BEGIN
 	Files.WriteLInt(rider, fd.freq*i*(fd.bits DIV 8));	(* average number of bytes per sec *)
 	Files.WriteInt(rider, (fd.bits DIV 8)*i);
 	Files.WriteInt(rider, fd.bits);
-	COPY("data", s); Files.WriteBytes(rider, s, 4);
+	 s := "data"; Files.WriteBytes(rider, s, 4);
 	Files.WriteLInt(rider, Length)
 END WriteHeader;
 
@@ -260,7 +260,7 @@ PROCEDURE Play*;
 BEGIN
 	IF ~recorded OR (file = NIL) THEN
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
-		COPY(S.s, filename);
+		 filename := S.s;
 		file:= Files.Old(filename)
 	END;
 	IF file # NIL THEN
@@ -304,7 +304,7 @@ BEGIN
 	recorded:= FALSE;
 	Root:= NIL;
 	Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
-	Texts.Scan(S); COPY(S.s, filename);
+	Texts.Scan(S);  filename := S.s;
 	Texts.Scan(S); dd.bits:= SHORT(S.i); Texts.Scan(S); Frq:= SHORT(S.i);
 	Texts.Scan(S); St:= SHORT(S.i);
 	(* In.Open; In.String(filename); In.Int(dd.bits); In.Int(Frq); In.Int(St); *)
@@ -408,7 +408,7 @@ PROCEDURE Store*;
 BEGIN
 	res:= Done;
 	IF recorded & (file # NIL) THEN
-		COPY(filename, name); Concat(name, ".Bak");
+		 name := filename; Concat(name, ".Bak");
 		Files.Rename(filename, name, r);
 		Files.Register(file);
 		recorded:= FALSE;
@@ -425,7 +425,7 @@ PROCEDURE Show*;
 	VAR gobj: Objects.Object; A: Objects.AttrMsg; S: Texts.Scanner;
 BEGIN
 	Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
-	COPY(S.s, A.s);
+	 A.s := S.s;
 	A.id:= Objects.set; A.name:= "Value"; A.class:= Objects.String;
 	gobj:= Gadgets.FindObj(Gadgets.context, "FName");
 	IF gobj # NIL THEN

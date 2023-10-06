@@ -223,16 +223,16 @@ END SetUp;
 			C: NetSystem.Connection;
 			user0: ARRAY 32 OF CHAR;
 	BEGIN
-		COPY(user, user0);
+		 user0 := user;
 		IF passwd = "" THEN NetSystem.GetPassword("telnet", host, user, passwd) END;
-		IF user = "" THEN COPY(user0, user) END;
+		IF user = "" THEN  user := user0 END;
 		NEW(task); task.safe := FALSE; task.handle := Receiver; task.colon := 0; task.T := F.text(Terminal);
 		WriteString(task.T,"Trying ..."); WriteLn(task.T);
 		Terminals.Flush(task.T);
 		IF NetTools.Connect(C, port, host, FALSE) THEN
 			task.T.C := C; task.T.task := task;
-			COPY(user, task.user);
-			COPY(passwd, task.passwd);
+			 task.user := user;
+			 task.passwd := passwd;
 			task.T.localecho := (port # DefPort);
 			task.T.message := TRUE; 
 			SetUp(task.T.C); Oberon.Install(task);
@@ -258,8 +258,8 @@ END SetUp;
 		(* Pre: url must be a telnet url *)
 		HyperDocs.UnESC(url);
 		port := DefPort;
-		COPY("", user);
-		COPY("", passwd);
+		 user := "";
+		 passwd := "";
 		i := 0;
 		Blanks();
 		IF prefix THEN
@@ -359,7 +359,7 @@ END SetUp;
 				port := DefPort
 			END
 		END;
-		COPY("telnet://", url);
+		 url := "telnet://";
 		IF user # "" THEN
 			Strings.Append(url, user);
 			IF passwd # "" THEN
@@ -433,7 +433,7 @@ END SetUp;
 		IF F.text IS Terminal THEN
 			NEW(D); TextDocs.InitLog(D);
 			D.dsc(TextGadgets.Frame).text := F.text.text;
-			COPY("Telnet.Log", D.name);
+			 D.name := "Telnet.Log";
 			D.W := HyperDocs.docW; D.H := HyperDocs.docH;
 			Desktops.ShowDoc(D)
 		END
@@ -694,7 +694,7 @@ END SetUp;
 		OpenConn(F, host, user, passwd, port);
 		D.dsc := F; D.W := F.W; D.H := F.H;
 		Documents.Init(D, F);
-		COPY(host, D.name);
+		 D.name := host;
 		D.handle := DocHandler;
 		IF HyperDocs.context # NIL THEN
 			HyperDocs.context.replace := FALSE;

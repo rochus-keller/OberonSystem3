@@ -197,7 +197,7 @@ CONST
 	BEGIN
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
 		NEW(P); Pictures.Open(P, S.s, TRUE);
-		 COPY(S.s, name);
+		  name := S.s;
 		FadeUp(P, 255); rot := FALSE;
 		Texts.Scan(S); rle := FALSE; a3 := FALSE; eps := FALSE;
 		IF (S.class = Texts.Char) & (S.c = Oberon.OptionChar) THEN Texts.Scan(S);

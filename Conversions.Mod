@@ -60,7 +60,7 @@ END BitPatternToStr;
 PROCEDURE IntToStr* (val: LONGINT; VAR str: ARRAY OF CHAR; base: LONGINT);
 	VAR i, j: LONGINT;	digits: ARRAY 32 OF LONGINT;
 BEGIN
-	IF (base <= 1) OR (base > 16) THEN COPY("???", str); RETURN END;
+	IF (base <= 1) OR (base > 16) THEN  str := "???"; RETURN END;
 	IF (base = 2) OR (base = 16) THEN BitPatternToStr (val, str, base); RETURN END;
 	IF val = MIN(LONGINT) THEN
 		COPY (Min[base-1], str); RETURN
@@ -83,7 +83,7 @@ PROCEDURE RealToStr*(x: LONGREAL; VAR s: ARRAY OF CHAR; base: LONGINT);
 VAR h, l: LONGINT; d: ARRAY 16 OF CHAR;
 	
 BEGIN
-	IF (base # 2) & (base # 10) & (base # 16) THEN COPY("???", s); RETURN END;
+	IF (base # 2) & (base # 10) & (base # 16) THEN  s := "???"; RETURN END;
 	IF base # 10 THEN
 		Reals.IntL (x, h, l);
 		IntToStr (h, s, base); IntToStr (l, d, base);

@@ -68,7 +68,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF M.id = Objects.get THEN
-					IF M.name = "Gen" THEN COPY("SetGadgets.NewSet", M.s); M.class := Objects.String; M.res := 0
+					IF M.name = "Gen" THEN  M.s := "SetGadgets.NewSet"; M.class := Objects.String; M.res := 0
 					ELSIF M.name = "Value" THEN SetToInt(obj.val, M.i); M.class := Objects.Int; M.res := 0
 					ELSIF M.name = "String" THEN Strings.SetToStr(obj.val, M.s); M.class := Objects.String; M.res := 0
 					ELSE Gadgets.objecthandle(obj, M)
@@ -127,8 +127,8 @@ VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.get; A.name := "Field"; A.class := Objects.Inval; A.s := "";
 	F.handle(F, A);
-	IF (A.res >= 0) & (A.class = Objects.String) & (A.s # "") THEN COPY(A.s, name)
-	ELSE COPY("Value", name)
+	IF (A.res >= 0) & (A.class = Objects.String) & (A.s # "") THEN  name := A.s
+	ELSE  name := "Value"
 	END
 END Field;
 
@@ -162,7 +162,7 @@ PROCEDURE HandleAttributes (F: Frame; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
 		IF M.name = "Gen" THEN
-			M.class := Objects.String; COPY("SetGadgets.NewFrame", M.s); M.res := 0
+			M.class := Objects.String;  M.s := "SetGadgets.NewFrame"; M.res := 0
 		ELSIF M.name = "Value" THEN
 			M.class := Objects.Int; SetToInt(F.val, M.i); M.res := 0
 		ELSIF M.name = "String" THEN

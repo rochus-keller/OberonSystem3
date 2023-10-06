@@ -3741,14 +3741,14 @@ VAR
 		END;
 
 		IF S.class = T.Name THEN
-			COPY(S.s,inName);
+			inName := S.s;
 		ELSE
 			doit := FALSE;
 		END;
 		T.Scan(S);
 		
 		IF S.class = T.Name THEN
-			COPY(S.s,outName);
+			outName := S.s;
 		ELSE
 			doit := FALSE;
 		END;
@@ -3787,7 +3787,7 @@ VAR
 			IF msg IS Objects.AttrMsg THEN
 				WITH msg: Objects.AttrMsg DO 
 					IF (msg.id = Objects.get) & (msg.name = "Gen") THEN
-						msg.class := Objects.String; COPY("Pictures.NewPicture", msg.s); msg.res:=0 
+						msg.class := Objects.String;  msg.s := "Pictures.NewPicture"; msg.res:=0 
 					END;
 				END;
 			ELSIF msg IS Objects.FileMsg THEN

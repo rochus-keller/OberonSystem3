@@ -57,7 +57,7 @@ MODULE HTMLImages;	(** portable *)
 							M.res := 0
 						ELSIF M.name = "MapName" THEN
 							M.class := Objects.String;
-							COPY(obj.name, M.s);
+							 M.s := obj.name;
 							M.res := 0
 						ELSE
 							Gadgets.objecthandle(obj, M)
@@ -113,7 +113,7 @@ Gadgets.objecthandle(obj, M);
 			WHILE HTMLDocs.NextAttr(S, attr) DO
 				IF attr = "NAME" THEN
 					NEW(map); InitMap(map);
-					COPY(S.value, map.name);
+					 map.name := S.value;
 					m := maps;
 					WHILE (m # NIL) & (m.name # map.name) DO
 						m := m.next
@@ -551,10 +551,10 @@ HALT(99)
 			ELSIF attr = "ISMAP" THEN
 				ismap := TRUE;
 				IF S.value # "" THEN
-					COPY(S.value, mapname)
+					 mapname := S.value
 				END
 			ELSIF (attr = "ALT") & (S.value # "") THEN
-				COPY(S.value, alt)
+				 alt := S.value
 			ELSIF attr = "BORDER" THEN
 				IF S.value # "" THEN
 					Strings.StrToInt(S.value, l); border := SHORT(l)
@@ -564,7 +564,7 @@ HALT(99)
 			ELSIF attr = "USEMAP" THEN
 				NEW(sattr);
 				IF S.value[0] # "#" THEN
-					COPY(S.value, sattr.s)
+					 sattr.s := S.value
 				ELSE
 					i := 1;
 					WHILE S.value[i] # 0X DO

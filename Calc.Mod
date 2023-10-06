@@ -224,7 +224,7 @@ MODULE Calc;	(** portable *)	(* CAS 28.9.93 / tk adapted for System 3 1.6.95*)
 		WHILE (s # NIL) & ((s.name # name) OR s.funct) DO s := s.next END;
 		IF insert THEN
 			IF s = NIL THEN NEW(s); s.next := syms; syms := s END;
-			COPY(name, s.name); s.funct := FALSE; s.val := val
+			 s.name := name; s.funct := FALSE; s.val := val
 		ELSIF s # NIL THEN val := s.val
 		ELSE S.class := Texts.Inval
 		END
@@ -236,7 +236,7 @@ MODULE Calc;	(** portable *)	(* CAS 28.9.93 / tk adapted for System 3 1.6.95*)
 		WHILE (s # NIL) & ((s.name # name) OR ~s.funct) DO s := s.next END;
 		IF insert THEN
 			IF s = NIL THEN s := sym; s.next := syms; syms := sym END;
-			COPY(name, s.name); s.funct := TRUE; s.val := 0
+			 s.name := name; s.funct := TRUE; s.val := 0
 		ELSIF s # NIL THEN sym := s
 		ELSE sym := NIL
 		END
@@ -379,7 +379,7 @@ MODULE Calc;	(** portable *)	(* CAS 28.9.93 / tk adapted for System 3 1.6.95*)
 	PROCEDURE Set*;	(** {name ":=" expr} "~" **)
 		VAR n: LONGREAL; name: ARRAY 32 OF CHAR;
 	BEGIN Str("Calc.Set"); Ln; OpenScanner(S); 
-		WHILE S.class = Texts.Name DO COPY(S.s, name); Scan(S);
+		WHILE S.class = Texts.Name DO  name := S.s; Scan(S);
 			IF (S.class = Texts.Char) & (S.c = ":") THEN
 				Texts.Scan(S); 
 				IF (S.class = Texts.Char) & (S.c = "=") THEN

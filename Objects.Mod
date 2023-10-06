@@ -254,12 +254,12 @@ Most entities in Oberon are derived from this base type.
         IF n # nofreg THEN
           proc := LibNew[n];
           L := proc();
-          COPY(name, L.name);
+           L.name := name;
           L.Load(L);  Kernel.RegisterObject(L, Cleanup, FALSE);
           IF name = L.name THEN
             L.next := FirstLib.next; FirstLib.next := L
           ELSE
-            NEW(A); COPY(name, A.name); A.lib := L; A.next := FirstAlias.next; FirstAlias.next := A;
+            NEW(A);  A.name := name; A.lib := L; A.next := FirstAlias.next; FirstAlias.next := A;
             Kernel.WriteString("Alias: ");
             Kernel.WriteString(name);  Kernel.WriteString(" -> ");  Kernel.WriteString(L.name);
             Kernel.WriteLn
@@ -295,7 +295,7 @@ Most entities in Oberon are derived from this base type.
   BEGIN n := 0;
     WHILE (n # nofreg) & (ext # LibExt[n]) DO INC(n) END;
     IF n # nofreg THEN LibNew[n] := new
-      ELSE COPY(ext, LibExt[nofreg]); LibNew[nofreg] := new; INC(nofreg)
+      ELSE  LibExt[nofreg] := ext; LibNew[nofreg] := new; INC(nofreg)
     END;
     (* free library entries that match *)
     L := FirstLib.next;
@@ -331,7 +331,7 @@ Most entities in Oberon are derived from this base type.
 		WITH obj: Dummy DO
 			IF M IS AttrMsg THEN
 				WITH M: AttrMsg DO 
-					IF (M.id = get) & (M.name = "Gen") THEN COPY(obj.GName, M.s) END
+					IF (M.id = get) & (M.name = "Gen") THEN  M.s := obj.GName END
 				END
 			ELSIF M IS CopyMsg THEN
 				WITH M: CopyMsg DO
@@ -339,7 +339,7 @@ Most entities in Oberon are derived from this base type.
 					ELSE
 						NEW(dum); obj.stamp := M.stamp; obj.dlink := dum;
 						dum.handle := obj.handle;
-						COPY(obj.GName, dum.GName); dum.len := obj.len; dum.blk := obj.blk;
+						 dum.GName := obj.GName; dum.len := obj.len; dum.blk := obj.blk;
 						M.obj := dum
 					END
 				END
@@ -360,7 +360,7 @@ Most entities in Oberon are derived from this base type.
 		VAR dum: Dummy;
 	BEGIN
 		NEW(dum); dum.handle := HandleDummy;
-		COPY(GName, dum.GName);
+		 dum.GName := GName;
 		NewObj := dum
 	END NewDummy;
 
@@ -577,7 +577,7 @@ Most entities in Oberon are derived from this base type.
 				IF org >= 0 THEN	(* there is an object in the file *)
 					Files.Set(L.R, L.f, org);
 					Files.ReadInt(L.R, m); Files.ReadLInt(L.R, olen);
-					COPY(L.GName[m], GName[N]);
+					 GName[N] := L.GName[m];
 					n := 0;
 					WHILE GName[n] # GName[N] DO INC(n) END;
 					IF n = N THEN INC(N) END;
@@ -590,7 +590,7 @@ Most entities in Oberon are derived from this base type.
 					Files.WriteLInt(indR, -1)
 				END
 			ELSIF obj # NoObj THEN	(* there is an object to store *)
-				A.res := -1; obj.handle(obj, A); COPY(A.s, GName[N]);
+				A.res := -1; obj.handle(obj, A);  GName[N] := A.s;
 				n := 0;
 				WHILE GName[n] # GName[N] DO INC(n) END;
 				IF n = N THEN INC(N) END;
@@ -615,7 +615,7 @@ Most entities in Oberon are derived from this base type.
 			NEW(L.GName, N);
 			FOR n := 0 TO N-1 DO
 				Files.WriteString(R, GName[n]);
-				COPY(GName[n], L.GName[n])
+				 L.GName[n] := GName[n]
 			END
 		END;
 
@@ -691,7 +691,7 @@ Most entities in Oberon are derived from this base type.
 				cur := D.first;
 				WHILE (cur # NIL) & ((cur.key >= 0) OR (cur.name # name)) DO cur := cur.next END;
 				IF cur = NIL THEN DEC(D.key);
-					NEW(cur); cur.key := D.key; COPY(name, cur.name); cur.next := D.first; D.first := cur
+					NEW(cur); cur.key := D.key;  cur.name := name; cur.next := D.first; D.first := cur
 				END;
 				key := cur.key
 			END
@@ -706,7 +706,7 @@ Most entities in Oberon are derived from this base type.
 		IF D IS ListDict THEN
 			cur := D(ListDict).first;
 			WHILE (cur # NIL) & (cur.key # key) DO cur := cur.next END;
-			IF cur = NIL THEN name[0] := 0X ELSE COPY(cur.name, name) END
+			IF cur = NIL THEN name[0] := 0X ELSE  name := cur.name END
 		ELSE name[0] := 0X
 		END
 	END GetName;
@@ -724,7 +724,7 @@ Most entities in Oberon are derived from this base type.
 					IF cur = NIL THEN
 					NEW(cur); cur.key := key; cur.next := D.first; D.first := cur
 					END;
-					COPY(name, cur.name)
+					 cur.name := name
 				END
 			END
 		END

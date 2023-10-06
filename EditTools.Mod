@@ -61,7 +61,7 @@ VAR
 
 	PROCEDURE CombineFontName (prefix, suffix: ARRAY OF CHAR; i, j, size: INTEGER; VAR fn: ARRAY OF CHAR);
 		VAR k: INTEGER; ch: CHAR; dig: ARRAY 10 OF CHAR;
-	BEGIN COPY(prefix, fn); k := 0;
+	BEGIN  fn := prefix; k := 0;
 		IF size < 6 THEN size := 6 ELSIF size > 128 THEN size := 128 END;
 		REPEAT dig[k] := CHR(size MOD 10 + 30H); size := size DIV 10; INC(k) UNTIL size = 0;
 		REPEAT DEC(k); fn[i] := dig[k]; INC(i) UNTIL k = 0;
@@ -121,7 +121,7 @@ VAR
 	BEGIN Texts.OpenReader(R, T, beg); Texts.Read(R, ch);
 		WHILE ~R.eot & (beg < end) DO org := beg; fnt := R.lib;
 			WHILE ~R.eot & (beg < end) & (R.lib = fnt) DO INC(beg); Texts.Read(R, ch) END;
-			IF IsFont(fnt) THEN SplitFontName(fnt.name, i, j, size); COPY(fnt.name, fn); fn[i] := 0X;
+			IF IsFont(fnt) THEN SplitFontName(fnt.name, i, j, size);  fn := fnt.name; fn[i] := 0X;
 				IF (i < j) & ((fn = old) OR (old[0] = "?")) THEN SplitFontName(new, i1, j1, size1);
 					CombineFontName(new, fnt.name, i1, j, size, fn); fnt := ThisFont(fn);
 					IF fnt # NIL THEN Texts.ChangeLooks(T, org, beg, {0}, fnt, 0, 0) END
@@ -137,7 +137,7 @@ VAR
 			WHILE ~R.eot & (beg < end) & (R.lib = fnt) DO INC(beg); Texts.Read(R, ch) END;
 			IF IsFont(fnt) THEN
 				SplitFontName(fnt.name, i, j, size);
-				IF (i < j) & ((fnt.name[j] = old) OR (old = "?")) & (fnt.name[j] # new) THEN COPY(fnt.name, fn);
+				IF (i < j) & ((fnt.name[j] = old) OR (old = "?")) & (fnt.name[j] # new) THEN  fn := fnt.name;
 					IF fn[j] = "." THEN k := j+1;
 						WHILE fn[k] # 0X DO INC(k) END;
 						WHILE k >= j DO fn[k+1] := fn[k]; DEC(k) END
@@ -212,7 +212,7 @@ VAR
 		Oberon.GetSelection(text, beg, end, time);
 		IF (time >= lastTime) & (S.line = 0) THEN
 			WHILE ~S.eot & ((S.class = Texts.Name) OR (S.class = Texts.Char) & (S.c = "?")) DO
-				IF (S.class = Texts.Char) & (S.c = "?") THEN old[0] := "?"; old[1] := 0X ELSE COPY(S.s, old) END;
+				IF (S.class = Texts.Char) & (S.c = "?") THEN old[0] := "?"; old[1] := 0X ELSE  old := S.s END;
 				SkipArrow(S);
 				IF S.class = Texts.Name THEN lastTime := time;
 					ChangeFontFamily(text, beg, end, old, S.s); Texts.Scan(S)
@@ -227,7 +227,7 @@ VAR
 		Oberon.GetSelection(text, beg, end, time);
 		IF (time >= lastTime) & (S.line = 0) THEN
 			WHILE (S.class = Texts.Name) OR ((S.class = Texts.Char) & (S.c = "?")) DO
-				IF S.class = Texts.Name THEN COPY(S.s, old) ELSE old := "?" END;
+				IF S.class = Texts.Name THEN  old := S.s ELSE old := "?" END;
 				SkipArrow(S);
 				IF S.class = Texts.Name THEN lastTime := time;
 					ChangeFont(text, beg, end, old, S.s); Texts.Scan(S)
@@ -437,7 +437,7 @@ VAR
 			NEW(D); TextDocs.InitDoc(D); (* make document wrapper *)
 			NEW(f); TextGadgets.Init(f, T, FALSE);	(* create content *)
 			Documents.Init(D, f); (* and merge together *)
-			COPY(S.s, D.name);
+			 D.name := S.s;
 			D.W := Display.Width DIV 8 * 3 + 20;
 			Desktops.ShowDoc(D)
 		END
@@ -465,7 +465,7 @@ VAR
 			NEW(D); TextDocs.InitDoc(D); (* make document wrapper *)
 			NEW(f); TextGadgets.Init(f, T, FALSE);	(* create content *)
 			Documents.Init(D, f); (* and merge together *)
-			COPY(S.s, D.name);
+			 D.name := S.s;
 			D.W := Display.Width DIV 8 * 3 + 20;
 			Desktops.ShowDoc(D)
 		END
@@ -496,7 +496,7 @@ VAR
 					
 					F := Files.New(D.name); IF F = NIL THEN HALT(99) END;
 					
-					COPY(D.name, bak); i := 0;
+					 bak := D.name; i := 0;
 					WHILE bak[i] # 0X DO INC(i) END;
 					bak[i] := "."; bak[i+1] := "B"; bak[i+2] := "a"; bak[i+3] := "k"; bak[i+4] := 0X;
 					Files.Rename(D.name, bak, res);

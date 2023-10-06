@@ -328,7 +328,7 @@ MODULE GfxPKFonts;	(** eos   **)
 				IF dpi # 0 THEN
 					scale := dpi * (Display.Unit/914400); pts := pt * scale;
 					IF (BestSizeScale < 0) OR (BestSizeScale < pts) & (pts <= SizeScale) OR (SizeScale <= pts) & (pts < BestSizeScale) THEN
-						COPY(name, Name); BestSize := pt; BestScale := scale; BestSizeScale := pts;
+						 Name := name; BestSize := pt; BestScale := scale; BestSizeScale := pts;
 						continue := (pts = SizeScale)
 					END
 				END
@@ -342,14 +342,14 @@ MODULE GfxPKFonts;	(** eos   **)
 		(* first try with correct point size *)
 		SizeScale := ptsize * scale; BestSizeScale := -1; Name := ""; Len := Strings.Length(name);
 		Strings.IntToStr(ptsize, size);
-		COPY(name, pat); Strings.Append(name, size); Strings.Append(pat, "*pk");
+		 pat := name; Strings.Append(name, size); Strings.Append(pat, "*pk");
 
 		FileDir.Enumerate(pat, FALSE, EnumFile);
 
 		
 		(* try any font of requested family *)
 		IF Name = "" THEN
-			COPY(name, pat); Strings.Append(pat, "*pk");
+			 pat := name; Strings.Append(pat, "*pk");
 
 			FileDir.Enumerate(pat, FALSE, EnumFile)
 
@@ -368,7 +368,7 @@ MODULE GfxPKFonts;	(** eos   **)
 			(* load pk font *)
 			base := LoadBase(Name);
 			IF base # NIL THEN
-				COPY(Name, base.name); base.ptsize := SHORT(BestSize); base.scale := BestScale;
+				 base.name := Name; base.ptsize := SHORT(BestSize); base.scale := BestScale;
 				base.next := Bases; Bases := base
 			END
 		END;
@@ -429,7 +429,7 @@ MODULE GfxPKFonts;	(** eos   **)
 		VAR font: Font; name: ARRAY 64 OF CHAR; scale, xmin, ymin, xmax, ymax: REAL; base: Base;
 	BEGIN
 		font := NIL;
-		COPY(family, name); Strings.Append(name, style);
+		 name := family; Strings.Append(name, style);
 		scale := Math.sqrt(ABS(GfxMatrix.Det(mat)));
 		base := OpenBase(name, ptsize, scale);
 		IF base # NIL THEN

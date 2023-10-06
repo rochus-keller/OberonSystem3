@@ -72,7 +72,7 @@ MODULE Solver;	(** eos   **)
 			attr := Att[id];
 			WHILE (attr # NIL) & (attr.name # name) DO attr := attr.next END;
 			IF attr = NIL THEN
-				NEW(attr); COPY(name, attr.name);
+				NEW(attr);  attr.name := name;
 				attr.next := Att[id]; Att[id] := attr
 			END;
 			RETURN attr
@@ -145,7 +145,7 @@ MODULE Solver;	(** eos   **)
 		VAR am: Objects.AttrMsg; val: REAL;
 	BEGIN
 		WHILE attr # NIL DO
-			am.id := Objects.get; COPY(attr.name, am.name); am.class := Objects.Real; am.x := attr.val; am.res := -1;
+			am.id := Objects.get;  am.name := attr.name; am.class := Objects.Real; am.x := attr.val; am.res := -1;
 			obj.handle(obj, am);
 			val := am.x; am.x := attr.val; attr.val := val;
 			am.id := Objects.set; am.class := Objects.Real; am.res := -1;

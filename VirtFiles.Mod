@@ -674,7 +674,7 @@ Portable routines to write the standard Oberon types.
 
 PROCEDURE GetName*(F: File;  VAR name: ARRAY OF CHAR);
 BEGIN
-	COPY(F.name, name)
+	 name := F.name
 END GetName;
 
 PROCEDURE Init*;

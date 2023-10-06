@@ -527,7 +527,7 @@ TYPE
 					A.id := Objects.get; A.name := "Font"; A.class := Objects.Inval; A.res := -1;
 					p.obj.handle(p.obj, A);
 					IF A.res = 0 THEN
-						A.id := Objects.set; A.class := Objects.String; COPY(lib(Fonts.Font).name, A.s);
+						A.id := Objects.set; A.class := Objects.String;  A.s := lib(Fonts.Font).name;
 						p.obj.handle(p.obj, A)
 					END
 				END

@@ -308,12 +308,12 @@ BEGIN
 	IF F.sorted THEN
 		i := F.items; p := NIL;
 		IF i = NIL THEN
-			NEW(j); COPY(s, j.s); j.sel := FALSE;
+			NEW(j);  j.s := s; j.sel := FALSE;
 			F.items := j
 		ELSE
 			WHILE (i # NIL) & (s > i.s) DO p := i; i := i.next END;
 			IF (i # NIL) & (i.s = s) THEN RETURN END; (* already in list *)
-			NEW(j); COPY(s, j.s); j.sel := FALSE;
+			NEW(j);  j.s := s; j.sel := FALSE;
 			IF p = NIL THEN
 				j.next := F.items;
 				IF F.items # NIL THEN F.items.prev := j; END;
@@ -329,7 +329,7 @@ BEGIN
 		p := NIL;
 		WHILE i # NIL DO p := i; i := i.next END;
 		NEW(j);
-		COPY(s, j.s);
+		 j.s := s;
 		j.sel := FALSE;
 		j.next := NIL;
 		j.prev := p;
@@ -404,17 +404,17 @@ PROCEDURE ListAttr(F: List; VAR M: Objects.AttrMsg);
 VAR i: Item;
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Lists.NewList", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Lists.NewList"; M.res := 0
 		ELSIF M.name = "ScrollBar" THEN M.class := Objects.Bool; M.b := F.scrollbar; M.res := 0
-		ELSIF M.name = "Cmd" THEN M.class := Objects.String; COPY(F.cmd, M.s); M.res := 0
+		ELSIF M.name = "Cmd" THEN M.class := Objects.String;  M.s := F.cmd; M.res := 0
 		ELSIF M.name = "LineupHY" THEN M.class := Objects.Int; M.i := F.H - Fonts.Default.height; M.res := 0
 		ELSIF M.name = "Point" THEN M.class := Objects.String; 
-			IF F.pointed # NIL THEN COPY(F.pointed.s, M.s) ELSE M.s := ""; END; M.res := 0;
+			IF F.pointed # NIL THEN  M.s := F.pointed.s ELSE M.s := ""; END; M.res := 0;
 		ELSIF M.name = "Sel" THEN
 			M.class := Objects.String; M.s := "";
 			i := F.beg;
 			WHILE (i # NIL) & (M.s = "") DO
-				IF i.sel THEN COPY(i.s, M.s) END;
+				IF i.sel THEN  M.s := i.s END;
 				i := i.next;
 			END;
 			M.res := 0
@@ -437,7 +437,7 @@ BEGIN
 			END
 		ELSIF M.name = "Point" THEN M.res := 0
 		ELSIF M.name = "Cmd" THEN
-			IF M.class = Objects.String THEN COPY(M.s, F.cmd); M.res := 0 END
+			IF M.class = Objects.String THEN  F.cmd := M.s; M.res := 0 END
 		ELSIF M.name = "Sorted" THEN
 			IF M.class = Objects.Bool THEN
 				IF M.b # F.sorted THEN
@@ -605,7 +605,7 @@ END Update;
 PROCEDURE CopyList*(VAR M: Objects.CopyMsg; from, to: List);
 VAR i: Item;
 BEGIN
-	 to.bar := from.bar; COPY(from.cmd, to.cmd); to.scrollbar := from.scrollbar; to.sorted := from.sorted;
+	 to.bar := from.bar;  to.cmd := from.cmd; to.scrollbar := from.scrollbar; to.sorted := from.sorted;
 	to.items := NIL;
 	i := from.items;
 	WHILE (i # NIL) DO InsertItem(to, i.s); i := i.next END;
@@ -1159,7 +1159,7 @@ PROCEDURE LibDir(name: ARRAY OF CHAR; text: Texts.Text);
 VAR  L: Objects.Library; ref, i: INTEGER; libName, objName: ARRAY 32 OF CHAR; 
 BEGIN
 	i := 0; WHILE (name[i] # 0X) & (name[i] # ".") DO INC(i) END;
-	name[i] := 0X; COPY(name, libName);
+	name[i] := 0X;  libName := name;
 	name[i] := "."; name[i+1] := "L"; name[i+2] := "i"; name[i+3] := "b"; name[i+4] := 0X;
 	
 	L := Objects.ThisLibrary(name);

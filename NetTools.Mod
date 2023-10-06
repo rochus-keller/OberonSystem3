@@ -324,9 +324,9 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 		lKey := "NetSystem."; Strings.Append(lKey, key);
 		Oberon.OpenScanner(S, lKey);
 		IF S.class IN {Texts.Name, Texts.String} THEN
-			COPY(S.s, s)
+			 s := S.s
 		ELSE
-			COPY("", s)
+			 s := ""
 		END;
 		RETURN s # ""
 	END QueryString;
@@ -353,7 +353,7 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 				port := defPort
 			END
 		ELSE
-			COPY("", host); port := 0
+			 host := ""; port := 0
 		END
 	END GetHostPort;
 

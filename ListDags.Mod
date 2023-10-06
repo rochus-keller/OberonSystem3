@@ -75,7 +75,7 @@ BEGIN
 	IF R.eol THEN R.d := NIL
 	ELSE
 		IF (R.d = NIL) OR ~(R.d IS ListRiders.String) THEN NEW(d); R.d := d ELSE d := R.d(ListRiders.String) END;
-		COPY(ref.node.s, d.s)
+		 d.s := ref.node.s
 	END
 END SetNode;
 
@@ -86,7 +86,7 @@ BEGIN
 	new.stamp := MIN(LONGINT); new.state := 0; new.dsc := NIL;
 	IF d = NIL THEN new.s := ""
 	ELSE
-		IF d IS ListRiders.String THEN COPY(d(ListRiders.String).s, new.s)
+		IF d IS ListRiders.String THEN  new.s := d(ListRiders.String).s
 		ELSIF d IS ListRiders.Int THEN Strings.IntToStr(d(ListRiders.Int).i, new.s)
 		ELSIF d IS ListRiders.Bool THEN Strings.BoolToStr(d(ListRiders.Bool).b, new.s)
 		ELSIF d IS ListRiders.Char THEN new.s[0] := d(ListRiders.Char).c; new.s[1] := 0X
@@ -352,7 +352,7 @@ VAR lastNr, stamp: LONGINT; nodes: Ref;
 				node.stamp := stamp; node.nr := lastNr; INC(lastNr);
 				NEW(node0);
 				node0.state := node.state; node0.stamp := MIN(LONGINT);
-				COPY(node.s, node0.s);
+				 node0.s := node.s;
 				InsertNode(nodes, node0);
 				IF node.dsc # NIL THEN
 					node0.dsc := MakeTail(node0); CopyLevel(node.dsc, node0.dsc)
@@ -451,7 +451,7 @@ END ReadDag;
 PROCEDURE DagAttr (obj: Dag; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN COPY("ListDags.New", M.s); M.class := Objects.String; M.res := 0
+		IF M.name = "Gen" THEN  M.s := "ListDags.New"; M.class := Objects.String; M.res := 0
 		ELSIF M.name = "Unique" THEN M.class := Objects.Bool; M.b := unique IN obj.state0; M.res := 0
 		ELSE Gadgets.objecthandle(obj, M)
 		END

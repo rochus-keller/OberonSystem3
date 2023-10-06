@@ -103,8 +103,8 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 			line: ARRAY MaxLine OF CHAR;
 	BEGIN
 		IF ~Connected(S.C, NetSystem.in) THEN
-			COPY("Connection closed by server.", sline);
-			COPY(sline, S.reply);
+			 sline := "Connection closed by server.";
+			 S.reply := sline;
 			S.status := 0; S.res := Disconnected;
 			RETURN
 		END;
@@ -216,9 +216,9 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 		lKey := "NetSystem."; Strings.Append(lKey, key);
 		Oberon.OpenScanner(S, lKey);
 		IF S.class IN {Texts.Name, Texts.String} THEN
-			COPY(S.s, s)
+			 s := S.s
 		ELSE
-			COPY("", s)
+			 s := ""
 		END;
 		RETURN s # ""
 	END QueryString;
@@ -227,10 +227,10 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 	BEGIN
 		IF (usr = "ftp") OR (usr = "anonymous") OR (usr = "") THEN
 			IF ~QueryString("EMail", passw) OR (passw[0] = "<") THEN
-				COPY("anonymous@host.nowhere", passw)
+				 passw := "anonymous@host.nowhere"
 			END;
 			IF usr = "" THEN
-				COPY("anonymous", usr)
+				 usr := "anonymous"
 			END
 		ELSIF passw = "" THEN
 			NetSystem.GetPassword("ftp", host, usr, passw)
@@ -267,11 +267,11 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 					IF (S.status = 230) OR (S.status= 330) THEN
 						S.res := Done
 					ELSE
-						S.res := WrongPassword; COPY(line, S.reply);
+						S.res := WrongPassword;  S.reply := line;
 						Close2(S)
 					END
 				ELSIF S.status # 230 THEN
-					S.res := WrongUser; COPY(line, S.reply);
+					S.res := WrongUser;  S.reply := line;
 					Close2(S)
 				ELSE
 					S.res := Done
@@ -451,7 +451,7 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 		ReadResponse(S, S.reply);
 		IF S.status = 257 THEN
 			IF S.system = VMS THEN
-				COPY(S.reply, curdir);
+				 curdir := S.reply;
 				i := 0;
 				WHILE curdir[i] > " " DO
 					INC(i)
@@ -474,7 +474,7 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 			END;
 			S.res := Done
 		ELSE
-			COPY("", curdir);
+			 curdir := "";
 			S.res := Failed
 		END
 	END GetCurDir;
@@ -565,7 +565,7 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 			Strings.Append(line, remName);
 			SendCmd(S, line);
 			ReadResponse(S, line);
-			COPY(line, S.reply);
+			 S.reply := line;
 			IF (S.status = 150) OR (S.status = 250) THEN
 				IF S.dataIP = NetSystem.anyIP THEN C := WaitDataCon(S) END;
 				IF S.res = Done THEN
@@ -641,7 +641,7 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 				END
 			END
 		ELSE
-			COPY(locName, S.reply);
+			 S.reply := locName;
 			Strings.Append(S.reply, " not found");
 			S.res := LocFileNotFound
 		END;
@@ -700,7 +700,7 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 			Strings.Append(line, remName);
 			SendCmd(S, line);
 			ReadResponse(S, line);
-			COPY(line, S.reply);
+			 S.reply := line;
 			IF (S.status = 150) OR (S.status = 250) THEN
 				IF S.dataIP = NetSystem.anyIP THEN C := WaitDataCon(S) END;
 				IF S.res = Done THEN
@@ -813,7 +813,7 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 		END Blanks;
 	BEGIN
 		type := 0X; port := DefConPort;
-		COPY("", user); COPY("", passwd);
+		 user := "";  passwd := "";
 		i := 0; Blanks();
 		(* look ahead for @ *)
 		j := i;
@@ -1126,20 +1126,20 @@ MODULE FTP; (** portable *)	(* EJZ,   *)
 			Texts.Scan(S)
 		END;
 		IF S.class IN {Texts.Name, Texts.String} THEN
-			COPY(S.s, name1);
+			 name1 := S.s;
 			Texts.Scan(S);
 			IF (S.class = Texts.Char) & (S.c = "=") THEN
 				Texts.Scan(S);
 				IF (S.class = Texts.Char) & (S.c = ">") THEN
 					Texts.Scan(S);
 					IF S.class IN {Texts.Name, Texts.String} THEN
-						COPY(S.s, name2);
+						 name2 := S.s;
 						Texts.Scan(S);
 						RETURN TRUE
 					END
 				END
 			ELSE
-				COPY(name1, name2);
+				 name2 := name1;
 				RETURN TRUE
 			END
 		END;

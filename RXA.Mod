@@ -539,7 +539,7 @@ BEGIN
 	countflag := 0;
 	errorvar := chrleft;
 	subdetect := FALSE; notflag := FALSE; inkleene := FALSE; inquotes := FALSE; first := FALSE;
-	COPY(rx, rxl); (* rxl := SYSTEM.VAL( LinePtr, SYSTEM.ADR(rx) ); *)
+	 rxl := rx; (* rxl := SYSTEM.VAL( LinePtr, SYSTEM.ADR(rx) ); *)
 	lookahead := "(";
 	tokenval := msopenpar;
 	anchor := NIL;
@@ -682,7 +682,7 @@ PROCEDURE Replace*( dfa : DFA; VAR line : ARRAY OF CHAR; replpat : ARRAY OF CHAR
 
 BEGIN
 	IF dfa # NIL THEN
-		(*IF LEN( line ) > noofchar THEN error := linecopofl; RETURN ELSE*) COPY( line, linecop ) (*END*);
+		(*IF LEN( line ) > noofchar THEN error := linecopofl; RETURN ELSE*)  linecop  :=  line (*END*);
 		replind := 0; lineind := beg; linefull := FALSE; inquotes := FALSE; first := FALSE; error := noerror;
 		ch := LexAn();
 		WHILE (~linefull) & ( ~ EORPL ) & ( error = noerror ) DO
@@ -713,7 +713,7 @@ BEGIN
 		error := nodfa
 	END;
 	pos := replind;
-	COPY( linecop, line )
+	 line  :=  linecop
 END Replace;
 
 END RXA.

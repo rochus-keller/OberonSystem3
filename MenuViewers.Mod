@@ -298,7 +298,7 @@ MODULE MenuViewers;	(** portable *) (*JG 16.10.94, color version *)
     VAR M: Objects.AttrMsg;
   BEGIN
     M.id := Objects.get; M.name := "Name"; M.s := ""; M.res := minint;
-    V.dsc.handle(V.dsc, M); COPY(M.s, name)
+    V.dsc.handle(V.dsc, M);  name := M.s
   END GetName;
 
   PROCEDURE New* (Menu, Main: Display.Frame; menuH, X, Y: INTEGER): Viewer; 

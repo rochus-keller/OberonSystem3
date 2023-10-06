@@ -1047,7 +1047,7 @@ VAR obj, list: Objects.Object; P, f: Gadgets.Frame; X, p: INTEGER; cmd, title: A
 			WHILE (cmd[j] # 0X) & (cmd[j] # " ") DO title[k] := cmd[j]; INC(k); INC(j) END;
 			title[k] := 0X
 		ELSE
-			COPY(cmd, title)
+			 title := cmd
 		END
 	END GenTitle;
 
@@ -1213,10 +1213,10 @@ VAR list: Display.Frame; X, Y: INTEGER;C: Display.ConsumeMsg;
 		f.X := X; f.Y := Y;
 		f.slink := list; list := f;
 		
-		A.id := Objects.set; A.name := "Caption"; A.class := Objects.String; COPY(caption, A.s); A.res := -1;
+		A.id := Objects.set; A.name := "Caption"; A.class := Objects.String;  A.s := caption; A.res := -1;
 		f.handle(f, A);
 		
-		A.id := Objects.set; A.name := "Cmd"; A.class := Objects.String; COPY(command, A.s); A.res := -1;
+		A.id := Objects.set; A.name := "Cmd"; A.class := Objects.String;  A.s := command; A.res := -1;
 		f.handle(f, A);
 		
 		A.id := Objects.set; A.name := "Popout"; A.class := Objects.Bool; A.b := TRUE; A.res := -1;
@@ -1285,7 +1285,7 @@ BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Attributes.Scan(S);
 	IF (S.class = Attributes.Name) OR (S.class = Attributes.String) THEN
-		COPY(S.s, filename); f := Files.Old(filename);
+		 filename := S.s; f := Files.Old(filename);
 		v := NIL;
 		IF f = NIL THEN
 			obj := Gadgets.CreateObject("PanelDocs.NewDoc");
@@ -1312,7 +1312,7 @@ BEGIN
 			
 			AddStandardThings(F);
 			INCL(doc.state, 30); (* allow document consumption *)
-			main := F; COPY(S.s, doc.name);
+			main := F;  doc.name := S.s;
 			Documents.Init(doc, main);
 			
 			v := Views.ViewOf(doc);
@@ -1320,7 +1320,7 @@ BEGIN
 		ELSIF IsDesktop(f) THEN
 			obj := Gadgets.CreateObject("PanelDocs.NewDoc");
 			doc := obj(Documents.Document);
-			COPY(S.s, doc.name);
+			 doc.name := S.s;
 			doc.Load(doc);
 			(*doc.W := 2*Display.Width; doc.H := 2*Display.Height;*)
 			Documents.Init(doc, doc.dsc(Gadgets.Frame));
@@ -1379,7 +1379,7 @@ BEGIN
 		IF (V # NIL) & (V IS DocViewer) THEN
 			doc := ViewerDoc(V(DocViewer));
 			IF doc # NIL THEN A.id := Objects.set; A.name := "Picture"; A.class := Objects.String; A.res := -1;
-				COPY(S.s, A.s); doc.dsc.handle(doc.dsc, A); Gadgets.Update(doc);
+				 A.s := S.s; doc.dsc.handle(doc.dsc, A); Gadgets.Update(doc);
 			END
 		END
 	END
@@ -1651,9 +1651,9 @@ BEGIN
 	IF (S.class = Attributes.Char) & (S.c = "(") THEN
 		Attributes.Scan(S);
 		IF S.class = Attributes.Name THEN
-			COPY(S.s, name);
+			 name := S.s;
 			Attributes.Scan(S);
-			IF (S.class = Attributes.Char) & (S.c = ")") THEN COPY(name, s);
+			IF (S.class = Attributes.Char) & (S.c = ")") THEN  s := name;
 			END
 		END
 	END
@@ -1668,22 +1668,22 @@ BEGIN
 	Attributes.Scan(S);
 	IF (S.class = Attributes.Char) & (S.c = "(") THEN
 		Option(S, type, FALSE);
-		Gadgets.GetAlias(type, alias); IF alias # "" THEN COPY(alias, type) END;
+		Gadgets.GetAlias(type, alias); IF alias # "" THEN  type := alias END;
 		IF type # "" THEN
 			Gadgets.Execute(type, Gadgets.executorObj, Gadgets.context, NIL, NIL);
 			IF (Objects.NewObj # NIL) & (Objects.NewObj IS Documents.Document) THEN
 				d := Objects.NewObj(Documents.Document); d.name[0] := 0X; d.Load(d);
-				COPY(d.name, name);
+				 name := d.name;
 			END
 		END
 	ELSIF (S.class = Attributes.Name) OR (S.class = Attributes.String) THEN
-		COPY(S.s, name);
+		 name := S.s;
 		Option(S, type, TRUE);
-		Gadgets.GetAlias(type, alias); IF alias # "" THEN COPY(alias, type) END;
+		Gadgets.GetAlias(type, alias); IF alias # "" THEN  type := alias END;
 		IF type # "" THEN
 			Gadgets.Execute(type, Gadgets.executorObj, Gadgets.context, NIL, NIL);
 			IF (Objects.NewObj # NIL) & (Objects.NewObj IS Documents.Document) THEN
-				d := Objects.NewObj(Documents.Document); COPY(name, d.name); d.Load(d)
+				d := Objects.NewObj(Documents.Document);  d.name := name; d.Load(d)
 			END
 		ELSE
 			d := Documents.Open(name);
@@ -1892,9 +1892,9 @@ VAR S: Attributes.Scanner; M: Display.SelectMsg; obj: Objects.Object;
 	BEGIN
 		IF name = "Default" THEN
 			Oberon.OpenScanner(S, "Printer.DefaultName");
-			IF ~(S.class IN {Texts.Name, Texts.String}) THEN COPY(name, S.s) END
+			IF ~(S.class IN {Texts.Name, Texts.String}) THEN  S.s := name END
 		ELSE
-			COPY(name, S.s)
+			 S.s := name
 		END;
 		Strings.AppendCh(options, Oberon.OptionChar);
 		Strings.Append(options, D.name);
@@ -1907,11 +1907,11 @@ BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Attributes.Scan(S);
 	IF S.class IN {Attributes.Name, Attributes.String} THEN (* printer name *)
-		COPY(S.s, printer); Attributes.Scan(S);
+		 printer := S.s; Attributes.Scan(S);
 		IF (S.class = Attributes.Char) & (S.c = Oberon.OptionChar) THEN
 			Attributes.Scan(S);
 			IF (S.class # Texts.Name) & (S.class # Texts.String) THEN options := ""
-			ELSE COPY(S.s, options)
+			ELSE  options := S.s
 			END;
 			Attributes.Scan(S)
 		ELSE options := ""

@@ -112,7 +112,7 @@ END GetText;
 PROCEDURE ErrorGadgetAttr(F: ErrorGadget; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Builder.NewErrorGadget", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Builder.NewErrorGadget"; M.res := 0
 		ELSIF M.name = "LineupHY" THEN M.class := Objects.Int; M.i := ABS(Fonts.Default.minY) + 1; M.res := 0
 		ELSE Gadgets.framehandle(F, M)
 		END
@@ -164,7 +164,7 @@ BEGIN
 			Texts.Scan(s);  IF (s.class = Texts.Char) & (s.c = "}") THEN s.eot := TRUE END
 		END;
 		IF ~s.eot THEN Texts.Read(s, ch); n := 0;
-			IF warn THEN COPY("warning: ", msg);
+			IF warn THEN  msg := "warning: ";
 				WHILE msg[n] # 0X DO INC(n) END
 			END;
 			WHILE ~s.eot & (ch # 0DX) DO msg[n] := ch; INC(n); Texts.Read(s, ch) END;
@@ -387,7 +387,7 @@ PROCEDURE InsertFlag (name: ARRAY OF CHAR);
 BEGIN
 	p := Flags;
 	WHILE (p.next # NIL) & (p.next.name < name) DO p := p.next END;
-	NEW(q); COPY(name, q.name); q.next := p.next; p.next := q
+	NEW(q);  q.name := name; q.next := p.next; p.next := q
 END InsertFlag;
 
 PROCEDURE ResetFlags;
@@ -531,12 +531,12 @@ BEGIN
 			Texts.Scan(S);
 		END;
 	END;
-	WHILE S.class = Texts.Name DO COPY(S.s, source);
+	WHILE S.class = Texts.Name DO  source := S.s;
 		Texts.Scan(S);
 		IF (S.class = Texts.Char) & (S.c = "=") & (S.nextCh = ">") THEN
 			Texts.Scan(S); Texts.Scan(S);
 			IF S.class = Texts.Name THEN
-				COPY(S.s, target)
+				 target := S.s
 			ELSE
 				Texts.WriteString(W, "Error after "); Texts.WriteString(W, source); Texts.WriteLn(W);
 				Texts.Append(Oberon.Log, W.buf);
@@ -688,18 +688,18 @@ PROCEDURE Import(VAR T: Tree; M: Mod);
 VAR modname: ARRAY 64 OF CHAR; m: Mod; r: Ref;
 BEGIN
 	IF sym = ident THEN (* ident *)
-		COPY(OPS.name, modname); OPS.Get(sym);
+		 modname := OPS.name; OPS.Get(sym);
 		IF sym = becomes THEN (* := *)
 			OPS.Get(sym);
 			IF sym = ident THEN
-				COPY(OPS.name, modname); OPS.Get(sym);
+				 modname := OPS.name; OPS.Get(sym);
 			END;
 		END;
 		IF modname # "SYSTEM" THEN
 			m := T.list; (* find module in list *)
 			WHILE (m # NIL) & (m.name # modname) DO m := m.next END;
 			IF m = NIL THEN (* module not found in list *)
-				NEW(m); COPY(modname, m.name); m.next := T.list; T.list := m; (* insert in list *)
+				NEW(m);  m.name := modname; m.next := T.list; T.list := m; (* insert in list *)
 			END;	
 			r := M.impl;
 			WHILE (r # NIL) & (r.mod # m) DO r := r.next END;
@@ -721,7 +721,7 @@ END ImportList;
 PROCEDURE AddModule*(VAR T: Tree; s: ARRAY OF CHAR; opts: ARRAY OF CHAR);
 VAR M, m: Mod; t: Texts.Text; R: Texts.Reader;
 BEGIN
-	NEW(M); COPY(s, M.fname);  COPY(opts, M.opts);
+	NEW(M);  M.fname := s;   M.opts := opts;
 	NEW(t); Texts.Open(t, s);
 	IF t.len = 0 THEN Texts.WriteString(W, s); Texts.WriteString(W, " not found"); Texts.WriteLn(W);
 		Texts.Append(Oberon.Log, W.buf);
@@ -730,7 +730,7 @@ BEGIN
 		InitPreprocessor; OPS.Get(sym);	(* <- preproc *)
 		IF MatchSym(module) THEN (* module *)
 			IF sym = ident THEN (* ident *)
-				COPY(OPS.name, M.name);
+				 M.name := OPS.name;
 				OPS.Get(sym);
 				IF MatchSym(semicolon) & MatchSym(import) THEN (* ; IMPORT *)
 					m := T.list;
@@ -739,7 +739,7 @@ BEGIN
 						ImportList(T, M); M.next := T.list; T.list := M;
 					ELSE
 						IF m.fname[0] = 0X THEN (* already in list but has no file name *)
-							M := m; COPY(s, M.fname); COPY(opts, M.opts); ImportList(T, M);
+							M := m;  M.fname := s;  M.opts := opts; ImportList(T, M);
 						END;
 					END;
 					error := FALSE; RETURN
@@ -750,7 +750,7 @@ BEGIN
 						M.next := T.list; T.list := M
 					ELSE
 						IF m.fname[0] = 0X THEN (* already in list but has no file name *)
-							M := m; COPY(s, M.fname); COPY(opts, M.opts); (* ImportList(T, M); *)
+							M := m;  M.fname := s;  M.opts := opts; (* ImportList(T, M); *)
 						END
 					END;
 					error := FALSE; RETURN
@@ -841,7 +841,7 @@ BEGIN
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Attributes.Scan(S);
 	WHILE S.class = Attributes.Name DO
-		COPY(S.s, s);
+		 s := S.s;
 		Attributes.Scan(S); GetOptions(S, opts); AddModule(T, s, opts);
 	END;
 	Hierarchy(T);
@@ -934,7 +934,7 @@ BEGIN
 	ELSE
 		error := FALSE;
 		WHILE ~S.eot & ~error & (S.class = Attributes.Name) DO
-			COPY(S.s, s); Attributes.Scan(S); GetOptions(S, opts);
+			 s := S.s; Attributes.Scan(S); GetOptions(S, opts);
 			AddModule(T, s, opts)
 		END;
 		IF ~error THEN
@@ -945,7 +945,7 @@ BEGIN
 					NEW(text); Texts.Open(text, m.fname);
 					Texts.OpenReader(R, text, 0);
 					InitPreprocessor;
-					COPY(options, opts); Strings.Append(opts, m.opts);
+					 opts := options; Strings.Append(opts, m.opts);
 					Compiler.Module(R, opts, MAX(LONGINT), Oberon.Log, error);
 				END;
 				m := m.next

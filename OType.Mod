@@ -529,7 +529,7 @@ MODULE OType;	(** eos   **)
 	PROCEDURE Open* (name: ARRAY OF CHAR): Font;
 		VAR fname, ext: ARRAY 64 OF CHAR; obj: CacheObj; file: Files.File; r: Files.Rider; version: LONGINT; font: Font;
 	BEGIN
-		COPY(name, fname);
+		 fname := name;
 		Strings.GetSuffix(name, ext);
 		IF ext[0] = 0X THEN
 			Strings.Append(fname, ".TTF")
@@ -549,13 +549,13 @@ MODULE OType;	(** eos   **)
 		(* try to open font file *)
 		file := Files.Old(fname);
 		IF (file = NIL) & (ext[0] = 0X) THEN	(* try extension '.OTF' if none was specified *)
-			COPY(name, fname); Strings.Append(fname, ".OTF");
+			 fname := name; Strings.Append(fname, ".OTF");
 			file := Files.Old(fname)
 		END;
 		IF file # NIL THEN
 			Files.Set(r, file, 0); ReadLInt(r, version);
 			IF version = 10000H THEN	(* 'OTTO' (including CFF outlines) not supported *)
-				NEW(font); COPY(name, font.name); font.file := file;
+				NEW(font);  font.name := name; font.file := file;
 				IF LoadFont(font) THEN
 					Append(FontCache, font);
 					InitCache(font.inst);

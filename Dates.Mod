@@ -202,7 +202,7 @@ BEGIN
 	Oberon.OpenScanner(S, "System.TimeDiff");
 	TimeDiff := 0;
 	IF S.class = Texts.String THEN
-		COPY(S.s, diff);
+		 diff := S.s;
 		i := 0; j := 1;
 		IF diff[i] = "+" THEN
 			INC(i)

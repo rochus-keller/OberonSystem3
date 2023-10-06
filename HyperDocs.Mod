@@ -202,7 +202,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 			IF S.class IN {Texts.Name, Texts.String} THEN
 				obj := Gadgets.CreateObject(S.s);
 				IF (obj # NIL) & (obj IS LinkScheme) THEN
-					l := obj(LinkScheme); COPY(prefix, l.prefix);
+					l := obj(LinkScheme);  l.prefix := prefix;
 					l.next := linkSchemes; linkSchemes := l
 				END
 			END
@@ -321,7 +321,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 		END;
 		IF s # NIL THEN
 			R.key := UndefKey; R.res := -1; R.base := base;
-			COPY(link, R.link);
+			 R.link := link;
 			s.handle(s, R);
 			RETURN R.key
 		ELSE
@@ -333,7 +333,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 	PROCEDURE TempDocName*(prefix: ARRAY OF CHAR; VAR name: ARRAY OF CHAR; VAR key: LONGINT);
 		VAR noStr: ARRAY 8 OF CHAR;
 	BEGIN
-		COPY(prefix, name); Strings.IntToStr(curKey+1, noStr); Strings.Append(name, noStr);
+		 name := prefix; Strings.IntToStr(curKey+1, noStr); Strings.Append(name, noStr);
 		Strings.Append(name, ".Temp"); key := BuildKey(NIL, name) (* key = noStr *)
 	END TempDocName;
 
@@ -359,7 +359,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 			END;
 			link[i] := 0X
 		ELSE
-			COPY("", link)
+			 link := ""
 		END
 	END RetrieveLink;
 
@@ -443,7 +443,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 				WITH M: Objects.AttrMsg DO
 					IF M.id = Objects.get THEN
 						IF M.name = "Prefix" THEN
-							M.class := Objects.String; COPY(L.prefix, M.s); M.res := 0
+							M.class := Objects.String;  M.s := L.prefix; M.res := 0
 						ELSE
 							Gadgets.objecthandle(L, M)
 						END
@@ -591,12 +591,12 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 	BEGIN
 		s := LinkSchemeByKey(key);
 		IF s # NIL THEN
-			COPY(s.prefix, name);
+			 name := s.prefix;
 			Strings.AppendCh(name, ":");
 			Strings.IntToStr(key, str);
 			Strings.Append(name, str)
 		ELSE
-			COPY("", name)
+			 name := ""
 		END
 	END DocNameByKey;
 
@@ -1034,9 +1034,9 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 				label[j] := 0X; DEC(j)
 			END
 		ELSE
-			COPY("", label)
+			 label := ""
 		END;
-		COPY("file:", url);
+		 url := "file:";
 		IF path # "" THEN
 			IF path[0] = "/" THEN
 				Strings.AppendCh(url, "/")
@@ -1061,7 +1061,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 			END;
 			INC(i)
 		END;
-		COPY(path, dpath);
+		 dpath := path;
 		IF lslash >= 0 THEN
 			dpath[lslash+1] := 0X
 		ELSIF slash > 0 THEN

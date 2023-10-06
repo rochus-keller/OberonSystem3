@@ -140,12 +140,12 @@ MODULE BookDocs;	(** portable *)
 			Gadgets.NameObj(obj, name);
 			obj.X := X; obj.Y := Y;
 			obj.W := Books.buttonW; obj.H := Books.buttonH;
-			COPY(caption, obj.caption);
+			 obj.caption := caption;
 			obj.popout := TRUE;
 			obj.val := FALSE;
 			A.id := Objects.set;
 			A.name := "Cmd";
-			COPY(cmdStr, A.s);
+			 A.s := cmdStr;
 			A.class := Objects.String;
 			A.res := -1;
 			obj.handle(obj, A);
@@ -453,7 +453,7 @@ MODULE BookDocs;	(** portable *)
 	BEGIN
 		IF ~new THEN
 			E.F := NIL;
-			COPY(il.name, E.name);
+			 E.name := il.name;
 			E.il := NIL;
 			E.res := -1;
 			Display.Broadcast(E);
@@ -506,9 +506,9 @@ MODULE BookDocs;	(** portable *)
 		Texts.Scan(S);
 		Texts.Scan(S);
 		IF S.class = Texts.Name THEN
-			COPY(S.s, open)
+			 open := S.s
 		ELSE
-			COPY("", open)
+			 open := ""
 		END
 	END GetOpenLabel;
 	
@@ -522,7 +522,7 @@ MODULE BookDocs;	(** portable *)
 			NEW(il);
 			il.next := NIL;
 			il.extLabels := NIL;
-			COPY(D.name, il.name);
+			 il.name := D.name;
 			IF ~Import(il, FALSE) THEN
 				HALT(99)
 			END;
@@ -576,7 +576,7 @@ MODULE BookDocs;	(** portable *)
 		Files.ReadSet(R, P.options);
 		Files.ReadString(R, P.iconStr);
 		IF Gadgets.FindPublicObj(P.iconStr) = NIL THEN
-			COPY(defaultIcon, P.iconStr)
+			 P.iconStr := defaultIcon
 		END;
 		Files.ReadLInt(R, len);
 		Files.ReadLInt(R, len);
@@ -591,7 +591,7 @@ MODULE BookDocs;	(** portable *)
 			il.extLabels := NIL;
 			il.ind := ind;
 			INC(ind);
-			COPY(name, il.name);
+			 il.name := name;
 			IF ~Import(il, FALSE) THEN
 				Texts.WriteString(Wr, "requires: ");
 				Texts.WriteString(Wr, name);
@@ -607,7 +607,7 @@ MODULE BookDocs;	(** portable *)
 		il.extLabels := NIL;
 		il.ind := ind;
 		INC(ind);
-		COPY(D.name, il.name);
+		 il.name := D.name;
 		IF ~Import(il, FALSE) THEN
 			HALT(99)
 		END;
@@ -671,7 +671,7 @@ MODULE BookDocs;	(** portable *)
 			T: Books.TGFrame;
 	BEGIN
 		M.F := NIL;
-		COPY(D.name, M.name);
+		 M.name := D.name;
 		M.res := -1;
 		Display.Broadcast(M);
 		IF (M.res >= 0) & (M.F # NIL) THEN
@@ -1368,7 +1368,7 @@ MODULE BookDocs;	(** portable *)
 						ELSIF M.name = "Icon" THEN
 							M.class := Objects.String;
 							IF Books.icon IN P.options THEN
-								COPY(D.dsc(Books.Panel).iconStr, M.s)
+								 M.s := D.dsc(Books.Panel).iconStr
 							ELSE
 								M.s := defaultIcon
 							END;
@@ -1626,7 +1626,7 @@ MODULE BookDocs;	(** portable *)
 		NEW(il);
 		il.next := NIL;
 		il.extLabels := NIL;
-		COPY(P.doc.name, il.name);
+		 il.name := P.doc.name;
 		IF Import(il, FALSE) THEN
 			el := il.extLabels;
 			WHILE (el # NIL) & (el.name # S.s) DO
@@ -1885,7 +1885,7 @@ MODULE BookDocs;	(** portable *)
 		BEGIN
 			obj := Gadgets.FindObj(Gadgets.context, name);
 			IF (obj # NIL) & (obj IS TextFields.TextField) THEN
-				COPY(obj(TextFields.TextField).val, text)
+				 text := obj(TextFields.TextField).val
 			ELSE
 				text[0] := 0X
 			END
@@ -1927,7 +1927,7 @@ MODULE BookDocs;	(** portable *)
 				Objects.Stamp(A);
 				M.obj.handle(M.obj, A);
 				IF A.res >= 0 THEN
-					COPY(A.s, obj(TextFields.TextField).val);
+					obj(TextFields.TextField).val := A.s;
 					Gadgets.Update(obj)
 				END
 			END
@@ -1998,7 +1998,7 @@ MODULE BookDocs;	(** portable *)
 						CalcDispVec(time)
 					END
 				ELSE
-					COPY(Text, sPat);
+					 sPat := Text;
 					sPatLen := StrLen(sPat);
 					CalcDispVec(Oberon.Time())
 				END;
@@ -2169,14 +2169,14 @@ MODULE BookDocs;	(** portable *)
 			Texts.Scan(S)
 		END;
 		IF S.class = Texts.Name THEN
-			COPY(S.s, fname)
+			 fname := S.s
 		ELSE
 			RETURN
 		END;
 		pos1 := -1; pos2 := -1;
 		Texts.Scan(S);
 		IF S.class = Texts.Name THEN
-			COPY(S.s, lname1)
+			 lname1 := S.s
 		ELSIF S.class = Texts.Int THEN
 			pos1 := S.i
 		ELSE
@@ -2184,14 +2184,14 @@ MODULE BookDocs;	(** portable *)
 		END;
 		Texts.Scan(S);
 		IF S.class = Texts.Name THEN
-			COPY(S.s, lname2)
+			 lname2 := S.s
 		ELSIF S.class = Texts.Int THEN
 			pos2 := S.i
 		ELSE
 			RETURN
 		END;
 		IF (pos1 = -1) & (pos2 = -1) THEN
-			NEW(il); COPY(P.doc.name, il.name); il.extLabels := NIL;
+			NEW(il);  il.name := P.doc.name; il.extLabels := NIL;
 			IF Import(il, TRUE) THEN
 				ind := Books.GetInd(P, P.cur);
 				el := il.extLabels;

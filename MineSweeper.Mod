@@ -438,7 +438,7 @@ PROCEDURE FieldAttr(F: Field; VAR M: Objects.AttrMsg);
 VAR i: LONGINT;
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class:= Objects.String; COPY("MineSweeper.NewField", M.s); M.res:= 0
+		IF M.name = "Gen" THEN M.class:= Objects.String;  M.s := "MineSweeper.NewField"; M.res:= 0
 		ELSIF M.name = "Width" THEN M.class:= Objects.Int; M.i:= F.W;  M.res:= 0
 		ELSIF M.name = "Height" THEN M.class:= Objects.Int; M.i:= F.H;  M.res:= 0
 		ELSIF M.name = "Mines" THEN M.class:= Objects.Int; M.i:= F.mines;  M.res:= 0
@@ -873,7 +873,7 @@ PROCEDURE FrameAttr(F: Frame; VAR M: Objects.AttrMsg);
 (* handles Objects.AttrMsg. Each object has to set at least the Gen attribute *)
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class:= Objects.String; COPY("MineSweeper.NewView", M.s); M.res:= 0
+		IF M.name = "Gen" THEN M.class:= Objects.String;  M.s := "MineSweeper.NewView"; M.res:= 0
 		ELSE Gadgets.framehandle(F, M)
 		END
 	ELSIF M.id = Objects.set THEN
@@ -1022,7 +1022,7 @@ PROCEDURE PanelAttr(F: MinePanel; VAR M: Objects.AttrMsg);
 (* handles Objects.AttrMsg. Each object has to set at least the Gen attribute *)
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class:= Objects.String; COPY("MineSweeper.NewPanel", M.s); M.res:= 0
+		IF M.name = "Gen" THEN M.class:= Objects.String;  M.s := "MineSweeper.NewPanel"; M.res:= 0
 		ELSE Panels.PanelHandler(F, M)
 		END
 	ELSIF M.id = Objects.set THEN
@@ -1105,13 +1105,13 @@ BEGIN
 		A.id:= Objects.set; 
 		A.name:= "Min"; A.class:= Objects.Int; A.i:= min; A.res:= -1; s.handle(s, A);
 		A.name:= "Max"; A.class:= Objects.Int; A.i:= max; A.res:= -1; s.handle(s, A);
-		A.name:= "Field"; A.class:= Objects.String; COPY(name, A.s); A.res:= -1; s.handle(s, A);
+		A.name:= "Field"; A.class:= Objects.String;  A.s := name; A.res:= -1; s.handle(s, A);
 
 		(* init the text gadget *)
 		t.W:= s.W; t.H:= 17; t.obj:= model;
-		A.name:= "Field"; A.class:= Objects.String; COPY(name, A.s); A.res:= -1; t.handle(t, A);
+		A.name:= "Field"; A.class:= Objects.String;  A.s := name; A.res:= -1; t.handle(t, A);
 		(* make sure A.id is set to Objects.String, when setting the text gadget's Value attribute *)
-		A.id:= Objects.get; COPY(name, A.name); A.class:= Objects.Int; A.res:= -1; model.handle(model, A);
+		A.id:= Objects.get;  A.name := name; A.class:= Objects.Int; A.res:= -1; model.handle(model, A);
 		A.id:= Objects.set; A.name:= "Value"; A.class:= Objects.Int; A.res:= -1; s.handle(s, A);
 		A.class:= Objects.String; Strings.IntToStr(A.i, A.s); A.res:= -1; t.handle(t, A);
 
@@ -1142,10 +1142,10 @@ BEGIN
 	(* init button gadget *)
 	b(Gadgets.Frame).W:= 35; b(Gadgets.Frame).H:= 25; b(Gadgets.Frame).obj:= model;
 	A.id:= Objects.set;
-	A.name:= "Caption"; A.class:= Objects.String; COPY(capt, A.s); A.res:= -1; b.handle(b, A);
+	A.name:= "Caption"; A.class:= Objects.String;  A.s := capt; A.res:= -1; b.handle(b, A);
 	(* if model is not NIL ,cmd holds not a command string, but the model's attribute name the button has to represent *)
 	IF model = NIL THEN A.name:= "Cmd" ELSE A.name:= "Field" END;
-	A.class:= Objects.String; COPY(cmd, A.s); A.res:= -1; b.handle(b, A);
+	A.class:= Objects.String;  A.s := cmd; A.res:= -1; b.handle(b, A);
 	A.name:= "Popout"; A.class:= Objects.Bool; A.b:= popout; A.res:= -1; b.handle(b, A);
 
 	(* insert button into the panel *)

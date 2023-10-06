@@ -384,7 +384,7 @@ PROCEDURE PanelAttr(F: Panel; VAR M: Objects.AttrMsg);
 VAR f: Files.File;
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Panels.NewPanel", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Panels.NewPanel"; M.res := 0
 		ELSIF M.name = "LineupHY" THEN M.class := Objects.Int; M.i := F.H - Fonts.Default.height; M.res := 0
 		ELSIF M.name = "Locked" THEN M.class := Objects.Bool; M.b := frozen IN F.state0; M.res := 0
 		ELSIF M.name = "Color" THEN M.class := Objects.Int; M.i := F.col; M.res := 0

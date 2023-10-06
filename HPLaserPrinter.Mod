@@ -123,7 +123,7 @@ BEGIN
 	i := 0;  WHILE (i < nofonts) & (font[i].name # name) DO INC(i) END;
 	IF i = nofonts THEN
 		IF nofonts < maxfonts THEN
-			COPY(name, font[i].name);
+			 font[i].name := name;
 			INC(nofonts);
 			inserted := TRUE
 		ELSE
@@ -429,7 +429,7 @@ BEGIN
 	ToPr3Font(name, pitch);	(* convert name to Printer file name *)
 	
 	IF (Files.Old(name) = NIL) THEN	(* no such file *)
-		COPY("Oberon10.Pr3.Fnt", name)	(* default printer font *);
+		 name := "Oberon10.Pr3.Fnt"	(* default printer font *);
 	END;
 	LookupFont(name,fntno,inserted);	(* lookup in own font table *)
 	IF inserted THEN	(* if new font then init*)
@@ -906,7 +906,7 @@ END Close;
 PROCEDURE GetMetric* (P: Printer.Printer;  fnt: Fonts.Font): Fonts.Font;
 VAR name: ARRAY 32 OF CHAR;  i: INTEGER;  metric: Fonts.Font;
 BEGIN
-	COPY(fnt.name, name);
+	 name := fnt.name;
 	i := 0;  WHILE (name[i] # ".") & (name[i] # 0X) DO INC(i) END;
 	(* look for Mdx *)
 	name[i] := "."; name[i+1] := "M"; name[i+2] := "d"; name[i+3] := "3";

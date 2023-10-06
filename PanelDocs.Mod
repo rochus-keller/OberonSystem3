@@ -129,7 +129,7 @@ BEGIN
 			
 			f := Files.New(D.name); IF f = NIL THEN HALT(99) END;
 			
-			COPY(D.name, new); i := 0; WHILE new[i] # 0X DO INC(i) END;
+			 new := D.name; i := 0; WHILE new[i] # 0X DO INC(i) END;
 			new[i] := "."; new[i+1] := "B"; new[i+2] := "a"; new[i+3] := "k"; new[i+4] := 0X;
 			Files.Rename(D.name, new, i); (* rename file *)
 			

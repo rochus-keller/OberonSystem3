@@ -272,7 +272,7 @@ PROCEDURE HandleAttributes (F: CalcModel; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
 		IF M.name = "Gen" THEN
-			M.class := Objects.String; COPY("HPCalc.NewModel", M.s); M.res := 0
+			M.class := Objects.String;  M.s := "HPCalc.NewModel"; M.res := 0
 		ELSIF M.name = "Mode" THEN
 			M.class := Objects.Int; M.i := F.Mode; M.res := 0;
 		ELSIF M.name = "Base" THEN
@@ -636,7 +636,7 @@ BEGIN
 	IF M IS Objects.AttrMsg THEN
 		IF M(Objects.AttrMsg).id = Objects.get THEN
 			IF M(Objects.AttrMsg).name = "Gen" THEN
-				WITH M: Objects.AttrMsg DO M.class := Objects.String; COPY("HPCalc.NewLockedTF", M.s); M.res := 0
+				WITH M: Objects.AttrMsg DO M.class := Objects.String;  M.s := "HPCalc.NewLockedTF"; M.res := 0
 				END
 			ELSE TextFields.TextFieldHandler (F, M)
 			END

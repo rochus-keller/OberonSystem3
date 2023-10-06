@@ -201,16 +201,16 @@ MODULE HTTPDocs;	(** portable *) (* ejz,   *)
 					ELSIF name = "DOMAIN" THEN
 						GetValue(C.domain); d := TRUE
 					ELSE
-						COPY(name, C.name); GetValue(C.val)
+						 C.name := name; GetValue(C.val)
 					END
 				END
 			END;
 			IF (C # NIL) & (C.name # "") THEN
 				IF ~p THEN
-					COPY(path, C.path)
+					 C.path := path
 				END;
 				IF ~d THEN
-					COPY(host, C.domain)
+					 C.domain := host
 				END;
 				IF ~e THEN
 				
@@ -220,9 +220,9 @@ MODULE HTTPDocs;	(** portable *) (* ejz,   *)
 					c := c.next
 				END;
 				IF c # NIL THEN
-					COPY(C.name, c.name);
-					COPY(C.domain, c.domain);
-					COPY(C.val, c.val);
+					 c.name := C.name;
+					 c.domain := C.domain;
+					 c.val := C.val;
 					c.d := C.d; c.t := C.t
 				ELSE
 					C.next := cookies; cookies := C
@@ -323,15 +323,15 @@ END ListCookies;
 			aut := GetAuthorization(host, path, port);
 			IF (aut = NIL) & (HyperDocs.context # NIL) & (HyperDocs.context IS HTTPDocs0.Context) & (HyperDocs.context(HTTPDocs0.Context).user # "") THEN
 				NEW(aut);
-				COPY(host, aut.host); aut.port := port; COPY(path, aut.path);
-				COPY(HyperDocs.context(HTTPDocs0.Context).user, label);
+				 aut.host := host; aut.port := port;  aut.path := path;
+				 label := HyperDocs.context(HTTPDocs0.Context).user;
 				Strings.AppendCh(label, ":");
 				Strings.Append(label, HyperDocs.context(HTTPDocs0.Context).passwd);
 				EncBase64(label, aut.coded);
 				HyperDocs.context(HTTPDocs0.Context).user := "";
 				aut.next := authorizations; authorizations := aut
 			END;
-			COPY(path, buf);
+			 buf := path;
 			HyperDocs.ESC(buf, 0X);
 			IF log THEN
 				Texts.WriteString(W, buf)
@@ -414,7 +414,7 @@ END ListCookies;
 	BEGIN
 		NEW(base); HyperDocs.RetrieveLink(key, buf);
 		key := HTTPDocs0.SplitHTTPAdr(buf, base.host, base.path, base.label, base.port);
-		status := 0; COPY("", location);
+		status := 0;  location := "";
 		NEW(cont); cont.typ := MIME.GetContentType("text/plain"); cont.encoding := MIME.EncBin; cont.len := 0;
 		time := Input.Time() + NetTools.TimeOut;
 		REPEAT
@@ -562,7 +562,7 @@ END ListCookies;
 							Texts.Append(Oberon.Log, W.buf)
 						END;
 						NetTools.Disconnect(C);
-						key := key2; query := NIL; COPY("GET", method);
+						key := key2; query := NIL;  method := "GET";
 						status := Connect(C, proxy, main, waitR, FALSE, block, method, key, cont, query, log, useProxy)
 					END
 				END
@@ -655,7 +655,7 @@ END ListCookies;
 			ELSIF M IS NetTools.ProxyMsg THEN
 				WITH M: NetTools.ProxyMsg DO
 					NEW(proxy);
-					COPY(M.host, proxy.host); proxy.port := M.port;
+					 proxy.host := M.host; proxy.port := M.port;
 					OpenHTTPDoc(M.D, M.key, proxy)
 				END
 			ELSIF M IS Objects.AttrMsg THEN

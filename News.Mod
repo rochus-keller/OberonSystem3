@@ -169,7 +169,7 @@ MODULE News; (** portable *)	(* ejz,   *)
 				group.subscribed := TRUE
 			END;
 			IF S.class IN {Texts.Name, Texts.String} THEN
-				COPY(S.s, group.name);
+				 group.name := S.s;
 				i := 0;
 				WHILE group.name[i] # 0X DO
 					INC(i)
@@ -360,7 +360,7 @@ MODULE News; (** portable *)	(* ejz,   *)
 		END;
 		IF (group = NIL) & new THEN
 			NEW(group);
-			COPY(name, group.name);
+			 group.name := name;
 			group.subscribed := FALSE;
 			group.readArtNrs := NIL;
 			group.next := groups;
@@ -435,7 +435,7 @@ MODULE News; (** portable *)	(* ejz,   *)
 	PROCEDURE RegisterNewsAdr(host, group: ARRAY OF CHAR): LONGINT;
 		VAR key: LONGINT;
 	BEGIN
-		COPY("news:", line);
+		 line := "news:";
 		Strings.Append(line, group);
 		IF host # "" THEN
 			Strings.AppendCh(line, "@");
@@ -558,7 +558,7 @@ MODULE News; (** portable *)	(* ejz,   *)
 			str: ARRAY 12 OF CHAR;
 			key: LONGINT;
 	BEGIN
-		COPY("nntp:", line);
+		 line := "nntp:";
 		Strings.Append(line, group);
 		Strings.AppendCh(line, "/");
 		Strings.IntToStr(artnr, str);
@@ -987,7 +987,7 @@ MODULE News; (** portable *)	(* ejz,   *)
 			text: Texts.Text;
 			ch: CHAR;
 	BEGIN
-		COPY("", name);
+		 name := "";
 		Texts.OpenReader(R, Oberon.Par.text, Oberon.Par.pos);
 		Texts.Read(R, ch);
 		WHILE ~R.eot & (ch <= " ") DO
@@ -1205,7 +1205,7 @@ MODULE News; (** portable *)	(* ejz,   *)
 				DEC(j)
 			END
 		ELSE
-			COPY("", host)
+			 host := ""
 		END;
 		key := RegisterNewsAdr(host, groupart);
 		RETURN key
@@ -1334,7 +1334,7 @@ MODULE News; (** portable *)	(* ejz,   *)
 				Texts.WriteLn(W);
 				Texts.Append(T, W.buf)
 			END;
-			COPY("Subscribed Groups", D.name)
+			 D.name := "Subscribed Groups"
 		ELSIF D.name = "newgroups" THEN
 			IF Connect(S) THEN
 				date := newgDate; time := newgTime;
@@ -1351,13 +1351,13 @@ MODULE News; (** portable *)	(* ejz,   *)
 					Texts.WriteDate(W, time, date); Texts.WriteLn(W);
 					Texts.WriteLn(W); Texts.Insert(T, 0, W.buf)
 				END;
-				COPY("New Groups", D.name);
+				 D.name := "New Groups";
 				Close(S)
 			END
 		ELSIF D.name = "news:" THEN
 			IF Connect(S) THEN
 				TextDocs.InitDoc(D);
-				COPY("All Groups", D.name);
+				 D.name := "All Groups";
 				AllGroups(S, T);
 				Close(S)
 			END
@@ -1367,10 +1367,10 @@ MODULE News; (** portable *)	(* ejz,   *)
 					TextDocs.InitDoc(D);
 					curGrpNewOnly := FALSE;
 					IF group = "" THEN
-						COPY("All Groups", D.name);
+						 D.name := "All Groups";
 						AllGroups(S, T)
 					ELSIF host = "" THEN
-						COPY(group, D.name);
+						 D.name := group;
 						Articles(S, group, T, NetTools.QueryBool("NewsThreading"))
 					ELSE
 						(* news:<group>@<number[-<number>][\n] *)
@@ -1385,10 +1385,10 @@ MODULE News; (** portable *)	(* ejz,   *)
 							curGrpNewOnly :=  (host[sPos] = "\" ) & (host[sPos+1] = "n" );  (* look for option \n *)
 							ArticleRange(S, group, T, NetTools.QueryBool("NewsThreading"), artnr, artnr1)
 						ELSE (* a real host *)
-							COPY(group, msgid);
+							 msgid := group;
 							Strings.AppendCh(msgid, "@");
 							Strings.Append(msgid, host);
-							COPY(msgid, D.name);
+							 D.name := msgid;
 							ArticleByMsgId(S, msgid, T);
 							article := TRUE
 						END
@@ -1401,7 +1401,7 @@ MODULE News; (** portable *)	(* ejz,   *)
 				IF Connect(S) THEN
 					TextDocs.InitDoc(D);
 					ArticleByNr(S, group, artnr, T);
-					COPY(group, D.name);
+					 D.name := group;
 					Strings.AppendCh(D.name, ".");
 					Strings.IntToStr(artnr, msgid);
 					Strings.Append(D.name, msgid);

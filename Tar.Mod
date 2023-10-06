@@ -147,7 +147,7 @@ END DocHandler;
 PROCEDURE Load(D: Documents.Document);
 VAR name: ARRAY 64 OF CHAR; F: Frame; T: Texts.Text;
 BEGIN
-	COPY(D.name, name);
+	 name := D.name;
 	
 	NEW(F);
 	ReadEntries (name, F.file, F.entries);
@@ -159,7 +159,7 @@ BEGIN
 		NEW(T); Texts.Open(T, "");
 		TextGadgets.Init(F, T , FALSE);	(* create content *)
 		DisplayEntries (F.text, F.entries);
-		COPY(name, D.name);
+		 D.name := name;
 		Documents.Init(D, F)
 	END
 END Load;

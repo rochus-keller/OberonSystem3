@@ -3063,7 +3063,7 @@ VAR  res, dummy, dw, idx, bus, dev, slot, DevID, VenID, i: LONGINT;  host: Host;
 (*Kernel.WriteString("AIC7xxx: found "); Kernel.WriteString(name); Kernel.WriteLn;*)
 		NEW(pcidev);
 		pcidev.flags := flags;  pcidev.features := features;
-		COPY(name, pcidev.name);  pcidev.submit := Execute;
+		 pcidev.name := name;  pcidev.submit := Execute;
 		pcidev.chip := chip;
 		pcidev.pause := {INTEN, PAUSE}; pcidev.unpause := {INTEN};
 		pcidev.epromSize := EpromSize;  pcidev.epromType := EpromType;

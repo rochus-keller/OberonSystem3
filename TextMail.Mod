@@ -274,7 +274,7 @@ MODULE TextMail;	(** portable *)	(*RS/ARD/JG, 12.10.97*)
 	PROCEDURE Directory*;
 	VAR S: Texts.Scanner;
 	BEGIN OpenScanner(TRUE, S);
-		IF S.class = Texts.Name THEN COPY(S.s, host); directory
+		IF S.class = Texts.Name THEN  host := S.s; directory
 		ELSE String("mail host missing"); Ln
         END
 	END Directory;
@@ -331,7 +331,7 @@ MODULE TextMail;	(** portable *)	(*RS/ARD/JG, 12.10.97*)
 	PROCEDURE Delete*;
 	VAR S: Texts.Scanner;
 	BEGIN OpenScanner(TRUE, S);
-		IF S.class = Texts.Name THEN COPY(S.s, host); delete
+		IF S.class = Texts.Name THEN  host := S.s; delete
 		ELSE String("mail host missing"); Ln
         END
 	END Delete;
@@ -356,7 +356,7 @@ MODULE TextMail;	(** portable *)	(*RS/ARD/JG, 12.10.97*)
 	PROCEDURE DeleteAll*;
 	VAR S: Texts.Scanner;
 	BEGIN OpenScanner(TRUE, S);
-		IF S.class = Texts.Name THEN COPY(S.s, host); deleteAll
+		IF S.class = Texts.Name THEN  host := S.s; deleteAll
 		ELSE String("mail host missing"); Ln
 		END
 	END DeleteAll;
@@ -388,7 +388,7 @@ MODULE TextMail;	(** portable *)	(*RS/ARD/JG, 12.10.97*)
 	PROCEDURE Show*;
 	VAR S: Texts.Scanner;
 	BEGIN OpenScanner(TRUE, S);
-		IF S.class = Texts.Name THEN COPY(S.s, host); show
+		IF S.class = Texts.Name THEN  host := S.s; show
 		ELSE String("mail host missing"); Ln
         END
 	END Show;
@@ -422,7 +422,7 @@ MODULE TextMail;	(** portable *)	(*RS/ARD/JG, 12.10.97*)
 	VAR S: Texts.Scanner;
 	BEGIN
          OpenScanner(TRUE, S);
-	  	IF S.class = Texts.Name THEN COPY(S.s, host); getAll
+	  	IF S.class = Texts.Name THEN  host := S.s; getAll
 		  ELSE String("mail host missing"); Ln
 		  END
 	END GetAll;
@@ -458,7 +458,7 @@ MODULE TextMail;	(** portable *)	(*RS/ARD/JG, 12.10.97*)
       par := Oberon.Par; 
       Texts.OpenScanner(S, par.text, par.pos); Texts.Scan(S);
       IF S.class = Texts.Name THEN
-        COPY(S.s, name); this := Files.Old(S.s);
+         name := S.s; this := Files.Old(S.s);
         IF this # NIL THEN Texts.Scan(S);
           IF (S.class = Texts.Char) & (S.c = "^") THEN
             Oberon.GetSelection(T, beg, end, time);
@@ -647,7 +647,7 @@ MODULE TextMail;	(** portable *)	(*RS/ARD/JG, 12.10.97*)
 	PROCEDURE Send*;
 	VAR S: Texts.Scanner;
 	BEGIN OpenScanner(FALSE, S);
-		IF S.class = Texts.Name THEN COPY(S.s, host); send
+		IF S.class = Texts.Name THEN  host := S.s; send
 		ELSE String("mail host missing"); Ln
         END
 	END Send;

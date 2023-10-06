@@ -142,7 +142,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF M.id = Objects.get THEN
-					IF M.name = "Gen" THEN COPY("BasicGadgets.NewBoolean", M.s); M.class := Objects.String; M.res := 0
+					IF M.name = "Gen" THEN  M.s := "BasicGadgets.NewBoolean"; M.class := Objects.String; M.res := 0
 					ELSIF M.name = "Value" THEN M.b := obj.val; M.class := Objects.Bool; M.res := 0
 					ELSE Gadgets.objecthandle(obj, M)
 					END
@@ -196,7 +196,7 @@ BEGIN NEW(obj); InitBoolean(obj); Objects.NewObj := obj;
 END NewBoolean;
 
 PROCEDURE CopyString*(VAR M: Objects.CopyMsg; from, to: String);
-BEGIN Gadgets.CopyObject(M, from, to); COPY(from.val, to.val); 
+BEGIN Gadgets.CopyObject(M, from, to);  to.val := from.val; 
 END CopyString;
 
 PROCEDURE StringHandler*(obj: Objects.Object; VAR M: Objects.ObjMsg);
@@ -206,13 +206,13 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF M.id = Objects.get THEN
-					IF M.name = "Gen" THEN COPY("BasicGadgets.NewString", M.s); M.class := Objects.String; M.res := 0
-					ELSIF M.name = "Value" THEN COPY(obj.val, M.s); M.class := Objects.String; M.res := 0
+					IF M.name = "Gen" THEN  M.s := "BasicGadgets.NewString"; M.class := Objects.String; M.res := 0
+					ELSIF M.name = "Value" THEN  M.s := obj.val; M.class := Objects.String; M.res := 0
 					ELSE Gadgets.objecthandle(obj, M)
 					END
 				ELSIF M.id = Objects.set THEN
 					IF M.name = "Value" THEN
-						IF M.class = Objects.String THEN COPY(M.s,  obj.val); M.res := 0
+						IF M.class = Objects.String THEN   obj.val := M.s; M.res := 0
 						ELSIF M.class = Objects.Int THEN Strings.IntToStr(M.i, obj.val); M.res := 0
 						ELSIF M.class = Objects.Real THEN Strings.RealToStr(M.x, obj.val); M.res := 0
 						ELSIF M.class = Objects.LongReal THEN Strings.RealToStr(M.y, obj.val); M.res := 0
@@ -254,7 +254,7 @@ BEGIN
 END StringHandler;
 
 PROCEDURE InitString*(obj: String);
-BEGIN obj.handle := StringHandler; COPY("", obj.val)
+BEGIN obj.handle := StringHandler;  obj.val := ""
 END InitString;
 
 PROCEDURE NewString*;
@@ -273,7 +273,7 @@ BEGIN
 		IF M IS  Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF M.id = Objects.get THEN
-					IF M.name = "Gen" THEN COPY("BasicGadgets.NewInteger", M.s); M.class := Objects.String; M.res := 0
+					IF M.name = "Gen" THEN  M.s := "BasicGadgets.NewInteger"; M.class := Objects.String; M.res := 0
 					ELSIF M.name = "Value" THEN M.i := obj.val; M.class := Objects.Int; M.res := 0
 					ELSE Gadgets.objecthandle(obj, M)
 					END
@@ -342,7 +342,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF M.id = Objects.get THEN
-					IF M.name = "Gen" THEN COPY("BasicGadgets.NewReal", M.s); M.class := Objects.String; M.res := 0
+					IF M.name = "Gen" THEN  M.s := "BasicGadgets.NewReal"; M.class := Objects.String; M.res := 0
 					ELSIF M.name = "Value" THEN M.y := obj.val; M.class := Objects.LongReal; M.res := 0
 					ELSE Gadgets.objecthandle(obj, M)
 					END
@@ -405,8 +405,8 @@ VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.get; A.name := "Field"; A.class := Objects.Inval; A.s := "";
 	F.handle(F, A);
-	IF (A.res >= 0) & (A.class = Objects.String) & (A.s # "") THEN COPY(A.s, name)
-	ELSE COPY("Value", name)
+	IF (A.res >= 0) & (A.class = Objects.String) & (A.s # "") THEN  name := A.s
+	ELSE  name := "Value"
 	END
 END Field;
 
@@ -490,8 +490,8 @@ END SetValues;
 PROCEDURE ButtonAttr(F: Button; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("BasicGadgets.NewButton", M.s); M.res := 0
-		ELSIF M.name = "Caption" THEN M.class := Objects.String; COPY(F.caption, M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "BasicGadgets.NewButton"; M.res := 0
+		ELSIF M.name = "Caption" THEN M.class := Objects.String;  M.s := F.caption; M.res := 0
 		ELSIF M.name = "Value" THEN M.class := Objects.Bool; M.b := F.val; M.res := 0
 		ELSIF M.name = "Popout" THEN M.class := Objects.Bool; M.b := F.popout; M.res := 0
 		ELSIF M.name = "SetVal" THEN M.class := Objects.Int; M.i := F.setval; M.res := 0
@@ -514,7 +514,7 @@ BEGIN
 		ELSE Gadgets.framehandle(F, M) END
 	ELSIF M.id = Objects.set THEN
 		IF (M.name = "Caption") THEN
-			IF  (M.class = Objects.String) THEN COPY(M.s, F.caption); M.res := 0 END
+			IF  (M.class = Objects.String) THEN  F.caption := M.s; M.res := 0 END
 		ELSIF (M.name = "Value") THEN
 			IF  (M.class = Objects.Bool) THEN
 				IF F.popout THEN M.b := FALSE END; (* small hack *)
@@ -662,7 +662,7 @@ END PrintButton;
 
 PROCEDURE CopyButton*(VAR M: Objects.CopyMsg; from, to: Button);
 BEGIN
-	Gadgets.CopyFrame(M, from, to); COPY(from.caption, to.caption); to.val := from.val; to.popout := from.popout;
+	Gadgets.CopyFrame(M, from, to);  to.caption := from.caption; to.val := from.val; to.popout := from.popout;
 	to.look := Gadgets.CopyPtr(M, from.look); to.setval := from.setval;
 	to.led := from.led; to.ledcol := from.ledcol
 END CopyButton;
@@ -871,7 +871,7 @@ PROCEDURE InitButton*(F: Button);
 BEGIN 
 	F.handle := ButtonHandler; F.W := 40; F.H := 30;
 	F.popout := TRUE; F.led:= TRUE; F.ledcol:= Display3.red;
-	COPY("Button", F.caption)
+	 F.caption := "Button"
 END InitButton;
 
 PROCEDURE NewButton*;
@@ -916,7 +916,7 @@ END CheckBoxSetModel;
 PROCEDURE CheckBoxAttr(B: CheckBox; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("BasicGadgets.NewCheckBox", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "BasicGadgets.NewCheckBox"; M.res := 0
 		ELSIF M.name = "Value" THEN M.class := Objects.Bool; M.b := B.val; M.res := 0
 		ELSIF M.name = "SetVal" THEN M.class := Objects.Int; M.i := B.setval; M.res := 0
 		ELSIF M.name = "LineupHY" THEN M.class := Objects.Int; M.i := B.H DIV 2 - 5; M.res := 0
@@ -1154,7 +1154,7 @@ END SliderSetModel;
 PROCEDURE SliderAttr(F: Slider; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("BasicGadgets.NewSlider", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "BasicGadgets.NewSlider"; M.res := 0
 		ELSIF M.name = "Min" THEN M.class := Objects.Int; M.i := F.min; M.res := 0
 		ELSIF M.name = "Max" THEN M.class := Objects.Int; M.i := F.max; M.res := 0
 		ELSIF M.name = "Value" THEN M.class := Objects.Int; M.i := F.val; M.res := 0

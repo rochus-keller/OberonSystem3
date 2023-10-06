@@ -426,7 +426,7 @@ END SendPacket;
 		PROCEDURE InName(VAR u:ARRAY OF CHAR);
 		BEGIN 
 			WHILE (S.class = Texts.Char) & (S.c = 0DX) DO Texts.Scan(S) END;
-			IF S.class=Texts.String THEN COPY(S.s, u); Texts.Scan(S)
+			IF S.class=Texts.String THEN  u := S.s; Texts.Scan(S)
 			ELSE InDone:=FALSE
 			END;
 		END InName;
@@ -459,14 +459,14 @@ END SendPacket;
 (*
 	Oberon.OpenScanner(S, "PPP");
 	IF S.class = Texts.String THEN
-		COPY(S.s, NetSystem.hostName);
+		 NetSystem.hostName := S.s;
 	END;
 *)
 	Oberon.OpenScanner(S, "DIAL.PAPName");
 	IF S.class = Texts.String THEN
 		i := 0;  WHILE S.s[i] # 0X DO INC(i) END;
 		IF (S.s[0] # "<") OR (S.s[i-1] # ">") THEN	(* user specified something *)
-			COPY(S.s, papname); INCL(ao.O, NegUPap);
+			 papname := S.s; INCL(ao.O, NegUPap);
 			Out.String("PAPName: "); Out.String(papname); Out.Ln;
 			IF HDLC.debug THEN
 				Debug.String("PAPName: "); Debug.String(papname)
@@ -477,7 +477,7 @@ END SendPacket;
 	IF S.class = Texts.String THEN
 		i := 0;  WHILE S.s[i] # 0X DO INC(i) END;
 		IF (S.s[0] # "<") OR (S.s[i-1] # ">") THEN	(* user specified something *)
-			COPY(S.s, pappasswd); INCL(ao.O, NegUPap); 
+			 pappasswd := S.s; INCL(ao.O, NegUPap); 
 			IF HDLC.debug THEN
 				Debug.String("PAPPassword: **** ")
 			END
@@ -537,11 +537,11 @@ END SendPacket;
 				ELSIF Cmp("Netmask") THEN
 					InInt(n0); InInt(n1); InInt(n2); InInt(n3); SetIP(n0, n1, n2, n3, myNetMask);
 					IF HDLC.debug THEN Debug.String("myNetmask "); Debug.Int(n0, 5); Debug.Int(n1, 5); Debug.Int(n2, 5); Debug.Int(n3, 5) END
-				ELSIF Cmp("LoginName") THEN InName(s); COPY(s, loginname); IF HDLC.debug THEN Debug.String("LoginName: "); Debug.String(loginname) END
-				ELSIF Cmp("LoginPasswd") THEN InName(s); COPY(s, loginpasswd); IF HDLC.debug THEN Debug.String("LoginPassword: "); Debug.String(loginpasswd) END
-				ELSIF Cmp("PAPName") THEN InName(s); COPY(s, papname); INCL(ao.O, NegUPap); IF HDLC.debug THEN Debug.String("PAPName: "); Debug.String(papname) END
-				ELSIF Cmp("PAPPasswd") THEN InName(s); COPY(s, pappasswd); INCL(ao.O, NegUPap); IF HDLC.debug THEN Debug.String("PAPPassword: "); Debug.String(pappasswd) END
-				ELSIF Cmp("SString") THEN InName(s); COPY(s, sstr); IF HDLC.debug THEN Debug.String("SString "); Debug.String(sstr) END
+				ELSIF Cmp("LoginName") THEN InName(s);  loginname := s; IF HDLC.debug THEN Debug.String("LoginName: "); Debug.String(loginname) END
+				ELSIF Cmp("LoginPasswd") THEN InName(s);  loginpasswd := s; IF HDLC.debug THEN Debug.String("LoginPassword: "); Debug.String(loginpasswd) END
+				ELSIF Cmp("PAPName") THEN InName(s);  papname := s; INCL(ao.O, NegUPap); IF HDLC.debug THEN Debug.String("PAPName: "); Debug.String(papname) END
+				ELSIF Cmp("PAPPasswd") THEN InName(s);  pappasswd := s; INCL(ao.O, NegUPap); IF HDLC.debug THEN Debug.String("PAPPassword: "); Debug.String(pappasswd) END
+				ELSIF Cmp("SString") THEN InName(s);  sstr := s; IF HDLC.debug THEN Debug.String("SString "); Debug.String(sstr) END
 				ELSE IF HDLC.debug THEN Debug.String("Illegal Option") END
 				END;
 				IF HDLC.debug THEN Debug.Ln END

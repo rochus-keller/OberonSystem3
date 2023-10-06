@@ -88,12 +88,12 @@ BEGIN
 	WHILE (c # NIL) & (name # c.name) & (~NetBase.Equal(adr, c.adr, NetIP.AdrLen)) DO c := c.next END;
 	IF c = NIL THEN
 		IF Trace THEN Kernel.WriteString("added ");  Kernel.WriteInt(timeout, 1) END;
-		NEW(c);  COPY(name, c.name);  NetBase.Copy(adr, c.adr, NetIP.AdrLen);
+		NEW(c);   c.name := name;  NetBase.Copy(adr, c.adr, NetIP.AdrLen);
 		c.expire := expire;  c.next := cache.next;  cache.next := c
 	ELSE
 		IF expire - c.expire > 0 THEN
 			IF Trace THEN Kernel.WriteString("refreshed ");  Kernel.WriteInt(timeout, 1) END;
-			c.expire := expire;  COPY(name, c.name);  NetBase.Copy(adr, c.adr, NetIP.AdrLen)
+			c.expire := expire;   c.name := name;  NetBase.Copy(adr, c.adr, NetIP.AdrLen)
 		END
 	END
 END CacheAdd;
@@ -282,7 +282,7 @@ BEGIN
 	END;
 	i := 0;
 	NetBase.Copy(NetIP.IPany, adr, NetIP.AdrLen);
-	REPEAT COPY(hostname, name);
+	REPEAT  name := hostname;
 		Domain(name, dom[i], FALSE); Cap(name); j := 0;
 		IF Trace THEN Kernel.WriteString(name);  Kernel.WriteChar(" ") END;
 		c := CacheFindName(name);
@@ -330,7 +330,7 @@ BEGIN
 	IF Trace THEN Kernel.WriteString(name);  Kernel.WriteChar(" ") END;
 	c := CacheFindAdr(netadr);
 	IF c # NIL THEN
-		COPY(c.name, hostname);  res := Done
+		 hostname := c.name;  res := Done
 	ELSE
 		REPEAT ReceiveInfo(server[dns MOD nofdns].adr, name, PTR, buf, len);
 			IF len > 0 THEN RetrieveHost(buf, hostname, timeout) END;
@@ -347,12 +347,12 @@ BEGIN
 END HostByNumber;
 
 PROCEDURE InstallDom* (name: ARRAY OF CHAR);
-BEGIN COPY(name, dom[nofdom]); nofdom := (nofdom + 1) MOD MaxDom
+BEGIN  dom[nofdom] := name; nofdom := (nofdom + 1) MOD MaxDom
 END InstallDom;
 
 PROCEDURE InstallDNS* (name: ARRAY OF CHAR; adr: NetIP.Adr);
 BEGIN NEW(server[nofdns]);
-	COPY(name, server[nofdns].name); NetBase.Copy(adr, server[nofdns].adr, NetIP.AdrLen);
+	 server[nofdns].name := name; NetBase.Copy(adr, server[nofdns].adr, NetIP.AdrLen);
 	nofdns := (nofdns + 1) MOD MaxDns
 END InstallDNS;
 

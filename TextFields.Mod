@@ -131,9 +131,9 @@ VAR lib: Objects.Library; R: Texts.Reader; ch: CHAR;
 BEGIN
 	Texts.OpenReader(R, T, 0); Texts.Read(R, ch); lib := R.lib;
 	WHILE ~R.eot & (R.lib = lib) DO Texts.Read(R, ch) END;
-	IF ~R.eot THEN COPY("mixed", font)
-	ELSIF lib = NIL THEN COPY(Fonts.Default.name, font)
-	ELSE COPY(lib.name, font)
+	IF ~R.eot THEN  font := "mixed"
+	ELSIF lib = NIL THEN  font := Fonts.Default.name
+	ELSE  font := lib.name
 	END
 END GetFont;
 
@@ -267,7 +267,7 @@ PROCEDURE CaptionAttributes(F: Caption; VAR M: Objects.AttrMsg);
 VAR str: ARRAY 64 OF CHAR;
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("TextFields.NewCaption", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "TextFields.NewCaption"; M.res := 0
 		ELSIF M.name = "Value" THEN Attributes.TxtToStr(F.text, M.s); M.class := Objects.String; M.res := 0
 		ELSIF M.name = "LineupHY" THEN M.class := Objects.Int; M.i := ABS(Fonts.Default.minY)+1; M.res := 0
 		ELSIF M.name = "Cmd" THEN
@@ -946,8 +946,8 @@ END GetSelection;
 PROCEDURE TextFieldAttr(F: TextField; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("TextFields.NewTextField", M.s); M.res := 0
-		ELSIF M.name = "Value" THEN M.class := Objects.String; COPY(F.val, M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "TextFields.NewTextField"; M.res := 0
+		ELSIF M.name = "Value" THEN M.class := Objects.String;  M.s := F.val; M.res := 0
 		ELSIF M.name = "Color" THEN M.class := Objects.Int; M.i := F.col; M.res := 0
 		ELSIF M.name = "LineupHY" THEN M.class := Objects.Int; M.i := Yoffset; M.res := 0
 		ELSIF M.name = "Field" THEN ForceString(F, M)
@@ -956,7 +956,7 @@ BEGIN
 		END;
 	ELSIF M.id = Objects.set THEN
 		IF M.name = "Value" THEN
-			IF M.class = Objects.String THEN COPY(M.s, F.val); M.res := 0 END
+			IF M.class = Objects.String THEN  F.val := M.s; M.res := 0 END
 		ELSIF M.name = "Color" THEN
 			IF M.class = Objects.Int THEN F.col := SHORT(M.i); M.res := 0 END
 		ELSE Gadgets.framehandle(F, M);
@@ -1053,15 +1053,15 @@ VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.get; A.name := "Field"; A.class := Objects.Inval; A.s := "";
 	F.handle(F, A);
-	IF (A.res >= 0) & (A.class = Objects.String) & (A.s # "") THEN COPY(A.s, name)
-	ELSE COPY("Value", name)
+	IF (A.res >= 0) & (A.class = Objects.String) & (A.s # "") THEN  name := A.s
+	ELSE  name := "Value"
 	END
 END Field;
 
 PROCEDURE SetValue(obj: Objects.Object; field, value: ARRAY OF CHAR; dlink: Objects.Object; VAR res: INTEGER);
 VAR A: Objects.AttrMsg;
 BEGIN
-	A.id := Objects.set; COPY(field, A.name); COPY(value, A.s); A.class := Objects.String; A.res := -1; A.dlink := dlink;
+	A.id := Objects.set;  A.name := field;  A.s := value; A.class := Objects.String; A.res := -1; A.dlink := dlink;
 	obj.handle(obj, A);
 	res := A.res
 END SetValue;
@@ -1069,10 +1069,10 @@ END SetValue;
 PROCEDURE GetValue(obj: Objects.Object; field: ARRAY OF CHAR; VAR value: ARRAY OF CHAR);
 VAR A: Objects.AttrMsg;
 BEGIN
-	A.id := Objects.get; COPY(field, A.name); A.class := Objects.Inval; A.s := ""; A.res := -1;
+	A.id := Objects.get;  A.name := field; A.class := Objects.Inval; A.s := ""; A.res := -1;
 	obj.handle(obj, A);
 	IF A.res >= 0 THEN
-		IF A.class = Objects.String THEN COPY(A.s, value)
+		IF A.class = Objects.String THEN  value := A.s
 		ELSIF A.class = Objects.Int THEN Strings.IntToStr(A.i, value)
 		ELSIF A.class = Objects.Real THEN Strings.RealToStr(A.x, value)
 		ELSIF A.class = Objects.LongReal THEN Strings.RealToStr(A.y, value)
@@ -1086,7 +1086,7 @@ PROCEDURE CopyTextField*(VAR M: Objects.CopyMsg; from, to: TextField);
 VAR field: ARRAY 64 OF CHAR;
 BEGIN
 	Gadgets.CopyFrame(M, from, to);
-	COPY(from.val, to.val); to.carpos := -1; to.selbeg := -1; to.col := from.col;
+	 to.val := from.val; to.carpos := -1; to.selbeg := -1; to.col := from.col;
 	
 	Field(to, field);
 	IF to.obj # NIL THEN GetValue(to.obj, field, to.val) END;
@@ -1271,7 +1271,7 @@ BEGIN
 END TextFieldHandler;
 
 PROCEDURE InitTextField*(F: TextField);
-BEGIN F.handle := TextFieldHandler; COPY("", F.val); F.W := 100; F.H := 20;
+BEGIN F.handle := TextFieldHandler;  F.val := ""; F.W := 100; F.H := 20;
 	F.selbeg := -1; F.carpos := -1; F.consistent := TRUE; F.col := Display3.textbackC
 END InitTextField;
 

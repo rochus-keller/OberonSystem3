@@ -360,7 +360,7 @@ END CopyOutline;
 PROCEDURE Attr(F: Outline; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Outlines.NewOutline", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Outlines.NewOutline"; M.res := 0
 		ELSIF M.name = "LineupHY" THEN M.class := Objects.Int; M.i := 0; M.res := 0
 		ELSIF M.name = "Cmd" THEN
 			Gadgets.framehandle(F, M);
@@ -662,7 +662,7 @@ BEGIN
 		Attributes.OpenScanner(aS, Oberon.Par.text, Oberon.Par.pos);
 		Attributes.Scan(aS);
 		IF aS.class = Attributes.String THEN
-			COPY(aS.s, inf.sPat); inf.sLen := aS.len; CalcDispVec(Oberon.Time())
+			 inf.sPat := aS.s; inf.sLen := aS.len; CalcDispVec(Oberon.Time())
 		ELSE
 			S.id:= Oberon.get; S.F:= NIL; S.time:= -1; Display.Broadcast(S);
 			IF (S.text # NIL) & (S.time >= 0) THEN	(* get new search pattern and save in info-structure*)

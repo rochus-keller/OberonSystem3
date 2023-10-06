@@ -204,7 +204,7 @@ MODULE ColorWells;	(** eos   **)
 				am.id := Objects.get; am.name := "TargetAttr"; am.res := -1;
 				well.handle(well, am);
 				IF (am.res >= 0) & (am.class = Objects.String) & (am.s # "") THEN
-					COPY(am.s, am.name)
+					 am.name := am.s
 				ELSE
 					am.name := "Color"
 				END;
@@ -264,9 +264,9 @@ MODULE ColorWells;	(** eos   **)
 		am.id := Objects.get; am.name := "Field"; am.res := -1;
 		frame.handle(frame, am);
 		IF (am.res >= 0) & (am.class = Objects.String) & (am.s # "") THEN
-			COPY(am.s, name)
+			 name := am.s
 		ELSE
-			COPY("Value", name)
+			 name := "Value"
 		END
 	END Field;
 	

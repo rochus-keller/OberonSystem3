@@ -104,7 +104,7 @@ BEGIN
 	IF M.id = Objects.get THEN
 		IF M.name = "Gen" THEN
 			M.class := Objects.String;
-			IF F.saveOld THEN COPY(oldGenerator, M.s) ELSE COPY(newGenerator, M.s) END;
+			IF F.saveOld THEN  M.s := oldGenerator ELSE  M.s := newGenerator END;
 			M.res := 0
 		ELSIF M.name = "SaveOld" THEN M.class := Objects.Bool; M.b := F.saveOld; M.res := 0
 		ELSE Panels.PanelHandler(F, M)

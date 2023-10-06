@@ -101,7 +101,7 @@ PROCEDURE DocToPlate(F: NamePlate);
 	VAR i, j, k: LONGINT;
 BEGIN
 (*ejz*)IF F.carpos >= 0 THEN RETURN END;
-	COPY(F.obj(Documents.Document).name, F.val);
+	 F.val := F.obj(Documents.Document).name;
 	i := 0; j := -1;
 	WHILE F.val[i] # 0X DO
 		IF F.val[i] = FileDir.PathChar THEN
@@ -129,7 +129,7 @@ PROCEDURE PlateToDoc(F: NamePlate);
 		lastChar: CHAR;
 BEGIN
 (*ejz*)IF F.carpos >= 0 THEN RETURN END;
-	(*COPY(F.val, F.obj(Documents.Document).name)*)
+	(* F.obj(Documents.Document := F.val.name)*)
 	i := 0;
 	WHILE F.val[i] > " " DO
 		INC(i)
@@ -152,7 +152,7 @@ BEGIN
 		END;
 		F.obj(Documents.Document).name[j] := 0X
 	ELSE
-		COPY(F.val, F.obj(Documents.Document).name)
+		F.obj(Documents.Document).name := F.val
 	END;
 	Update(F.obj)
 END PlateToDoc;
@@ -438,16 +438,16 @@ END ForceString;
 PROCEDURE NamePlateAttr(F: NamePlate; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("NamePlates.NewNamePlate", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "NamePlates.NewNamePlate"; M.res := 0
 		ELSIF M.name = "Value" THEN
 IF F.carpos >= 0 THEN
 (*ejz*)PlateToDoc(F); DocToPlate(F)
 END;
 			M.class := Objects.String;
 			IF (F.obj # NIL) & (F.obj IS Documents.Document) THEN
-				COPY(F.obj(Documents.Document).name, M.s)
+				 M.s := F.obj(Documents.Document).name
 			ELSE
-				COPY(F.val, M.s)
+				 M.s := F.val
 			END;
 			M.res := 0
 		ELSIF M.name = "Cmd" THEN ForceString(F, M)
@@ -457,10 +457,10 @@ END;
 		IF M.name = "Value" THEN
 			IF M.class = Objects.String THEN
 				IF (F.obj # NIL) & (F.obj IS Documents.Document) THEN
-					COPY(M.s, F.obj(Documents.Document).name);
+					F.obj(Documents.Document).name := M.s;
 					DocToPlate(F)
 				ELSE
-					COPY(M.s, F.val)
+					 F.val := M.s
 				END;
 				M.res := 0
 			END;
@@ -569,7 +569,7 @@ BEGIN
 	Gadgets.CopyFrame(M, from, to);
 	from.obj := obj;
 	
-	COPY(from.val, to.val); to.carpos := -1; to.selbeg := -1;
+	 to.val := from.val; to.carpos := -1; to.selbeg := -1;
 END CopyNamePlate;
 
 PROCEDURE NamePlateHandler*(F: Objects.Object; VAR M: Objects.ObjMsg);
@@ -716,7 +716,7 @@ END NamePlateHandler;
 
 PROCEDURE InitNamePlate*(F: NamePlate);
 VAR M: Objects.AttrMsg;
-BEGIN F.handle := NamePlateHandler; F.carpos := -1; COPY("", F.val); F.W := 100; F.H := 20;
+BEGIN F.handle := NamePlateHandler; F.carpos := -1;  F.val := ""; F.W := 100; F.H := 20;
 	F.selbeg := -1;
 	M.res := -1; M.id := Objects.set; M.name := "Cmd"; M.class := Objects.String; M.s := "Attributes.Echo '#Value '";
 	Gadgets.framehandle(F, M)

@@ -301,7 +301,7 @@ VAR nr, ilong: LONGINT; x: LONGREAL;
 BEGIN
 	IF M.id = Objects.get THEN
 	(* settable attributes first *)
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Histogram.NewFrame", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Histogram.NewFrame"; M.res := 0
 		ELSIF M.name = "adaptive" THEN M.class := Objects.Bool; M.b := F.adapting; M.res := 0
 		ELSIF M.name = "moving" THEN M.class := Objects.Bool; M.b := F.moving; M.res := 0
 		ELSIF M.name = "suspended" THEN M.class := Objects.Bool; M.b := F.suspended; M.res := 0

@@ -200,7 +200,7 @@ PROCEDURE ^InspectThis(VAR P: Panel; obj: Objects.Object; lib: Objects.Library; 
 PROCEDURE LoadDoc(D: Documents.Document);
 	VAR lib: Objects.Library; i: LONGINT; view: INTEGER; p: Panel; name: ARRAY 64 OF CHAR;
 BEGIN
-	COPY(D.name, name);
+	 name := D.name;
 	p:= NIL; lib := NIL; view := NoView;
 	IF (name # "") & (name # DocName) THEN
 		i := 0;
@@ -213,7 +213,7 @@ BEGIN
 		END
 	END;
 	InspectThis(p, NIL, lib, view);
-	COPY(DocName, D.name); D.W:= p.W; D.H:= p.H;
+	 D.name := DocName; D.W:= p.W; D.H:= p.H;
 	Documents.Init(D, p)
 END LoadDoc;
 
@@ -294,7 +294,7 @@ BEGIN
 		IF M IS Objects.AttrMsg THEN
 			WITH M: Objects.AttrMsg DO
 				IF (M.id = Objects.get) & (M.name = "Gen") THEN
-					M.class:= Objects.String; COPY("Columbus.NewPanel", M.s); M.res:= 0
+					M.class:= Objects.String;  M.s := "Columbus.NewPanel"; M.res:= 0
 				ELSE Panels.PanelHandler(P, M)
 				END
 			END	(* WITH *)
@@ -364,10 +364,10 @@ PROCEDURE MakeCmd(caption, cmd: ARRAY OF CHAR; isPict: BOOLEAN): Display.Frame;
 BEGIN
 	BasicGadgets.NewButton; F:= Objects.NewObj(BasicGadgets.Button);
 	IF isPict THEN F.caption:= ""; F.look:= Gadgets.FindPublicObj(caption)
-	ELSE COPY(caption, F.caption)
+	ELSE  F.caption := caption
 	END;
 	F.val:= FALSE; F.popout:= TRUE;
-	A.id:= Objects.set; A.class:= Objects.String; A.name:= "Cmd"; COPY(cmd, A.s); A.res:= -1;
+	A.id:= Objects.set; A.class:= Objects.String; A.name:= "Cmd";  A.s := cmd; A.res:= -1;
 	F.handle(F, A);
 	F.W:= 50; F.H:= 25;
 	RETURN F
@@ -389,7 +389,7 @@ BEGIN
 	TextFields.NewTextField; F:= Objects.NewObj(TextFields.TextField);
 	BasicGadgets.NewString; F.obj:= Objects.NewObj;
 	F.W:= F.W*3;
-	COPY(val, F.obj(BasicGadgets.String).val); COPY(val, F.val);
+	F.obj(BasicGadgets.String).val := val; F.val := val;
 	F.W:= LargeW; F.H:= Height;
 	RETURN F
 END MakeString;
@@ -657,7 +657,7 @@ PROCEDURE AddItem(VAR L: Layout; name: ARRAY OF CHAR; class: INTEGER; val: Displ
 	VAR new: Item;
 BEGIN
 	val.next:= MakeCaption(name, Display.FG, FALSE);
-	NEW(new); COPY(name, new.name); new.val:= val; new.class:= class;
+	NEW(new);  new.name := name; new.val:= val; new.class:= class;
 	new.next:= L.items; L.items:= new
 END AddItem; 
 
@@ -673,7 +673,7 @@ PROCEDURE AddControlItem(VAR L: Layout; name, caption: ARRAY OF CHAR; val: Displ
 	VAR new: Item; 
 BEGIN
 	val.next:= MakeCaption(caption, Display.FG, FALSE);
-	NEW(new); new.class:= Control; COPY(name, new.name); new.val:= val;
+	NEW(new); new.class:= Control;  new.name := name; new.val:= val;
 	new.next:= L.items; L.items:= new
 END AddControlItem;
 
@@ -687,7 +687,7 @@ BEGIN
 	i:= layout.items; WHILE (i # NIL) & ((i.name # name) OR (i.class # Attribute)) DO i:= i.next END;
 	IF i # NIL THEN RETURN END;
 
-	A.id:= Objects.get; A.class:= Objects.Inval; COPY(name, A.name); A.res:= -1;
+	A.id:= Objects.get; A.class:= Objects.Inval;  A.name := name; A.res:= -1;
 	enumObj.handle(enumObj, A);
 
 	IF (A.res = -1) OR (A.class = Objects.Inval) THEN val:= MakeCaption("has no value", Display.FG, FALSE)
@@ -1008,7 +1008,7 @@ BEGIN
 	WHILE o # NIL DO
 		A.id:= Objects.get; A.name:= "Gen"; A.res:= -1; o.handle(o, A);
 		(* JSS Start *)
-		COPY(A.s,Generator);
+		Generator := A.s;
 		WriteCaption(subLay, A.s, Display.FG, FALSE); WriteTab(subLay);
 		WriteFrame(subLay, MakeLink(o, TRUE)); 
 		(* JSS Start of additions to display an indication of what the object does, e.g. its Name, Caption, Cmd or Value *)
@@ -1018,13 +1018,13 @@ BEGIN
         WriteTab(subLay);
         offset:= subLay.X;
         A.id := Objects.get;A.name := "Caption";A.res := -1;o.handle(o,A);
-        COPY(A.s,Name);
+        Name := A.s;
         IF (Name = Generator)OR(Name = "") THEN
-           A.id := Objects.get;A.name := "Name";A.res := -1;o.handle(o,A);COPY(A.s,Name);
+           A.id := Objects.get;A.name := "Name";A.res := -1;o.handle(o,A);Name := A.s;
            IF (Name = Generator)OR(Name = "") THEN
-             A.id:= Objects.get;A.name:= "Cmd";A.res:= -1;o.handle(o,A);COPY(A.s,Name);
+             A.id:= Objects.get;A.name:= "Cmd";A.res:= -1;o.handle(o,A);Name := A.s;
               IF (Name = Generator)OR(Name = "") THEN
-                A.id := Objects.get;A.name := "Value";A.res := -1;o.handle(o,A);COPY(A.s,Name)
+                A.id := Objects.get;A.name := "Value";A.res := -1;o.handle(o,A);Name := A.s
               END
            END
         END;
@@ -1182,7 +1182,7 @@ BEGIN
 	WriteFrame(L, f);
 	WriteLn(L); WriteVSpace(L, 6);
 
-	COPY(lib.name, param0);
+	 param0 := lib.name;
 	i:= 0; WHILE (param0[i] # ".") & (param0[i] # 0X) DO INC(i) END;
 	param0[i]:= 0X; Append(".&", param0); 
 	COPY (param0, param); Append(ObjNameObj, param); Append(".Value", param);
@@ -1295,15 +1295,15 @@ VAR A: Objects.AttrMsg; i: Item;
 BEGIN
 	i:= oldValues; WHILE (i # NIL) & ((i.name # name) OR (i.class # Attribute)) DO i:= i.next END;
 	IF i = NIL THEN
-		A.id:= Objects.get; A.class:= Objects.Inval; COPY(name, A.name); A.res:= -1;
+		A.id:= Objects.get; A.class:= Objects.Inval;  A.name := name; A.res:= -1;
 		enumObj.handle(enumObj, A);
-		NEW(i); i.class := Attribute; COPY(name, i.name); i.next := oldValues; oldValues := i;
+		NEW(i); i.class := Attribute;  i.name := name; i.next := oldValues; oldValues := i;
 
 		IF (A.res < 0) OR (A.class = Objects.Inval) THEN i.val := NIL
 		ELSIF A.class = Objects.Bool THEN
 			i.val := Gadgets.CreateObject("Boolean"); i.val(BasicGadgets.Boolean).val := A.b
 		ELSIF A.class = Objects.String THEN
-			i.val := Gadgets.CreateObject("String"); COPY(A.s, i.val(BasicGadgets.String).val)
+			i.val := Gadgets.CreateObject("String"); i.val(BasicGadgets.String).val := A.s
 		ELSIF A.class = Objects.Int THEN
 			i.val := Gadgets.CreateObject("Integer"); i.val(BasicGadgets.Integer).val := A.i
 		ELSIF A.class = Objects.Real THEN
@@ -1312,7 +1312,7 @@ BEGIN
 			i.val := Gadgets.CreateObject("Real"); i.val(BasicGadgets.Real).val := A.y
 		ELSIF A.class = Objects.Char THEN
 			A.s[0]:= A.c; A.s[1]:= 0X;
-			i.val:= Gadgets.CreateObject("String"); COPY(A.s, i.val(BasicGadgets.String).val)
+			i.val:= Gadgets.CreateObject("String"); i.val(BasicGadgets.String).val := A.s
 		ELSE i.val := NIL
 		END
 	END
@@ -1325,7 +1325,7 @@ BEGIN
 	IF i = NIL THEN
 		L.id:= Objects.get; COPY (name, L.name); L.obj:= NIL; L.res := -1;
 		enumObj.handle(enumObj, L);
-		NEW(i); i.class := Link; COPY(name, i.name); i.val := L.obj; i.next := oldValues; oldValues := i
+		NEW(i); i.class := Link;  i.name := name; i.val := L.obj; i.next := oldValues; oldValues := i
 	END
 END EnumOldLinkValues;
 
@@ -1346,7 +1346,7 @@ PROCEDURE SetObject(obj: Objects.Object; P: Panel): BOOLEAN;
 				IF i.class = Link THEN
 					res := (item.val(RefGadgets.Reference).val # i.val)
 				ELSIF (i.val # NIL) & (item.val # NIL) THEN
-					A0.id := Objects.get; A0.class := Objects.Inval; COPY("Value", A0.name); A0.res := -1;
+					A0.id := Objects.get; A0.class := Objects.Inval;  A0.name := "Value"; A0.res := -1;
 					A1 := A0;
 					i.val.handle(i.val, A0); item.val.handle(item.val, A1);
 					IF (A0.class = A1.class) & (A0.res >= 0) & (A1.res >= 0) & (A0.class # Objects.Inval) THEN
@@ -1366,7 +1366,7 @@ PROCEDURE SetObject(obj: Objects.Object; P: Panel): BOOLEAN;
 BEGIN
 	(* get a list of old values *)
 	enumObj := obj;
-	NEW(oldValues); oldValues.next := NIL; oldValues.class := Attribute; COPY("Name", oldValues.name);
+	NEW(oldValues); oldValues.next := NIL; oldValues.class := Attribute;  oldValues.name := "Name";
 	oldValues.val := Gadgets.CreateObject("String");
 	Attributes.GetString(obj, "Name", oldValues.val(BasicGadgets.String).val); 
 	A.id := Objects.enum; A.Enum := EnumOldAttrValues; obj.handle(obj, A);
@@ -1376,7 +1376,7 @@ BEGIN
 	item:= P.items; changeC:= FALSE; changeV := FALSE;
 	WHILE item #NIL DO
 		IF (item.class = Attribute) & HasValue(item) THEN
-			A.id:= Objects.set; COPY(item.name, A.name); A.res:= -1;
+			A.id:= Objects.set;  A.name := item.name; A.res:= -1;
 			IF item.val IS BasicGadgets.Boolean THEN
 				A.class:= Objects.Bool; A.b:= item.val(BasicGadgets.Boolean).val
 			ELSIF item.val IS BasicGadgets.Integer THEN
@@ -1384,7 +1384,7 @@ BEGIN
 			ELSIF item.val IS BasicGadgets.Real THEN
 				A.class:= Objects.LongReal; A.y:= item.val(BasicGadgets.Real).val
 			ELSIF item.val IS BasicGadgets.String THEN
-				A.class:= Objects.String; COPY(item.val(BasicGadgets.String).val, A.s)
+				A.class:= Objects.String;  A.s := item.val(BasicGadgets.String).val
 			ELSE A.class:= Objects.Inval
 			END;
 			IF A.class # Objects.Inval THEN
@@ -1400,7 +1400,7 @@ BEGIN
 				END
 			END
 		ELSIF (item.class = Link) & HasValue(item) THEN
-			L.id:= Objects.set; COPY(item.name, L.name); L.res:= -1;
+			L.id:= Objects.set;  L.name := item.name; L.res:= -1;
 			L.obj:= item.val(RefGadgets.Reference).val;
 			IF (L.obj # NIL) & Gadgets.Recursive(obj, L.obj) THEN
 				String("Link "); String(item.name); String(" could not be set (recursion)");
@@ -1447,9 +1447,9 @@ BEGIN
 	item:= P.items;
 	WHILE item # NIL DO
 		IF (item.name = "AName") & (item.val IS BasicGadgets.String) THEN
-			COPY(item.val(BasicGadgets.String).val, A.name)
+			 A.name := item.val(BasicGadgets.String).val
 		ELSIF (item.name = "LName") & (item.val IS BasicGadgets.String) THEN
-			COPY(item.val(BasicGadgets.String).val, L.name)
+			 L.name := item.val(BasicGadgets.String).val
 		ELSIF (item.name = "AValue") & (item.val IS BasicGadgets.String) THEN
 			IF item.val(BasicGadgets.String).val # "" THEN
 				NEW(T); Texts.Open(T, ""); String(item.val(BasicGadgets.String).val);
@@ -1460,8 +1460,8 @@ BEGIN
 				ELSIF S.class = Texts.LongReal THEN A.class:= Objects.LongReal; A.y:= S.y
 				ELSIF (S.class = Texts.Char) & (T.len = 1) THEN A.class:= Objects.Char; A.c:= S.c
 				ELSIF (S.s = "Yes") OR (S.s = "No") THEN A.class := Objects.Bool; Strings.StrToBool(S.s, A.b)
-				ELSIF S.class IN {Texts.Name, Texts.String} THEN A.class := Objects.String; COPY(S.s, A.s)
-				ELSE A.class:= Objects.String; COPY(item.val(BasicGadgets.String).val, A.s)
+				ELSIF S.class IN {Texts.Name, Texts.String} THEN A.class := Objects.String;  A.s := S.s
+				ELSE A.class:= Objects.String;  A.s := item.val(BasicGadgets.String).val
 				END
 			END
 		ELSIF (item.name = "LValue") & (item.val IS RefGadgets.Reference) THEN
@@ -1490,9 +1490,9 @@ BEGIN
 	name:= ""; item:= P.items;
 	WHILE item # NIL DO
 		IF (item.name = "AName") & (item.val IS BasicGadgets.String) THEN
-			COPY(item.val(BasicGadgets.String).val, name); attribute:= TRUE
+			 name := item.val(BasicGadgets.String).val; attribute:= TRUE
 		ELSIF (item.name = "LName") & (item.val IS BasicGadgets.String) THEN
-			COPY(item.val(BasicGadgets.String).val, name); attribute:= FALSE
+			 name := item.val(BasicGadgets.String).val; attribute:= FALSE
 		END;
 		item:= item.next
 	END;
@@ -1631,7 +1631,7 @@ BEGIN
 		Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Attributes.Scan(S);
 		IF S.class IN {Attributes.String, Attributes.Name} THEN 
 			P:= FindPanel(); new:= (P = NIL);
-			L.id:= Objects.get; L.res:= -1; COPY(S.s, L.name); obj.handle(obj, L);
+			L.id:= Objects.get; L.res:= -1;  L.name := S.s; obj.handle(obj, L);
 			IF L.obj # NIL THEN
 				InspectThis(P, L.obj, L.obj.lib, ObjAttrView)
 			ELSE
@@ -1810,7 +1810,7 @@ PROCEDURE OpenText(name: ARRAY OF CHAR; T: Texts.Text);
 BEGIN
 	D := Gadgets.CreateObject("TextDocs.NewDoc");
 	WITH D: Documents.Document DO
-		COPY(name, D.name);
+		 D.name := name;
 		NEW(F); TextGadgets.Init(F, T, FALSE);
 		Documents.Init(D, F);
 		Desktops.ShowDoc(D)
@@ -1826,7 +1826,7 @@ BEGIN
 		WHILE ~listR.eol DO listR.do.DeleteLink(NIL, listR) END;
 		Texts.OpenScanner(S, T, 0); Texts.Scan(S);
 		WHILE S.class IN {Texts.String, Texts.Name} DO
-			NEW(d); COPY(S.s, d.s); listR.do.Write(listR, d);
+			NEW(d);  d.s := S.s; listR.do.Write(listR, d);
 			Texts.Scan(S)
 		END;
 		Gadgets.Update(list)
@@ -1969,7 +1969,7 @@ BEGIN
 		UpdateObjList(lib, TRUE);
 		dst := Gadgets.FindObj(Gadgets.context, LibNameObj);
 		IF dst # NIL THEN
-			A.id:= Objects.set; A.name:= "Value"; A.class:= Objects.String; COPY(S.s, A.s); A.res:= -1; 
+			A.id:= Objects.set; A.name:= "Value"; A.class:= Objects.String;  A.s := S.s; A.res:= -1; 
 			i := 0; WHILE (A.s[i] # 0X) & (A.s[i] # ".") DO INC(i) END; A.s[i] := 0X;
 			dst.handle(dst, A);
 			Gadgets.Update(dst)
@@ -2095,7 +2095,7 @@ BEGIN
 	Oberon.Defocus;
 	Attributes.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Attributes.Scan(S);
 	IF S.class = Attributes.Name THEN
-		obj:= Gadgets.FindPublicObj(S.s); COPY(S.s, name);
+		obj:= Gadgets.FindPublicObj(S.s);  name := S.s;
 		IF obj # NIL THEN
 			Attributes.Scan(S);
 			IF S.class = Attributes.Name THEN
@@ -2266,7 +2266,7 @@ BEGIN
 	IF P # NIL THEN
 		IF P.history # NIL THEN
 			CleanupThis(P.history.lib);
-			COPY(P.history.lib.name, S.s); P.history:= NIL;
+			 S.s := P.history.lib.name; P.history:= NIL;
 			InspectThis(P, NIL, Objects.ThisLibrary(S.s), LibEditView)
 		END
 	ELSE

@@ -314,7 +314,7 @@ MODULE Books;	(** portable *) (* ejz, further hacked by jm *)
 						NEW(F0);
 						F.stamp := M.stamp; F.dlink := F0;
 						Panels.CopyPanel(M, F, F0);
-						COPY(F.iconStr, F0.iconStr);
+						 F0.iconStr := F.iconStr;
 						F0.cur := NIL;
 						F0.texts := NIL;
 						tl := F.texts;

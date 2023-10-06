@@ -371,7 +371,7 @@ BEGIN
 	SetScanner(S); T1:= NIL; T2:= NIL;
 	IF S.class = Attributes.Name THEN
 		NEW(T); Texts.Open(T, S.s);
-		IF T.len > 0 THEN NEW(T1); T1.text := T; COPY(S.s, T1.name)
+		IF T.len > 0 THEN NEW(T1); T1.text := T;  T1.name := S.s
 		ELSE
 			Texts.WriteString(W, "could not open "); Texts.WriteString(W, S.s); Texts.WriteLn(W);
 			Texts.Append(Oberon.Log, W.buf)
@@ -380,7 +380,7 @@ BEGIN
 	END;
 	IF S.class = Attributes.Name THEN
 		NEW(T); Texts.Open(T, S.s);
-		IF T.len > 0 THEN NEW(T2); T2.text := T; COPY(S.s, T2.name)
+		IF T.len > 0 THEN NEW(T2); T2.text := T;  T2.name := S.s
 		ELSE
 			Texts.WriteString(W, "could not open "); Texts.WriteString(W, S.s); Texts.WriteLn(W);
 			Texts.Append(Oberon.Log, W.buf)

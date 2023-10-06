@@ -93,7 +93,7 @@ MODULE Script;	(** portable *)	(* RS, Wed, 9-Jun-1993*)
 		F: ScriptFrames.Frame; T: Texts.Text;
 		name: ARRAY 32 OF CHAR;
 	BEGIN OpenScanner(S, NIL);
-		IF S.class # Texts.Name THEN name := "Script.Open" ELSE COPY(S.s, name) END;
+		IF S.class # Texts.Name THEN name := "Script.Open" ELSE  name := S.s END;
 		NEW(T); Texts.Open(T, name); F := ScriptFrames.NewText(T, 0);
 		Texts.Scan(S); F.hide := (S.class = Texts.Char) & (S.c = Oberon.OptionChar) & (S.nextCh = "n");
 		OpenViewer (name, F)
@@ -806,7 +806,7 @@ MODULE Script;	(** portable *)	(* RS, Wed, 9-Jun-1993*)
 		WHILE (S.class = Texts.Char) & ((S.c = Oberon.OptionChar)) & (S.line = line) DO
 			Texts.Scan(S);	(*opt*)
 			IF (S.line = line) & (S.class = Texts.Name) THEN
-				COPY(S.s, opt); Texts.Scan(S);
+				 opt := S.s; Texts.Scan(S);
 				IF opt[0] = "h" THEN INCL(opts, header)	(*header*)
 				ELSIF opt[0] = "c" THEN	(*copies*)
 					IF S.class = Texts.Int THEN copies := SHORT(S.i); Texts.Scan(S) END
@@ -829,7 +829,7 @@ MODULE Script;	(** portable *)	(* RS, Wed, 9-Jun-1993*)
 				ELSIF opt[0] = "H" THEN	(*Header*)
 					IF opt[1] = "t" THEN ReadString(S, ht)
 					ELSIF opt[1] = "c" THEN ReadString(S, hc)
-					ELSE ReadString(S, ht); COPY(ht, hc)
+					ELSE ReadString(S, ht);  hc := ht
 					END
 *)
 				ELSIF opt[0] = "p" THEN	(*page numbering*)
@@ -877,10 +877,10 @@ VAR
 BEGIN
 	Texts.WriteString(W, "Script.Print ");
 	Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
-	IF S.class IN {Texts.String, Texts.Name} THEN COPY(S.s, printer);
-		COPY(S.s, printer);
+	IF S.class IN {Texts.String, Texts.Name} THEN  printer := S.s;
+		 printer := S.s;
 		IF S.nextCh = Oberon.OptionChar THEN Texts.Scan(S); Texts.Scan(S); 
-			COPY(S.s, options)
+			 options := S.s
 		ELSE options := ""
 		END;
 		Texts.WriteString(W, printer); 

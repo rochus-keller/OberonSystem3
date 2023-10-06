@@ -65,7 +65,7 @@ BEGIN
 	NEW(n);
 	IF val = NIL THEN n.s := ""
 	ELSE
-		IF val IS ListRiders.String THEN COPY(val(ListRiders.String).s, n.s)
+		IF val IS ListRiders.String THEN  n.s := val(ListRiders.String).s
 		ELSIF val IS ListRiders.Int THEN Strings.IntToStr(val(ListRiders.Int).i, n.s)
 		ELSIF val IS ListRiders.Bool THEN Strings.BoolToStr(val(ListRiders.Bool).b, n.s)
 		ELSIF val IS ListRiders.Char THEN n.s[0] := val(ListRiders.Char).c; n.s[1] := 0X
@@ -372,7 +372,7 @@ VAR ver: LONGINT;
 		WHILE key # NoKey DO
 			NEW(n.next); n.next.prev := n; n := n.next;
 			n.key := key; n.pos := n.prev.pos + 1;
-			Files.ReadString(M.R, n.s); NEW(str); COPY(n.s, str.s); n.d := str;
+			Files.ReadString(M.R, n.s); NEW(str);  str.s := n.s; n.d := str;
 			Files.ReadLInt(M.R, n.state);
 			Files.Read(M.R, ch);
 			IF ch = 0FFX THEN
@@ -397,7 +397,7 @@ END ReadList;
 PROCEDURE ListAttr (obj: List; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN COPY("ListModels.NewList", M.s); M.class := Objects.String; M.res := 0
+		IF M.name = "Gen" THEN  M.s := "ListModels.NewList"; M.class := Objects.String; M.res := 0
 		ELSIF M.name = "Sorted" THEN M.class := Objects.Bool; M.b := sorted IN obj.state0; M.res := 0
 		ELSIF M.name = "Unique" THEN M.class := Objects.Bool; M.b := unique IN obj.state0; M.res := 0
 		ELSE Gadgets.objecthandle(obj, M)

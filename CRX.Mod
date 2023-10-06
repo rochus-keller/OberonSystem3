@@ -171,7 +171,7 @@ PROCEDURE GenErrorMsg (errTyp, errSym: INTEGER; VAR errNr: INTEGER);
 	VAR i: INTEGER; name: ARRAY 32 OF CHAR; sn: CRT.SymbolNode;
 BEGIN
 	INC (errorNr); errNr := errorNr;
-	CRT.GetSym (errSym, sn); COPY(sn.name, name);
+	CRT.GetSym (errSym, sn);  name := sn.name;
 	i := 0; WHILE name[i] # 0X DO IF name[i] = CHR(34) THEN name[i] := "'" END ; INC(i) END ;
 	Texts.WriteString(err, "  |");
 	Texts.WriteInt (err, errNr, 3); Texts.WriteString (err, ": Msg("); Texts.Write(err, CHR(34));
@@ -410,8 +410,8 @@ PROCEDURE GenCompiler*;
 			t: Texts.Text; pos: LONGINT;	f: Files.File;
 BEGIN
 	CRT.GetNode(CRT.root, gn); CRT.GetSym(gn.p1, sn);
-	COPY(sn.name, parser); i := Length(parser); parser[i] := "P"; parser[i+1] := 0X;
-	COPY(parser, scanner); scanner[i] := "S";
+	 parser := sn.name; i := Length(parser); parser[i] := "P"; parser[i+1] := 0X;
+	 scanner := parser; scanner[i] := "S";
 
 	NEW(t); Texts.Open(t, "Parser.FRM"); Texts.OpenReader(fram, t, 0);
 	IF t.len = 0 THEN

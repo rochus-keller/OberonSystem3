@@ -123,7 +123,7 @@ MODULE AsciiCoder;	(** portable *) (* Wolfgang Weck 14 Dec 93, compression due t
 		VAR last, n: NameList; s: Texts.Scanner;
 	BEGIN NEW(names); last := names; Texts.OpenScanner(s, t, beg); pos := beg; Texts.Scan(s);
 		WHILE (pos < end) & ((s.class = Texts.String) OR (s.class = Texts.Name)) DO NEW(n); last.next := n; last := n;
-			COPY(s.s, n.name);
+			 n.name := s.s;
 			pos := Texts.Pos(s); Texts.Scan(s)
 		END;
 		last.next := NIL; names := names.next; pos := Texts.Pos(s)

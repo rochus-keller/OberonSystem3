@@ -131,7 +131,7 @@ END DropOnFittingStack;
 PROCEDURE TalonAttr(T: Talon; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Solitaire.NewTalon", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Solitaire.NewTalon"; M.res := 0
 		ELSIF M.name = "DrawNum" THEN M.class := Objects.Int; M.i:= T.nrDraw; M.res := 0 
 		ELSE Cards.StackHandler(T, M)
 		END
@@ -341,7 +341,7 @@ END NewTalon;
 PROCEDURE DepotAttr(D: Depot; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Solitaire.NewDepot", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Solitaire.NewDepot"; M.res := 0
 	ELSE Cards.StackHandler(D, M);
 	END
 END DepotAttr;
@@ -390,7 +390,7 @@ END NewDepot;
 PROCEDURE ColumnAttr(C: Column; VAR M: Objects.AttrMsg);
 BEGIN
 	IF (M.id = Objects.get) & (M.name = "Gen") THEN
-		M.class := Objects.String; COPY("Solitaire.NewColumn", M.s); M.res := 0
+		M.class := Objects.String;  M.s := "Solitaire.NewColumn"; M.res := 0
 	ELSE Cards.StackHandler(C, M);
 	END
 END ColumnAttr;

@@ -280,7 +280,7 @@ END TrackMouse;
 PROCEDURE StackAttr(S: Stack; VAR M: Objects.AttrMsg);
 BEGIN
 	IF M.id = Objects.get THEN
-		IF M.name = "Gen" THEN M.class := Objects.String; COPY("Cards.NewStack", M.s); M.res := 0
+		IF M.name = "Gen" THEN M.class := Objects.String;  M.s := "Cards.NewStack"; M.res := 0
 		ELSIF M.name = "Background" THEN M.class := Objects.Int; M.i := S.bgNr; M.res := 0 
 		ELSE Gadgets.framehandle(S, M)
 		END

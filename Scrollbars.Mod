@@ -452,7 +452,7 @@ MODULE Scrollbars;	(** portable *)		(** ps (based on sources of rv and Effects),
 	BEGIN
 		IF M.id = Objects.get THEN
 			IF M.name = "Gen" THEN
-				M.class := Objects.String; COPY("Scrollbars.New", M.s); M.res := 0
+				M.class := Objects.String;  M.s := "Scrollbars.New"; M.res := 0
 			ELSIF M.name = "Min" THEN
 				M.class := Objects.Int; M.i := F.min; M.res := 0
 			ELSIF M.name = "Max" THEN

@@ -2723,7 +2723,7 @@ BEGIN
 	Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 	Texts.Scan(S);
 	IF S.class IN {Texts.Name, Texts.String} THEN
-		COPY(S.s, objSuffix);
+		 objSuffix := S.s;
 		Out.String("Object file suffix set to ");
 		Out.String(objSuffix)
 	ELSE
@@ -2733,7 +2733,7 @@ BEGIN
 END SetSuffix;
 
 BEGIN
-	COPY(Modules.extension, objSuffix);
+	 objSuffix := Modules.extension;
 	(*Out.String("Decoder  NM / pjm / prk"); Out.Ln;*)
 	breakpos := -1; suppressH := FALSE; suppressOut := FALSE;
 	NEW(PE, 32);
