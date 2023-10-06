@@ -36,4 +36,7 @@ Modification steps:
 - Replaced SYSTEM.HALT by HALT; SYSTEM.BYTE by BYTE; "SYSTEM.VAL(SET," by "BITS("; "SYSTEM.VAL(LONGINT," by "ORD("; SYSTEM.VAL(CHAR, by "(";
   "SYSTEM.VAL(SHORTINT," by "("; "SYSTEM.VAL(INTEGER," by "("
 - Replaced all "COPY(x,y)" by "y := x"
+- Added original Displays, Displays.Display, DisplayLinear and CLUTs modules from Native Oberon System 3 Release 2.3.7 Alpha, downloaded and
+  extracted from https://sourceforge.net/projects/nativeoberon/files/nativeoberon/Native%20Oberon%202.3.7%20Alpha/NativeOberon_2.3.7.tar.gz/download
+  on 2023-09-09 and converted to plain text UTF-8 ISO 8859-1 format; replacing Empty.Display.Mod.
 
