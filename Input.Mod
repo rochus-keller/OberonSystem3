@@ -26,7 +26,7 @@ Module Input is responsible for event timing, mouse and keyboard input.
 *)
 
 IMPORT
-	Files, Display, Kernel, V24, SYSTEM;
+	Files, Display, Kernel;
 
 CONST
 	TimeUnit* = 1000;	(** portable, but VAR on other ports *)	(** timer ticks per second (platform dependent). *)

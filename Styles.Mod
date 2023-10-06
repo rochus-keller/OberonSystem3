@@ -94,7 +94,7 @@ MODULE Styles;	(** portable *) (* RS, Wed, 9-Jun-1993 *)
 		font: FontList;
 		W: Texts.Writer;
 		(*pat, pat2: ARRAY 6 OF CHAR;*)
-		dash, dash2: LONGINT;
+		dash, dash2: Display.Pattern;
 		nfnt: Fonts.Font;
 
 (* document coordinate stuff *)

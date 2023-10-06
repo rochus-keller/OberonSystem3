@@ -3,7 +3,7 @@ Refer to the license.txt file provided with this distribution. *)
 
 MODULE Displays;	(* pjm *)
 
-IMPORT SYSTEM;
+IMPORT P := ObxPal;
 
 CONST
 		(** formats for Transfer.  value = bytes per pixel. *)
@@ -15,7 +15,7 @@ CONST
 		(** color components. *)
 	red* = 00FF0000H; green* = 0000FF00H; blue* = 000000FFH;
 	
-	trans* = 80000000H;	(** transparency for Mask. *)
+	trans* = SHORT(80000000H);	(** transparency for Mask. *)
 	invert* = 40000000H;	(** inverting. *)
 (*
 	alpha = 0C0000000H;	(** alpha blending. *)
@@ -24,37 +24,72 @@ CONST
 	BufSize = 65536;
 	
 TYPE
-	Display* = OBJECT
-		VAR
+  FrameBuffer* = POINTER TO ARRAY OF BYTE;
+  Pattern* = POINTER TO ARRAY OF CHAR; // w = buf[0], h = buf[1], pixmap = buf[2..]
+  Display* = POINTER TO RECORD
 			width*, height*: LONGINT;	(** dimensions of visible display. *)
 			offscreen*: LONGINT;	(** number of non-visible lines at the bottom of the display. *)
 			format*: LONGINT;	(** format for Transfer. *)
 			unit*: LONGINT;	(** approximate square pixel size = unit/36000 mm. *)
-			fblow, fbhigh, fbstride: LONGINT;
-		
-		(** Transfer a block of pixels in "raw" display format to (op = set) or from (op = get) the display.  Pixels in the rectangular area are transferred from left to right and top to bottom.  The pixels are transferred to or from "buf", starting at "ofs".  The line byte increment is "stride", which may be positive, negative or zero. *)
-		PROCEDURE Transfer*(VAR buf: ARRAY OF CHAR; ofs, stride, x, y, w, h, op: LONGINT);
-		VAR bufadr, buflow, bufhigh, dispadr: LONGINT;
+			fb*: FrameBuffer;
+			fbstride: LONGINT;
+  		END;
+  		
+  	PROCEDURE Move*( IN from: ARRAY OF CHAR; fromoff: LONGINT; VAR to: ARRAY OF CHAR; tooff, w: LONGINT);
+  	VAR i, lf: LONGINT;
+  	BEGIN
+  	  //lf := LEN(from);
+      FOR i := 0 TO w-1 DO
+        //IF fromoff+i >= lf THEN // TODO check whether still necessary
+        //  to[tooff+i] := 0x
+        //ELSE
+          to[tooff+i] := from[fromoff+i];
+        //END
+      END
+  	END Move;
+  	
+  	PROCEDURE Move2( IN from: ARRAY OF CHAR; fromoff: LONGINT; VAR to: ARRAY OF BYTE; tooff, w: LONGINT);
+  	VAR i: LONGINT;
+  	BEGIN
+      FOR i := 0 TO w-1 DO
+        to[tooff+i] := ORD(from[fromoff+i]);
+      END;
+  	END Move2;
+  	
+  	PROCEDURE Move3( IN from: ARRAY OF BYTE; fromoff: LONGINT; VAR to: ARRAY OF CHAR; tooff, w: LONGINT);
+  	VAR i: LONGINT;
+  	BEGIN
+      FOR i := 0 TO w-1 DO
+        to[tooff+i] := CHR(from[fromoff+i]);
+      END;
+  	END Move3;
+  	
+		(** Transfer a block of pixels in "raw" display format to (op = set) or from (op = get) the display.  
+		Pixels in the rectangular area are transferred from left to right and top to bottom.  The pixels are 
+		transferred to or from "buf", starting at "ofs".  The line byte increment is "stride", which may be 
+		positive, negative or zero. *)
+		PROCEDURE (SELF: Display) Transfer*(VAR buf: ARRAY OF CHAR; ofs, stride, x, y, w, h, op: LONGINT);
+		VAR dispidx, i, w0, h0: LONGINT;
 		BEGIN
 			IF w > 0 THEN
-				ASSERT(fblow # 0);
-				w := w * format;	(* convert to bytes *)
-				bufadr := SYSTEM.ADR(buf[ofs]);
-				dispadr := fblow + ((y*width)+x)*format;
+				ASSERT(SELF.fb # NIL);
+				w0 := w; h0 := h;
+				w := w * SELF.format;	(* convert to bytes *)
+				dispidx := ((y*SELF.width)+x)*SELF.format;
 				CASE op OF
 					set:
-						WHILE h > 0 DO
-							ASSERT((dispadr >= fblow) & (dispadr+w <= fbhigh));	(* index check *)
-							SYSTEM.MOVE(bufadr, dispadr, w);
-							INC(bufadr, stride); INC(dispadr, fbstride);
-							DEC(h)
-						END
+            WHILE h > 0 DO
+              ASSERT((dispidx >= 0) & (dispidx+w <= LEN(SELF.fb)));	(* index check *)
+              Move2(buf, ofs, SELF.fb, dispidx, w);
+              INC(ofs, stride); INC(dispidx, SELF.fbstride);
+              DEC(h)
+            END
+            P.update(x,y,w0,h0);
 					|get:
-						buflow := SYSTEM.ADR(buf[0]); bufhigh := buflow + LEN(buf);
 						WHILE h > 0 DO
-							ASSERT((bufadr >= buflow) & (bufadr+w <= bufhigh));	(* index check *)
-							SYSTEM.MOVE(dispadr, bufadr, w);
-							INC(bufadr, stride); INC(dispadr, fbstride);
+							ASSERT((ofs >= 0) & (ofs+w <= LEN(buf)));	(* index check *)
+							Move3(SELF.fb, dispidx, buf, ofs, w);
+							INC(ofs, stride); INC(dispidx, SELF.fbstride);
 							DEC(h)
 						END
 					ELSE (* skip *)
@@ -63,155 +98,148 @@ TYPE
 		END Transfer;
 		
 		(** Fill a rectangle in color "col". *)
-		PROCEDURE Fill*(col, x, y, w, h: LONGINT);
+		PROCEDURE (SELF: Display) Fill*(col, x, y, w, h: LONGINT);
 		BEGIN
 			Fill0(SELF, col, x, y, w, h)
 		END Fill;
 		
 		(** Equivalent to Fill(col, x, y, 1, 1). *)
-		PROCEDURE Dot*(col, x, y: LONGINT);
-		TYPE Buf = ARRAY 4 OF CHAR;
-		VAR t, c: SET;
+		PROCEDURE (SELF: Display) Dot*(col, x, y: LONGINT);
+		VAR t, c: SET; buf: ARRAY 4 OF CHAR;
 		BEGIN (*{EXCLUSIVE}*)
 			IF col >= 0 THEN	(* opaque or invert *)
-				CASE format OF
+				CASE SELF.format OF
 					index8:
-						c := SYSTEM.VAL(SET, ColorToIndex(col))
+						c := BITS(SELF.ColorToIndex(col))
 					|color565:
-						c := SYSTEM.VAL(SET, ASH(col, 15-23)) * {11..15} +
-								SYSTEM.VAL(SET, ASH(col, 10-15)) * {5..10} +
-								SYSTEM.VAL(SET, ASH(col, 4-7)) * {0..4}
+						c := BITS(ASH(col, 15-23)) * {11..15} +
+								 BITS(ASH(col, 10-15)) * {5..10} +
+								 BITS(ASH(col, 4-7)) * {0..4}
 					|color888, color8888:
-						c := SYSTEM.VAL(SET, col MOD 1000000H)
+						c := BITS(col MOD 1000000H) // restrict col to lower three bytes
 				END;
 				IF ASH(col, 1) < 0 THEN	(* invert *)
 					IF c = {} THEN c := {0..31} END;
-					Transfer(SYSTEM.VAL(Buf, t), 0, format, x, y, 1, 1, get);
+					SELF.Transfer(buf, 0, SELF.format, x, y, 1, 1, get);
+					NUMBER(t,buf);
 					c := t / c
 				END;
-				Transfer(SYSTEM.VAL(Buf, c), 0, format, x, y, 1, 1, set)
+				BYTES(buf,c);
+				SELF.Transfer(buf, 0, SELF.format, x, y, 1, 1, set)
 			END
 		END Dot;
 		
-		(** Transfer a block of pixels from a 1-bit mask to the display.  Pixels in the rectangular area are transferred from left to right and top to bottom.  The pixels are transferred from "buf", starting at bit offset "bitofs".  The line byte increment is "stride", which may be positive, negative or zero. "fg" and "bg" specify the colors for value 1 and 0 pixels respectively. *)
-		PROCEDURE Mask*(VAR buf: ARRAY OF CHAR; bitofs, stride, fg, bg, x, y, w, h: LONGINT);
-		TYPE Buf = ARRAY 4 OF CHAR;
-		VAR p, i: LONGINT; s, fgc, bgc, t: SET;
+		(** Transfer a block of pixels from a 1-bit mask to the display.  Pixels in the rectangular 
+		    area are transferred from left to right and top to bottom.  The pixels are transferred from 
+		    "pat", starting at bit offset "bitofs".  The line byte increment is "stride", which may be 
+		    positive, negative or zero. "fg" and "bg" specify the colors for value 1 and 0 pixels 
+		    respectively. "bitofs" already includes the 16 bits of the first w/h bytes. *)
+		PROCEDURE (SELF: Display) Mask*(VAR pat: Pattern; bitofs, stride, fg, bg, x, y, w, h: LONGINT);
+		VAR patoff, i: LONGINT; s, fgc, bgc, t: SET; b: ARRAY 4 OF CHAR;
 		BEGIN
 			IF (w > 0) & (h > 0) THEN
-				CASE format OF
+				CASE SELF.format OF
 					index8:
-						IF fg >= 0 THEN fgc := SYSTEM.VAL(SET, ColorToIndex(fg)) END;
-						IF bg >= 0 THEN bgc := SYSTEM.VAL(SET, ColorToIndex(bg)) END
+						IF fg >= 0 THEN fgc := BITS(SELF.ColorToIndex(fg)) END;
+						IF bg >= 0 THEN bgc := BITS(SELF.ColorToIndex(bg)) END
 					|color565:
-						fgc := SYSTEM.VAL(SET, ASH(fg, 15-23)) * {11..15} +
-								SYSTEM.VAL(SET, ASH(fg, 10-15)) * {5..10} +
-								SYSTEM.VAL(SET, ASH(fg, 4-7)) * {0..4};
-						bgc := SYSTEM.VAL(SET, ASH(bg, 15-23)) * {11..15} +
-								SYSTEM.VAL(SET, ASH(bg, 10-15)) * {5..10} +
-								SYSTEM.VAL(SET, ASH(bg, 4-7)) * {0..4}
+						fgc := BITS(ASH(fg, 15-23)) * {11..15} +
+								BITS(ASH(fg, 10-15)) * {5..10} +
+								BITS(ASH(fg, 4-7)) * {0..4};
+						bgc := BITS(ASH(bg, 15-23)) * {11..15} +
+								BITS(ASH(bg, 10-15)) * {5..10} +
+								BITS(ASH(bg, 4-7)) * {0..4}
 					|color888, color8888:
-						fgc := SYSTEM.VAL(SET, fg MOD 1000000H);
-						bgc := SYSTEM.VAL(SET, bg MOD 1000000H)
+						fgc := BITS(fg MOD 1000000H);
+						bgc := BITS(bg MOD 1000000H)
 				END;
 				IF (ASH(fg, 1) < 0) & (fgc = {}) THEN fgc := {0..31} END;	(* invert special *)
 				IF (ASH(bg, 1) < 0) & (bgc = {}) THEN bgc := {0..31} END;	(* invert special *)
-				p := SYSTEM.ADR(buf[0]) + bitofs DIV 32 * 4;	(* p always aligned to 32-bit boundary *)
+				patoff := bitofs DIV 32 * 4;	 // offset to pat param, rounded to the byte in which bitofs points
 				bitofs := bitofs MOD 32; stride := stride*8;
 				LOOP
-					SYSTEM.GET(p, s); i := bitofs;
+          Move(pat, patoff, b, 0, 4); NUMBER(s,b); i := bitofs;
 					LOOP
 						IF (i MOD 32) IN s THEN
 							IF fg >= 0 THEN
 								IF ASH(fg, 1) < 0 THEN	(* invert *)
-									Transfer(SYSTEM.VAL(Buf, t), 0, format, x+i-bitofs, y, 1, 1, get);
+									SELF.Transfer(b, 0, SELF.format, x+i-bitofs, y, 1, 1, get);
+									NUMBER(t,b);
 									t := t / fgc
 								ELSE
 									t := fgc
 								END;
-								Transfer(SYSTEM.VAL(Buf, t), 0, format, x+i-bitofs, y, 1, 1, set)
+								BYTES(b,t);
+								SELF.Transfer(b, 0, SELF.format, x+i-bitofs, y, 1, 1, set)
 							END
 						ELSE
 							IF bg >= 0 THEN
 								IF ASH(bg, 1) < 0 THEN	(* invert *)
-									Transfer(SYSTEM.VAL(Buf, t), 0, format, x+i-bitofs, y, 1, 1, get);
+									SELF.Transfer(b, 0, SELF.format, x+i-bitofs, y, 1, 1, get);
+									NUMBER(t,b);
 									t := t / bgc
 								ELSE
 									t := bgc
 								END;
-								Transfer(SYSTEM.VAL(Buf, t), 0, format, x+i-bitofs, y, 1, 1, set)
+								BYTES(b,t);
+								SELF.Transfer(b, 0, SELF.format, x+i-bitofs, y, 1, 1, set)
 							END
 						END;
 						INC(i);
 						IF i-bitofs = w THEN EXIT END;
-						IF i MOD 32 = 0 THEN SYSTEM.GET(p+i DIV 8, s) END
-					END;
+						IF i MOD 32 = 0 THEN Move(pat, patoff+i DIV 8, b, 0, 4); NUMBER(s,b) END
+					END; // inner LOOP
 					DEC(h);
 					IF h = 0 THEN EXIT END;
 					INC(y); INC(bitofs, stride);
 					IF (bitofs >= 32) OR (bitofs < 0) THEN	(* moved outside s *)
-						INC(p, bitofs DIV 32 * 4); bitofs := bitofs MOD 32
+						INC(patoff, bitofs DIV 32 * 4); bitofs := bitofs MOD 32
 					END
-				END
-			END
+				END // outer LOOP
+			END // IF w,h > 0
 		END Mask;
 		
 		(** Copy source block sx, sy, w, h to destination dx, dy.  Overlap is allowed. *)
-		PROCEDURE Copy*(sx, sy, w, h, dx, dy: LONGINT);
+		PROCEDURE (SELF: Display) Copy*(sx, sy, w, h, dx, dy: LONGINT);
 		BEGIN
 			Copy0(SELF, sx, sy, w, h, dx, dy)
 		END Copy;
 		
 		(** Map a color value to an 8-bit CLUT index.  Only used if format = index8. *)
-		PROCEDURE ColorToIndex*(col: LONGINT): LONGINT;
+		PROCEDURE (SELF: Display) ColorToIndex*(col: LONGINT): LONGINT;
 		BEGIN
 				(* default implementation is not very useful and should be overridden. *)
-			RETURN SYSTEM.VAL(LONGINT, 
-					SYSTEM.VAL(SET, ASH(col, 7-23)) * {5..7} +
-					SYSTEM.VAL(SET, ASH(col, 4-15)) * {2..4} +
-					SYSTEM.VAL(SET, ASH(col, 1-7)) * {0..1})
+			RETURN ORD( 
+					BITS(ASH(col, 7-23)) * {5..7} +
+					BITS(ASH(col, 4-15)) * {2..4} +
+					BITS(ASH(col, 1-7)) * {0..1})
 		END ColorToIndex;
 		
 		(** Map an 8-bit CLUT index to a color value.  Only used if format = index8. *)
-		PROCEDURE IndexToColor*(index: LONGINT): LONGINT;
+		PROCEDURE (SELF: Display) IndexToColor*(index: LONGINT): LONGINT;
 		BEGIN
 				(* default implementation is not very useful and should be overridden. *)
 			RETURN
-					ASH(SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, index) * {5..7}), 23-7) +
-					ASH(SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, index) * {2..4}), 15-4) +
-					ASH(SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, index) * {0..1}), 7-1)
+					ASH(ORD(BITS(index) * {5..7}), 23-7) +
+					ASH(ORD(BITS(index) * {2..4}), 15-4) +
+					ASH(ORD(BITS(index) * {0..1}), 7-1)
 		END IndexToColor;
 		
 		(** Initialize a linear frame buffer for Transfer. *)
-		PROCEDURE InitFrameBuffer*(adr, size: LONGINT);
+		PROCEDURE (SELF: Display) InitFrameBuffer*(buf: FrameBuffer);
 		BEGIN
-			ASSERT(width*(height+offscreen)*format <= size);
-			fblow := adr; fbhigh := fblow + size; fbstride := width*format;
-			ASSERT(ASH(fblow, -31) = ASH(fbhigh, -31), 100)	(* same sign, for index check in Transfer *)
+			ASSERT(SELF.width*(SELF.height+SELF.offscreen)*SELF.format <= LEN(buf));
+			SELF.fb := buf; SELF.fbstride := SELF.width*SELF.format;
+			// ASSERT(ASH(SELF.fblow, -31) = ASH(SELF.fbhigh, -31), 100)	(* same sign, for index check in Transfer *)
 		END InitFrameBuffer;
-		
-(*
-		(** Draw a line. *)
-		PROCEDURE Line*(col, x1, y1, x2, y2: LONGINT);	(* error term, major, minor? *)
-		BEGIN
-			HALT(99)
-		END Line;
-		
-		(* Like Mask, but replicate the mask in the specified rectangular area. *)
-		PROCEDURE ReplMask*(VAR buf: ARRAY OF CHAR; bitofs, stride, fg, bg, px, py, pw, ph, x, y, w, h: LONGINT);
-		BEGIN
-			HALT(99)
-		END ReplMask;
-*)
-		
-	END Display;
+				
 
 VAR
 	main*: Display;
 	buf: POINTER TO ARRAY OF CHAR;
 
 PROCEDURE Fill0(d: Display; col, x, y, w, h: LONGINT);
-VAR j, p, w0, h0, s: LONGINT; t, c: SET; invert: BOOLEAN;
+VAR j, bufoff, w0, h0, s: LONGINT; t, c: SET; invert: BOOLEAN; b: ARRAY 4 OF CHAR;
 BEGIN (*{EXCLUSIVE}*)
 	IF (w > 0) & (h > 0) & (col >= 0) THEN	(* opaque or invert *)
 		invert := ASH(col, 1) < 0;
@@ -219,34 +247,39 @@ BEGIN (*{EXCLUSIVE}*)
 		CASE d.format OF
 			index8:
 				s := 4; col := d.ColorToIndex(col);
-				c := SYSTEM.VAL(SET, ASH(col, 24) + ASH(col, 16) + ASH(col, 8) + col)
+				c := BITS(ASH(col, 24) + ASH(col, 16) + ASH(col, 8) + col)
 			|color565:
 				s := 4;
-				col := SYSTEM.VAL(LONGINT, 
-						SYSTEM.VAL(SET, ASH(col, 15-23)) * {11..15} +
-						SYSTEM.VAL(SET, ASH(col, 10-15)) * {5..10} +
-						SYSTEM.VAL(SET, ASH(col, 4-7)) * {0..4});
-				c := SYSTEM.VAL(SET, ASH(col, 16) + col MOD 10000H)
+				col := ORD( 
+						BITS(ASH(col, 15-23)) * {11..15} +
+						BITS(ASH(col, 10-15)) * {5..10} +
+						BITS(ASH(col, 4-7)) * {0..4});
+				c := BITS(ASH(col, 16) + col MOD 10000H)
 			|color888:
-				s := 3; c := SYSTEM.VAL(SET, col MOD 1000000H)
+				s := 3; c := BITS(col MOD 1000000H)
 			|color8888:
-				s := 4; c := SYSTEM.VAL(SET, col MOD 1000000H)
+				s := 4; c := BITS(col MOD 1000000H)
 		END;
 		w0 := w*d.format; h0 := (LEN(buf^)-3) DIV w0;	(* -3 for 32-bit loops below *)
 		ASSERT(h0 > 0);
 		IF h < h0 THEN h0 := h END;
 		IF ~invert THEN
-			p := SYSTEM.ADR(buf[0]);
-			FOR j := 0 TO (w0*h0-1) DIV s DO SYSTEM.PUT(p, c); INC(p, s) END
+			bufoff := 0;
+			BYTES(b,c); 
+			FOR j := 0 TO (w0*h0-1) DIV s DO 
+  			Move(b,0,buf,bufoff,4); 
+  			INC(bufoff, s) 
+  		END
 		ELSE
 			IF c = {} THEN c := {0..31} END
 		END;
 		LOOP
 			IF invert THEN
 				d.Transfer(buf^, 0, w0, x, y, w, h0, get);
-				p := SYSTEM.ADR(buf[0]);
+				bufoff := 0;
 				FOR j := 0 TO (w0*h0-1) DIV s DO
-					SYSTEM.GET(p, t); SYSTEM.PUT(p, t / c); INC(p, s)
+  				Move(buf,bufoff,b,0,4); NUMBER(t,b);
+  				BYTES(b, t/c); Move(b,0,buf,bufoff,4); INC(bufoff, s)
 				END
 			END;
 			d.Transfer(buf^, 0, w0, x, y, w, h0, set);

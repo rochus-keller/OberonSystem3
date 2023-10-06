@@ -68,7 +68,7 @@ of characters, each character being a pattern and and metric data.
 
 	PROCEDURE ReadInt (VAR R: Files.Rider; VAR x: INTEGER);
 	VAR c0: CHAR; s1: SHORTINT;
-	BEGIN Files.Read(R, c0); Files.Read(R, s1); x := s1; x := x * 100H + ORD(c0)
+	BEGIN Files.ReadChar(R, c0); Files.Read(R, s1); x := s1; x := x * 100H + ORD(c0)
 	END ReadInt;
 
 	PROCEDURE *GetCharObj (L: Objects.Library; ref: INTEGER; VAR obj: Objects.Object);

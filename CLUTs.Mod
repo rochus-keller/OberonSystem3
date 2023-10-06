@@ -233,19 +233,19 @@ MODULE CLUTs; (** portable *)	(* eos   **)
 	BEGIN
 		FOR n := 0 TO clut.size-1 DO
 			col := clut.col[n];
-			Files.Write(r, CHR(ASH(col, -16) MOD 100H));
-			Files.Write(r, CHR(ASH(col, -8) MOD 100H));
-			Files.Write(r, CHR(col MOD 100H))
+			Files.Write(r, (ASH(col, -16) MOD 100H));
+			Files.Write(r, (ASH(col, -8) MOD 100H));
+			Files.Write(r, (col MOD 100H))
 		END
 	END Write;
 	
 	(** read up to size colors from file **)
 	PROCEDURE Read* (VAR r: Files.Rider; VAR clut: CLUT; size: LONGINT);
-		VAR n: LONGINT; red, green, blue: CHAR;
+		VAR n: LONGINT; red, green, blue: BYTE;
 	BEGIN
 		FOR n := 0 TO size-1 DO
 			Files.Read(r, red); Files.Read(r, green); Files.Read(r, blue);
-			Set(clut, n, ASH(ASH(ORD(red), 8) + ORD(green), 8) + ORD(blue));
+			Set(clut, n, ASH(ASH(red, 8) + green, 8) + blue);
 		END
 	END Read;
 	

@@ -5,7 +5,7 @@ MODULE OTFonts;	(** eos   **)
 	**)
 	
 	IMPORT
-		SYSTEM, Files, Objects, Fonts, Texts, Oberon, Strings, OTInt, OType;
+		SYSTEM, Files, Objects, Fonts, Texts, Oberon, Strings, OTInt, OType, Display;
 		
 	
 	CONST
@@ -181,9 +181,11 @@ MODULE OTFonts;	(** eos   **)
 	END GetChar;
 	
 	PROCEDURE GetCharObj (lib: Objects.Library; ref: INTEGER; VAR obj: Objects.Object);
-		VAR font: Font; adr, pat: LONGINT; no: INTEGER; ch: CHAR; s: SHORTINT;
+		VAR font: Font; adr, pat: Display.Pattern; no: INTEGER; ch: CHAR; s: SHORTINT;
 	BEGIN
 		font := lib(Font);
+		TRAP();
+		(* TODO
 		adr := SYSTEM.ADR(font.mem[0]);
 		SYSTEM.GET(adr + 4*ref, pat);
 		IF pat = 0 THEN
@@ -210,6 +212,7 @@ MODULE OTFonts;	(** eos   **)
 		SYSTEM.GET(pat+1, ch); Char.h := ORD(ch);
 		Char.pat := pat;
 		obj := Char
+		*)
 	END GetCharObj;
 	
 	PROCEDURE LoadFont (font: Font);

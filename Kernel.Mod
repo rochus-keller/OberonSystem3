@@ -3,6 +3,8 @@ Refer to the license.txt file provided with this distribution. *)
 
 MODULE Kernel;	(** non-portable *)	(* rc/ard/nm/jm/jdv/pjm/rml*)
 
+IMPORT ObxPal;
+
 (** Module Kernel is responsible for memory allocation, garbage collection and other run-time 
 support for the Oberon language, as well as interfacing to the underlying machine.  Using features 
 exported from module Kernel may result in an unportable module, as not all Oberon Kernels are the same. 
@@ -189,7 +191,7 @@ END WriteHex;
 (** WriteChar - Write a character to the trace output (not reentrant). *)
 PROCEDURE WriteChar*(c: CHAR);
 BEGIN
-  // TODO ObxPAL.printChar(c)
+  ObxPal.printChar(c)
 END WriteChar;
 
 (** WriteLn - Skip to the next line on trace output *)

@@ -1,7 +1,7 @@
 (* ETH Oberon, Copyright 1990-2003 Computer Systems Institute, ETH Zurich, CH-8092 Zurich.
 Refer to the license.txt file provided with this distribution. *)
 
-MODULE Display;	(* pjm *)
+MODULE Display;	(* pjm *) 
 
 (* Native Oberon display module based on Displays. *)
 
@@ -9,10 +9,11 @@ MODULE Display;	(* pjm *)
  Module Display provides the display drawing primitives and the base type of the visual objects, called Frames.
 *)
 
-IMPORT SYSTEM, AosDisplays := Displays, Kernel, Modules, Objects;
+IMPORT Displays, Kernel, Modules, Objects, DisplayLinear, P := ObxPal;
 
 CONST
 	BG* = 0; FG* = 15; (** Background, foreground colors. *)
+	w_h_bitofs = 16;  // width of the w and h fields of a pattern in bits
 	
 	(** Drawing operation modes. *)
 	replace* = 0;	(** replace destination. *)
@@ -34,14 +35,11 @@ CONST
 TYPE
 	Color* = LONGINT;
 	
-	Pattern* = LONGINT;
-	PatternPtr = POINTER TO RECORD
-		buf: ARRAY 8192 OF CHAR	(* w = buf[0], h = buf[1], pixmap = buf[2..] *)
-	END;
+	Pattern* = Displays.Pattern; // was originally LONGINT;
 	List = POINTER TO ListDesc;
 	ListDesc = RECORD
 		next: List;
-		pat: PatternPtr
+		pat: Pattern
 	END;
 
 	Frame* = POINTER TO FrameDesc;	(** Base type of all displayable objects. *)
@@ -118,8 +116,13 @@ VAR
 	
 	buf: POINTER TO ARRAY OF CHAR;	(* for DisplayBlock *)
 	
-	disp: AosDisplays.Display;
+	disp: Displays.Display;
 	height: LONGINT;
+
+PROCEDURE ProcessEvents*():BOOLEAN;
+BEGIN
+  RETURN P.process_events(0) # 0 // already suspends and waits for events, sleep not necessary
+END ProcessEvents;
 
 (** Change color palette entry. 0 <= col, red, green, blue < 256. *)
 PROCEDURE SetColor*(col: Color; red, green, blue: LONGINT);
@@ -184,30 +187,32 @@ BEGIN
 	clipX1 := 0; clipY1 := UBottom; clipX2 := disp.width-1; clipY2 := height-1
 END ResetClip;
 
-(** Copy source block SX, SY, W, H to destination DX, DY using operation mode. A block is given by its lower left corner X, Y and its dimension W, H. *)
+(** Copy source block SX, SY, W, H to destination DX, DY using operation mode. A block is given by its 
+    lower left corner X, Y and its dimension W, H. *)
 PROCEDURE CopyBlock*(sx, sy, w, h, dx, dy, mode: LONGINT);
 BEGIN
 	disp.Copy(sx, height-sy-h, w, h, dx, height-dy-h)
 END CopyBlock;
 
-(* Place a dot of color col in operation mode at x, y. Effect equivalent to ReplConst with a block of size 1, 1. *)
+(* Place a dot of color col in operation mode at x, y. Effect equivalent to ReplConst with a block of 
+   size 1, 1. *)
 PROCEDURE CopyPattern*(col: Color;  pat: Pattern;  x, y, mode: LONGINT);
-VAR pw, ph, stride: LONGINT; p: PatternPtr;
+VAR pw, ph, stride: LONGINT; 
 BEGIN
-	p := SYSTEM.VAL(PatternPtr, pat); pw := ORD(p.buf[0]); ph := ORD(p.buf[1]);
+	pw := ORD(pat[0]); ph := ORD(pat[1]);
 	IF (x >= clipX1) & (y >= clipY1) & (x+pw-1 <= clipX2) & (y+ph-1 <= clipY2) THEN	(* completely visible *)
 		IF col >= 0 THEN col := palette[col MOD 256] END;
 		stride := (pw+7) DIV 8;
 		CASE mode OF
 			replace:
-				disp.Mask(p.buf, 16 + (ph-1)*stride*8, -stride, col MOD 1000000H, 
+				disp.Mask(pat, w_h_bitofs + (ph-1)*stride*8, -stride, col MOD 1000000H, 
 					palette[BG], x, height-y-ph, pw, ph)
 			|invert:
-				disp.Mask(p.buf, 16 + (ph-1)*stride*8, -stride, col MOD 1000000H + AosDisplays.invert,
-					AosDisplays.trans, x, height-y-ph, pw, ph)
+				disp.Mask(pat, w_h_bitofs + (ph-1)*stride*8, -stride, col MOD 1000000H + Displays.invert,
+					Displays.trans, x, height-y-ph, pw, ph)
 			ELSE	(* paint *)
-				disp.Mask(p.buf, 16 + (ph-1)*stride*8, -stride, col MOD 1000000H, 
-					AosDisplays.trans, x, height-y-ph, pw, ph)
+				disp.Mask(pat, w_h_bitofs + (ph-1)*stride*8, -stride, col MOD 1000000H, 
+					Displays.trans, x, height-y-ph, pw, ph)
 		END
 	ELSIF (x+pw-1 >= clipX1) & (y+ph-1 >= clipY1) & (x <= clipX2) & (y <= clipY2) THEN	(* partially visible *)
 		FillPattern(col, pat, x, y, x, y, pw, ph, mode)
@@ -216,9 +221,12 @@ BEGIN
 	END
 END CopyPattern;
 
-(** Replicate pattern pat in color col into block x, y, w, h using operation mode, proceeding from left to right and from bottom to top, starting at lower left corner. The pattern origin is placed at px, py. *)
+(** Replicate pattern pat in color col into block x, y, w, h using operation mode, proceeding from 
+    left to right and from bottom to top, starting at lower left corner. The pattern origin is placed 
+    at px, py. *)
 PROCEDURE FillPattern*(col: Color; pat: Pattern; px, py, x, y, w, h, mode: LONGINT);
-VAR pw, ph, rdx, lpx, ldw, lsx, rdw, tdy, bpy, cdy, csy, cdh, cdx, csx, stride, fg, bg: LONGINT; p: PatternPtr;
+VAR pw, ph, rdx, lpx, ldw, lsx, rdw, tdy, bpy, cdy, csy, cdh, cdx, csx, stride, fg, bg: LONGINT; 
+    p: Pattern;
 (* See Displays.Display.Text for documentation *)
 BEGIN
 	rdx := x+w-1;  tdy := y+h-1;	(* (x,y) bottom left & (rdx,tdy) top right *)
@@ -230,11 +238,13 @@ BEGIN
 		IF (w > 0) & (h > 0) THEN
 			IF col >= 0 THEN col := palette[col MOD 256] END;
 			CASE mode OF
-				replace: fg := col MOD 1000000H; bg := palette[BG]
-				|invert: fg := col MOD 1000000H + AosDisplays.invert; bg := AosDisplays.trans
-				ELSE fg := col MOD 1000000H; bg := AosDisplays.trans
+				|replace: fg := col MOD 1000000H; 
+				 bg := palette[BG]
+				|invert: fg := col MOD 1000000H + Displays.invert; 
+				 bg := Displays.trans;
+				ELSE fg := col MOD 1000000H; bg := Displays.trans
 			END;
-			p := SYSTEM.VAL(PatternPtr, pat); pw := ORD(p.buf[0]); ph := ORD(p.buf[1]);
+			p := pat; pw := ORD(p[0]); ph := ORD(p[1]);
 			IF (pw > 0) & (ph > 0) THEN	(* rest of code copied from eos' TileBuffer *)
 				stride := (pw+7) DIV 8;
 				INC(px, (x - px) DIV pw * pw); INC(py, (y - py) DIV ph * ph);
@@ -248,30 +258,30 @@ BEGIN
 					cdh := bpy - cdy;
 					cdx := x; csx := lsx;
 					IF px < x THEN
-						disp.Mask(p.buf, 16 + (csy+cdh-1)*stride*8+lsx, -stride, fg, bg, cdx, height-cdh-cdy, ldw, cdh);
+						disp.Mask(p, w_h_bitofs + (csy+cdh-1)*stride*8+lsx, -stride, fg, bg, cdx, height-cdh-cdy, ldw, cdh);
 						csx := 0; cdx := lpx
 					END;
 					WHILE cdx + pw <= rdx DO
-						disp.Mask(p.buf, 16 + (csy+cdh-1)*stride*8, -stride, fg, bg, cdx, height-cdh-cdy, pw, cdh);
+						disp.Mask(p, w_h_bitofs + (csy+cdh-1)*stride*8, -stride, fg, bg, cdx, height-cdh-cdy, pw, cdh);
 						INC(cdx, pw)
 					END;
 					IF cdx < rdx THEN
-						disp.Mask(p.buf, 16 + (csy+cdh-1)*stride*8+csx, -stride, fg, bg, cdx, height-cdh-cdy, rdw, cdh);
+						disp.Mask(p, w_h_bitofs + (csy+cdh-1)*stride*8+csx, -stride, fg, bg, cdx, height-cdh-cdy, rdw, cdh);
 					END;
 					csy := 0; cdy := bpy
 				END;
 				WHILE cdy + ph <= tdy DO
 					cdx := x; csx := lsx;
 					IF px < x THEN	(* draw left border *)
-						disp.Mask(p.buf, 16 + (ph-1)*stride*8+lsx, -stride, fg, bg, cdx, height-ph-cdy, ldw, ph);
+						disp.Mask(p, w_h_bitofs + (ph-1)*stride*8+lsx, -stride, fg, bg, cdx, height-ph-cdy, ldw, ph);
 						csx := 0; cdx := lpx
 					END;
 					WHILE cdx + pw <= rdx DO
-						disp.Mask(p.buf, 16 + (ph-1)*stride*8, -stride, fg, bg, cdx, height-ph-cdy, pw, ph);
+						disp.Mask(p, w_h_bitofs + (ph-1)*stride*8, -stride, fg, bg, cdx, height-ph-cdy, pw, ph);
 						INC(cdx, pw)
 					END;
 					IF cdx < rdx THEN	(* draw right border *)
-						disp.Mask(p.buf, 16 + (ph-1)*stride*8+csx, -stride, fg, bg, cdx, height-ph-cdy, rdw, ph);
+						disp.Mask(p, w_h_bitofs + (ph-1)*stride*8+csx, -stride, fg, bg, cdx, height-ph-cdy, rdw, ph);
 					END;
 					INC(cdy, ph)
 				END;
@@ -279,15 +289,15 @@ BEGIN
 					cdh := tdy - cdy;
 					cdx := x; csx := lsx;
 					IF px < x THEN	(* draw top left corner *)
-						disp.Mask(p.buf, 16 + (csy+cdh-1)*stride*8+lsx, -stride, fg, bg, cdx, height-cdh-cdy, ldw, cdh);
+						disp.Mask(p, w_h_bitofs + (csy+cdh-1)*stride*8+lsx, -stride, fg, bg, cdx, height-cdh-cdy, ldw, cdh);
 						csx := 0; cdx := lpx
 					END;
 					WHILE cdx + pw <= rdx DO
-						disp.Mask(p.buf, 16 + (csy+cdh-1)*stride*8, -stride, fg, bg, cdx, height-cdh-cdy, pw, cdh);
+						disp.Mask(p, w_h_bitofs + (csy+cdh-1)*stride*8, -stride, fg, bg, cdx, height-cdh-cdy, pw, cdh);
 						INC(cdx, pw)
 					END;
 					IF cdx < rdx THEN	(* draw top right corner *)
-						disp.Mask(p.buf, 16 + (csy+cdh-1)*stride*8+csx, -stride, fg, bg, cdx, height-cdh-cdy, rdw, cdh);
+						disp.Mask(p, w_h_bitofs + (csy+cdh-1)*stride*8+csx, -stride, fg, bg, cdx, height-cdh-cdy, rdw, cdh);
 					END
 				END
 			END
@@ -314,7 +324,7 @@ BEGIN
 		IF (w > 0) & (h > 0) THEN
 			IF col >= 0 THEN col := palette[col MOD 256] END;
 			IF mode = invert THEN
-				disp.Fill(col MOD 1000000H + AosDisplays.invert, x, height-y-h, w, h)
+				disp.Fill(col MOD 1000000H + Displays.invert, x, height-y-h, w, h)
 			ELSE
 				disp.Fill(col MOD 1000000H, x, height-y-h, w, h)
 			END
@@ -322,13 +332,14 @@ BEGIN
 	END
 END ReplConst;
 
-(** Place a dot of color col in operation mode at x, y. Effect equivalent to ReplConst with a block of size 1, 1. *)
+(** Place a dot of color col in operation mode at x, y. Effect equivalent to ReplConst with a block of 
+    size 1, 1. *)
 PROCEDURE Dot*(col: Color; x, y, mode: LONGINT);
 BEGIN
 	IF (x <= clipX2) & (y <= clipY2) & (x >= clipX1) & (y >= clipY1) THEN
 		IF col >= 0 THEN col := palette[col MOD 256] END;
 		IF mode = invert THEN
-			disp.Dot(col MOD 1000000H + AosDisplays.invert, x, height-y-1)
+			disp.Dot(col MOD 1000000H + Displays.invert, x, height-y-1)
 		ELSE
 			disp.Dot(col MOD 1000000H, x, height-y-1)
 		END
@@ -339,22 +350,25 @@ END Dot;
 PROCEDURE GetDim*(pat: Pattern; VAR w, h: INTEGER);
 VAR ch: CHAR;
 BEGIN
-	SYSTEM.GET(pat, ch); w := ORD(ch);
-	SYSTEM.GET(pat+1, ch); h := ORD(ch)
+	w := ORD(pat[0]);
+	h := ORD(pat[1])
 END GetDim;
 
 (** Define a new pattern. *)
 PROCEDURE NewPattern*(w, h: LONGINT; VAR image: ARRAY OF SET): Pattern;
-VAR len, src, dest, i: LONGINT;  p: PatternPtr;  pl: List;
+VAR len, src, dest, i: LONGINT;  p: Pattern;  pl: List; tmp: ARRAY 4 OF CHAR;
 BEGIN
 	len := (w+7) DIV 8;
-	SYSTEM.NEW(p, 4+len*h); p.buf[0] := CHR(w); p.buf[1] := CHR(h);
-	src := SYSTEM.ADR(image[0]); dest := SYSTEM.ADR(p.buf[2]);
+	NEW(p, 2+len*h); p[0] := CHR(w); p[1] := CHR(h);
+	src := 0; // index to image
+	dest := 2; // index to p
 	i := 0;
-	WHILE i < h DO SYSTEM.MOVE(src, dest, len); INC(src, 4); INC(dest, len); INC(i) END;
+	WHILE i < h DO 
+  	BYTES(tmp,image[src]); Displays.Move(tmp,0,p,dest,len); 
+  	INC(src); INC(dest, len); INC(i) 
+  END;
 	NEW(pl); pl.pat := p; pl.next := pattern;  pattern := pl;	(* put in list to avoid GC *)
-	ASSERT(SYSTEM.ADR(p.buf[0]) = SYSTEM.VAL(LONGINT, p));
-	RETURN SYSTEM.ADR(p.buf[0])
+	RETURN p
 END NewPattern;
 
 (* Define standard patterns. *)
@@ -526,10 +540,10 @@ END CreatePatterns;
 PROCEDURE TransferFormat*(x: LONGINT): LONGINT;
 BEGIN
 	CASE disp.format OF
-		AosDisplays.index8: RETURN index8
-		|AosDisplays.color565: RETURN color565
-		|AosDisplays.color888: RETURN color888
-		|AosDisplays.color8888: RETURN color8888
+		Displays.index8: RETURN index8
+		|Displays.color565: RETURN color565
+		|Displays.color888: RETURN color888
+		|Displays.color8888: RETURN color8888
 		ELSE RETURN unknown
 	END
 END TransferFormat;
@@ -553,7 +567,7 @@ END TransferBlock;
 (** Change screen mode. *)
 PROCEDURE SetMode*(x: LONGINT; s: SET);
 BEGIN
-	disp := AosDisplays.main; height := disp.height;
+	disp := Displays.main; height := disp.height;
 	Left := 0; ColLeft := 0; Bottom := 0;
 	Unit := disp.unit;
 	UBottom := SHORT(-disp.offscreen);
@@ -562,8 +576,9 @@ BEGIN
 END SetMode;
 
 (** Display a picture.  Used internally by Pictures module only. *)
-PROCEDURE DisplayBlock*(adr, dx, dy, w, h, sx, sy, mode: LONGINT);
-VAR pw, pd, src, dst, rdx, tdy, col: LONGINT; ch, prev, prevmap: CHAR;
+PROCEDURE DisplayBlock*(data: POINTER TO ARRAY OF CHAR; depth: INTEGER; wth, 
+                        dx, dy, w, h, sx, sy, mode: LONGINT);
+VAR pw, pd, src, dst, rdx, tdy, col: LONGINT; ch, prev, prevmap: CHAR; tmp: ARRAY 4 OF CHAR;
 BEGIN
 	rdx := sx+w-1;  tdy := sy+h-1;	(* (sx,sy) bottom left & (rdx,tdy) top right *)
 	IF (sx <= clipX2) & (sy <= clipY2) & (rdx >= clipX1) & (tdy >= clipY1) THEN
@@ -572,43 +587,45 @@ BEGIN
 		IF rdx > clipX2 THEN DEC(w, rdx-clipX2) END;
 		IF tdy > clipY2 THEN DEC(h, tdy-clipY2) END;
 		IF (w > 0) & (h > 0) THEN
-			pd := 0; SYSTEM.GET(adr+4, SYSTEM.VAL(INTEGER, pd));
+			pd := depth; 
 			IF pd = 8 THEN
-				SYSTEM.GET(adr+8, pw); SYSTEM.GET(adr+12, src);
+				pw := wth; src := 0; // index into data
 				INC(src, (dy+h-1)*pw + dx);	(* top left corner *)
 				IF w*h*disp.format+1 > LEN(buf^) THEN NEW(buf, w*h*disp.format+1) END;	(* +1 for *** below *)
-				dst := SYSTEM.ADR(buf[0]);
+				dst := 0; // index into buf
 				CASE disp.format OF
-					AosDisplays.index8:
+					Displays.index8:
 						prev := CHR(BG); prevmap := CHR(disp.ColorToIndex(palette[ORD(prev)]));
 						FOR tdy := 0 TO h-1 DO
 							FOR rdx := 0 TO w-1 DO
-								SYSTEM.GET(src, ch); INC(src);
+								ch := data[src]; INC(src);
 								IF ch # prev THEN 
 									prev := ch; prevmap := CHR(disp.ColorToIndex(palette[ORD(prev)]))
 								END;
-								SYSTEM.PUT(dst, prevmap); INC(dst)
+								buf[dst] := prevmap; INC(dst)
 							END;
 							INC(src, -w-pw)
 						END
-					|AosDisplays.color565:
+					|Displays.color565:
 						FOR tdy := 0 TO h-1 DO
 							FOR rdx := 0 TO w-1 DO
-								SYSTEM.GET(src, ch); INC(src); col := palette[ORD(ch)];
-								SYSTEM.PUT(dst, SYSTEM.VAL(INTEGER, 
-										SYSTEM.VAL(SET, ASH(col, 15-23)) * {11..15} +
-										SYSTEM.VAL(SET, ASH(col, 10-15)) * {5..10} +
-										SYSTEM.VAL(SET, ASH(col, 4-7)) * {0..4}));
+								ch := data[src]; INC(src); col := palette[ORD(ch)];
+								BYTES(tmp, 
+    								BITS(ASH(col, 15-23)) * {11..15} +
+										BITS(ASH(col, 10-15)) * {5..10} +
+										BITS(ASH(col, 4-7)) * {0..4});
+								Displays.Move(tmp,0,buf,dst,2); 
 								INC(dst, 2)
 							END;
 							INC(src, -w-pw)
 						END
-					|AosDisplays.color888, AosDisplays.color8888:
+					|Displays.color888, Displays.color8888:
 						col := disp.format;	(* size *)
 						FOR tdy := 0 TO h-1 DO
 							FOR rdx := 0 TO w-1 DO
-								SYSTEM.GET(src, ch); INC(src);
-								SYSTEM.PUT(dst, palette[ORD(ch)]);	(* *** possible 32-bit write to 24-bit value *)
+								ch := data[src]; INC(src);
+								BYTES(tmp,palette[ORD(ch)]);
+								Displays.Move(tmp,0,buf,dst,col);	
 								INC(dst, col)
 							END;
 							INC(src, -w-pw)
@@ -632,7 +649,7 @@ PROCEDURE LoadDriver;
 VAR m: Modules.Module; c: Modules.Command; name: ARRAY 32 OF CHAR;
 BEGIN
 	Kernel.GetConfig("DDriver", name);
-	IF name = "" THEN name := "DisplayPermedia2" END;
+	IF name = "" THEN name := "DisplayLinear" END;
 	m := Modules.ThisMod(name);
 	IF m # NIL THEN
 		c := Modules.ThisCommand(m, "Install");
@@ -646,12 +663,13 @@ BEGIN
 END LoadDriver;
 
 BEGIN
-	ASSERT((get = AosDisplays.get) & (set = AosDisplays.set));
-	LoadDriver;
+	ASSERT((get = Displays.get) & (set = Displays.set));
+	DisplayLinear.Install; // instead of LoadDriver
 	NEW(buf, 8192);
 	pattern := NIL;
 	CreatePatterns;
-	SetMode(0, {})
+	SetMode(0, {});
+	P.open_screen(disp.width,disp.height,disp.format,"Oberon System 3", disp.fb^);
 END Display.
 
 Compiler.Compile Displays.Display.Mod\X ~

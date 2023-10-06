@@ -71,7 +71,7 @@ BEGIN
 	Display.ReplConst(col, DX, DY, DW, DH, mode);
 END ReplConst;
 
-PROCEDURE ReplPattern* (F : Frame; col: INTEGER; pat: LONGINT; X, Y, W, H, mode: INTEGER);
+PROCEDURE ReplPattern* (F : Frame; col: INTEGER; pat: Display.Pattern; X, Y, W, H, mode: INTEGER);
 	VAR DX,DY,DW,DH : INTEGER;
 BEGIN
 	DW := W; DH := H;

@@ -56,7 +56,7 @@ MODULE Menu;	(** portable *)	(* rs/uh, Wed, 7-Jul-1993 *)
 		ch: CHAR;
 		W: Texts.Writer;
 
-	PROCEDURE GetChar(F: Fonts.Font; ch: CHAR; VAR dx, x, y, w, h: INTEGER; VAR pat: LONGINT);
+	PROCEDURE GetChar(F: Fonts.Font; ch: CHAR; VAR dx, x, y, w, h: INTEGER; VAR pat: Display.Pattern);
 	BEGIN
 		Fonts.GetChar(F, ch, dx, x, y, w, h, pat)
 	END GetChar;
@@ -104,7 +104,7 @@ MODULE Menu;	(** portable *)	(* rs/uh, Wed, 7-Jul-1993 *)
 	END SelectItem;
 
 	PROCEDURE Area(fnt: Fonts.Font; VAR entryH, width, height: INTEGER);
-		VAR pat: LONGINT;	dx, x, y, w, h, w0: INTEGER;
+		VAR pat: Display.Pattern;	dx, x, y, w, h, w0: INTEGER;
 	BEGIN	(* ch read *)
 		entryH := fnt.height + 3; width := 0; height := entryH; w0 := 0;
 		REPEAT
@@ -122,7 +122,7 @@ MODULE Menu;	(** portable *)	(* rs/uh, Wed, 7-Jul-1993 *)
 	END Area;
 
 	PROCEDURE Write(fnt: Fonts.Font; X, Y, entryH: INTEGER);
-		VAR pat: LONGINT;	dx, x, y, w, h, xleft: INTEGER;
+		VAR pat: Display.Pattern;	dx, x, y, w, h, xleft: INTEGER;
 	BEGIN	(* ch read *)
 		DEC(Y, entryH); xleft := X;
 		REPEAT

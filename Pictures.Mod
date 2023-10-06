@@ -114,9 +114,11 @@ BEGIN
 END CopyBlock;
 
 (** Copy the pattern pat in color col to position x, y using mode. *)
-PROCEDURE CopyPattern* (P:Picture;col:INTEGER;pat:LONGINT;X,Y,mode: INTEGER); 
+PROCEDURE CopyPattern* (P:Picture;col:INTEGER;pat:Display.Pattern;X,Y,mode: INTEGER); 
 VAR w, h: INTEGER;
 BEGIN
+  TRAP();
+  (* TODO
 	IF InBoundaries(X, Y, P.width, P.height) THEN
 		w := 0;  h := 0;  SYSTEM.GET(pat, ( w));
 		SYSTEM.GET(pat+1, ( h));
@@ -124,6 +126,7 @@ BEGIN
 			Bitmaps.CopyPattern(P.bitmap,col,pat,X, Y, mode)
 		END
 	END
+	*)
 END CopyPattern;
 	
 (** Block fill area x, y, w, h in color col using mode. *)
@@ -138,7 +141,7 @@ BEGIN
 END ReplConst;
 	
 (** Pattern fill pattern pat in the area x, y, w, h in color col using mode. *)
-PROCEDURE ReplPattern* (P:Picture;col:INTEGER;pat:LONGINT;X,Y,W,H,mode: INTEGER); 
+PROCEDURE ReplPattern* (P:Picture;col:INTEGER;pat:Display.Pattern;X,Y,W,H,mode: INTEGER); 
 BEGIN
 	IF InBoundaries(X, Y, P.width, P.height) THEN
 		ASSERT((W >= 0) & (H >= 0));
@@ -553,9 +556,12 @@ BEGIN
 	greyPat[2,0] := 02100000H; greyPat[2,1] :=  0AAAAAAAAH; greyPat[2,2] := 0FFFFFFFFH;
 	greyPat[3,0] := 04100000H; greyPat[3,1] :=  011111111H; greyPat[3,2] := 0; greyPat[3,3] := 044444444H; greyPat[3,4] := 0;
 
+  TRAP();
+  (* TODO
 	grey[0] := SYSTEM.ADR(greyPat[1]) +2; 
 	grey[1] := SYSTEM.ADR(greyPat[3]) +2; 
 	grey[2] := SYSTEM.ADR(greyPat[0]) +2; 
+	*)
 	grey[3] := Display.grey1;
 END Init;
 

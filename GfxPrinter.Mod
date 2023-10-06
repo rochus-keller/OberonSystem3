@@ -214,7 +214,7 @@ MODULE GfxPrinter;	(** eos   **)
 	PROCEDURE Show (ctxt: Gfx.Context; x, y: REAL; VAR str: ARRAY OF CHAR);
 		VAR
 			mat, m: GfxMatrix.Matrix; font: GfxFonts.Font; pc: Context; u, v, du, dv: REAL; metric: Fonts.Font;
-			i, aw, dx, bx, by, w, h, px, py: INTEGER; pat: LONGINT;
+			i, aw, dx, bx, by, w, h, px, py: INTEGER; pat: Display.Pattern;
 	BEGIN
 		GfxMatrix.Concat(ctxt.font.mat, ctxt.ctm, mat);
 		GfxMatrix.Scale(mat, Printer.Unit/Display.Unit, Printer.Unit/Display.Unit, m);	(* check for screen font *)

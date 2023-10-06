@@ -39,4 +39,8 @@ Modification steps:
 - Added original Displays, Displays.Display, DisplayLinear and CLUTs modules from Native Oberon System 3 Release 2.3.7 Alpha, downloaded and
   extracted from https://sourceforge.net/projects/nativeoberon/files/nativeoberon/Native%20Oberon%202.3.7%20Alpha/NativeOberon_2.3.7.tar.gz/download
   on 2023-09-09 and converted to plain text UTF-8 ISO 8859-1 format; replacing Empty.Display.Mod.
+- Redesigned display modules to work with ObxPal; Pattern and FrameBuffer are now regular CHAR/BYTE arrays, no longer unmanaged memory we had to
+  access by SYSTEM backdoors; thus replaced all SYSTEM calls with regular language constructs; in consequence patterns are no longer LONGINT but 
+  Display.Pattern all over the code.
+- Implementing File based on ObxPal, WIP
 

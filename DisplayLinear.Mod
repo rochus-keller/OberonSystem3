@@ -24,7 +24,7 @@ Config strings:
 The Init program is a 8086 machine code program in hexadecimal.  It has to initialize the specified display mode, possibly by making display BIOS calls, and leave the 32-bit physical address of the frame buffer in DX:CX.
 *)
 
-IMPORT SYSTEM, Kernel, Files, MathL, V86, Displays, CLUTs;
+IMPORT Kernel, Files, MathL, Displays, CLUTs;
 
 CONST
 	PalFile = "Displays.Pal";	(* physical palette for 8-bit modes - if missing, use default direct mapping *)
@@ -82,35 +82,35 @@ VAR
 	display: Display;
 
 TYPE
-	Display = OBJECT (Displays.Display)
-		VAR clut: POINTER TO CLUTs.CLUT;
+	Display = POINTER TO RECORD (Displays.Display)
+		clut: POINTER TO CLUTs.CLUT;
+		END;
 		
-		PROCEDURE ColorToIndex*(col: LONGINT): LONGINT;
+		PROCEDURE (SELF: Display) ColorToIndex*(col: LONGINT): LONGINT;
 		BEGIN
-			IF (format = Displays.index8) & (clut # NIL) THEN
-				IF 30 IN SYSTEM.VAL(SET, col) THEN	(* invert *)
-					col := CLUTs.Match(clut^, col);
+			IF (SELF.format = Displays.index8) & (SELF.clut # NIL) THEN
+				IF 30 IN BITS(col) THEN	(* invert *)
+					col := CLUTs.Match(SELF.clut^, col);
 					IF col # 0 THEN RETURN col ELSE RETURN 15 END
 				ELSE
-					RETURN CLUTs.Match(clut^, col)
+					RETURN CLUTs.Match(SELF.clut^, col)
 				END
 			ELSE
-				RETURN ColorToIndex^(col)
+				RETURN SELF.ColorToIndex^(col)
 			END
 		END ColorToIndex;
 		
-		PROCEDURE IndexToColor*(index: LONGINT): LONGINT;
+		PROCEDURE (SELF: Display) IndexToColor*(index: LONGINT): LONGINT;
 		VAR col: LONGINT;
 		BEGIN
-			IF (format = Displays.index8) & (clut # NIL) THEN
-				CLUTs.Get(clut^, index, col);
+			IF (SELF.format = Displays.index8) & (SELF.clut # NIL) THEN
+				CLUTs.Get(SELF.clut^, index, col);
 				RETURN col MOD 1000000H
 			ELSE
-				RETURN IndexToColor^(index)
+				RETURN SELF.IndexToColor^(index)
 			END
 		END IndexToColor;
 		
-	END Display;
 	
 (* StrToInt - Convert a string to an integer. *)
 
@@ -132,7 +132,7 @@ BEGIN
 	RETURN sgn * vd
 END StrToInt;
 
-PROCEDURE GetVal(name: ARRAY OF CHAR;  default: LONGINT): LONGINT;
+PROCEDURE GetVal(IN name: ARRAY OF CHAR;  default: LONGINT): LONGINT;
 VAR v: LONGINT;  s: ARRAY 12 OF CHAR;  p: LONGINT;
 BEGIN
 	Kernel.GetConfig(name, s);
@@ -162,7 +162,7 @@ BEGIN
 	ELSE
 		d.clut := NIL
 	END;
-	SYSTEM.PORTIN(3DAH, ch);
+	(* SYSTEM.PORTIN(3DAH, ch);
 	SYSTEM.PORTOUT(3C0H, 11X);
 	SYSTEM.PORTOUT(3C0H, 0X);	(* palette entry 0 is black *)
 	SYSTEM.PORTOUT(3C0H, 20X);
@@ -172,7 +172,7 @@ BEGIN
 		SYSTEM.PORTOUT(3C9H, CHR(ASH(col, -16) MOD 100H DIV 4));
 		SYSTEM.PORTOUT(3C9H, CHR(ASH(col, -8) MOD 100H DIV 4));
 		SYSTEM.PORTOUT(3C9H, CHR(col MOD 100H DIV 4))
-	END
+	END *)
 END InitPalette;
 
 PROCEDURE pow(x: LONGREAL; n: LONGINT): LONGREAL;
@@ -391,85 +391,12 @@ BEGIN
 	t.vSyncPol := '+'
 END GTFCalcTimings;
 
-PROCEDURE SetVesaMode(mode, hz: LONGINT; VAR w, h, d, adr: LONGINT);
-VAR width, height, ver: INTEGER; flags: SET; bpp: SHORTINT; reg: V86.Regs; t: GTFTimings;
-BEGIN
-	V86.Init;
-	ASSERT(V86.bufsize >= 512);	(* enough for VESA *)
-
-	SYSTEM.MOVE(SYSTEM.ADR("VBE2"), V86.bufadr, 4);
-	reg.EAX := 4F00H;	(* get VESA info *)
-	reg.ES := V86.bufadr DIV 16;
-	reg.EDI := V86.bufadr MOD 16;
-	V86.Video(reg);
-	ASSERT(reg.EAX MOD 10000H = 4FH, 100);	(* vesa call ok *)
-	SYSTEM.GET(V86.bufadr+4, ver);	(* version *)
-
-	SYSTEM.MOVE(SYSTEM.ADR("VBE2"), V86.bufadr, 4);
-	reg.EAX := 4F01H;	(* get mode info *)
-	reg.ECX := mode;
-	reg.ES := V86.bufadr DIV 16;
-	reg.EDI := V86.bufadr MOD 16;
-	V86.Video(reg);
-	ASSERT(reg.EAX MOD 10000H = 4FH, 101);	(* vesa call ok *)
-	
-	SYSTEM.GET(V86.bufadr+12H, width);
-	SYSTEM.GET(V86.bufadr+14H, height);
-	SYSTEM.GET(V86.bufadr+19H, bpp);
-	SYSTEM.GET(V86.bufadr+28H, adr);
-	IF bpp = 15 THEN bpp := 16 END;	(* 15bpp not really supported currently *)
-	w := width; h := height; d := bpp;
-	ASSERT((adr # 0) & (adr MOD 4096 = 0), 102);	(* frame buffer address ok *)
-	
-	IF (ver >= 300H) & (hz > 0) THEN
-		GTFCalcTimings(w, h, hz, GTFLockVF, FALSE, FALSE, t);
-		reg.EAX := 4F0BH; reg.EBX := 0; reg.EDX := mode;
-		reg.ECX := hz * t.h.hTotal * t.v.vTotal;
-		V86.Video(reg);
-		ASSERT(reg.EAX MOD 10000H = 4FH, 104);	(* vesa call ok *)
-		
-		SYSTEM.PUT(V86.bufadr, SYSTEM.VAL(INTEGER, t.h.hTotal));
-		SYSTEM.PUT(V86.bufadr+2, SYSTEM.VAL(INTEGER, t.h.hSyncStart));
-		SYSTEM.PUT(V86.bufadr+4, SYSTEM.VAL(INTEGER, t.h.hSyncEnd));
-		SYSTEM.PUT(V86.bufadr+6, SYSTEM.VAL(INTEGER, t.v.vTotal));
-		SYSTEM.PUT(V86.bufadr+8, SYSTEM.VAL(INTEGER, t.v.vSyncStart));
-		SYSTEM.PUT(V86.bufadr+10, SYSTEM.VAL(INTEGER, t.v.vSyncEnd));
-		flags := {};
-		IF t.interlace = "I" THEN INCL(flags, 1) END;
-		IF t.hSyncPol = "-" THEN INCL(flags, 2) END;
-		IF t.vSyncPol = "-" THEN INCL(flags, 3) END;
-		SYSTEM.PUT(V86.bufadr+12, SYSTEM.VAL(CHAR, flags));
-		SYSTEM.PUT(V86.bufadr+13, reg.ECX);
-		SYSTEM.PUT(V86.bufadr+17, SYSTEM.VAL(INTEGER, SHORT(hz*100)));
-		reg.EBX := 800H
-	ELSE
-		reg.EBX := 0
-	END;
-	
-	reg.EAX := 4F02H; 	(* set mode *)
-	reg.EBX := reg.EBX + mode + 4000H;	(* enable linear fb *)
-	reg.ES := V86.bufadr DIV 16;
-	reg.EDI := V86.bufadr MOD 16;
-	V86.Video(reg);
-	ASSERT(reg.EAX MOD 10000H = 4FH, 103);	(* vesa call ok *)
-	
-	Kernel.traceConsole := FALSE;
-	V86.Cleanup
-END SetVesaMode;
-
 PROCEDURE Init;
-VAR w, h, d, f, mem, adr, vmode: LONGINT;
+VAR w, h, d, f, mem, adr, vmode: LONGINT; buf: Displays.FrameBuffer;
 BEGIN
-	vmode := GetVal("DMode", 0);
-	IF vmode # 0 THEN	(* attempt V86 call to VESA BIOS *)
-		SetVesaMode(vmode, GetVal("DRefresh", 0), w, h, d, adr)
-	ELSE	(* assume mode was set with Init= *)
-		w := GetVal("DWidth", 1024);
-		h := GetVal("DHeight", 768);
-		d := GetVal("DDepth", 16);
-		Kernel.GetInit(1, adr);	(* DX:CX from Init code *)
-		ASSERT((adr # 0) & (adr MOD 4096 = 0))
-	END;
+  w := GetVal("DWidth", 1024);
+  h := GetVal("DHeight", 768);
+  d := 32; // GetVal("DDepth", 16);
 	
 	CASE d DIV 8 OF
 		1: f := Displays.index8
@@ -478,9 +405,7 @@ BEGIN
 		|4: f := Displays.color8888
 	END;
 	
-	mem := GetVal("DMem", 0)*1024;
-	IF mem = 0 THEN mem := w*h*f END;
-	Kernel.MapPhysical(adr, mem + (-mem) MOD 4096, adr);
+	mem := w*h*f; // size of frame buffer
 	
 	NEW(display);
 	display.width := w; display.height := h;
@@ -488,8 +413,8 @@ BEGIN
 	display.format := f; display.unit := 10000;
 	
 	IF f = Displays.index8 THEN InitPalette(display) END;
-	
-	display.InitFrameBuffer(adr, mem)
+	NEW(buf, mem);
+	display.InitFrameBuffer(buf)
 END Init;
 
 BEGIN

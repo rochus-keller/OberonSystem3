@@ -714,7 +714,7 @@ END ClipPoly;
 
 (** build the texture for a string **)
 PROCEDURE InitStringTexture* (poly: Polygon; string, font: ARRAY OF CHAR; col, backCol: Color; transparent: BOOLEAN);
-VAR P: Pictures.Picture; width, height, i, dx, x, y, w, h, fontCol, bgCol, X: INTEGER; F: Fonts.Font; pat: LONGINT;
+VAR P: Pictures.Picture; width, height, i, dx, x, y, w, h, fontCol, bgCol, X: INTEGER; F: Fonts.Font; pat: Display.Pattern;
 BEGIN
 	(* calculate size of picture for the string *)
 	F := Fonts.This(font);

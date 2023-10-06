@@ -480,7 +480,7 @@ END AddPoint;
 (** === Lines === *)
 
 PROCEDURE DrawLine*(F: Figure; M: Display3.Mask; x, y: INTEGER; hint: Point; mode: INTEGER);
-VAR p, q: Point; n, w, md: INTEGER; pat: LONGINT;
+VAR p, q: Point; n, w, md: INTEGER; pat: Display.Pattern;
 
 	PROCEDURE Prev(q: Point): Point;
 	VAR p: Point;
@@ -525,7 +525,7 @@ BEGIN
 END DrawLine;
 
 PROCEDURE PrintLine*(F: Figure; M: Display3.Mask; x, y: INTEGER);
-VAR p: Point; n: INTEGER; pat: LONGINT;
+VAR p: Point; n: INTEGER; pat: Display.Pattern;
 BEGIN pat := GetPat(F.patno);
 	n := 0; p := F.p;
 	WHILE p # NIL DO
@@ -627,7 +627,7 @@ END NewLine;
 (** === Circles === *)
 
 PROCEDURE DrawCircle*(F: Figure; M: Display3.Mask; x, y: INTEGER; hint: Point; mode: INTEGER);
-VAR p, q: Point; w, md: INTEGER; pat: LONGINT;
+VAR p, q: Point; w, md: INTEGER; pat: Display.Pattern;
 BEGIN
 	IF mode = trackmode THEN w := 1; pat := Display.solid; md := Display.invert
 	ELSE w := F.width; pat := GetPat(F.patno); md := mode
@@ -641,7 +641,7 @@ BEGIN
 END DrawCircle;
 
 PROCEDURE PrintCircle*(F: Figure; M: Display3.Mask; x, y: INTEGER);
-VAR p, q: Point; pat: LONGINT;
+VAR p, q: Point; pat: Display.Pattern;
 BEGIN pat := GetPat(F.patno);
 	p := F.p; q := F.p.next;
 	IF (filled IN F.state0)THEN
@@ -718,7 +718,7 @@ END NewCircle;
 (** === Rectangles === *)
 
 PROCEDURE DrawRect*(F: Figure; M: Display3.Mask; x, y: INTEGER; hint: Point; mode: INTEGER);
-VAR p, q: Point; w, md: INTEGER; pat: LONGINT;
+VAR p, q: Point; w, md: INTEGER; pat: Display.Pattern;
 BEGIN
 	IF mode = trackmode THEN w := 1; pat := Display.solid; md := Display.invert
 	ELSE w := F.width; pat := GetPat(F.patno); md := mode
@@ -734,7 +734,7 @@ BEGIN
 END DrawRect;
 
 PROCEDURE PrintRect*(F: Figure; M: Display3.Mask; x, y: INTEGER);
-VAR p, q: Point; pat: LONGINT;
+VAR p, q: Point; pat: Display.Pattern;
 BEGIN pat := GetPat(F.patno);
 	p := F.p; q := F.p.next;
 	IF (filled IN F.state0) THEN
@@ -821,7 +821,7 @@ BEGIN
 END DrawRect3D;
 
 PROCEDURE PrintRect3D*(F: Figure; M: Display3.Mask; x, y: INTEGER);
-VAR p, q: Point; pat: LONGINT; wid, w, h: INTEGER;
+VAR p, q: Point; pat: Display.Pattern; wid, w, h: INTEGER;
 BEGIN pat := GetPat(F.patno);
 	p := F.p; q := F.p.next;
 	x := x + Dev(Min(p.x, q.x)); y := y + Dev(Min(p.y, q.y)); w := Dev(ABS(p.x - q.x) + 1); h := Dev(ABS(p.y - q.y) + 1);
@@ -1049,7 +1049,7 @@ END NewRect3D;
 (* end of Rege code *)
 		
 PROCEDURE DrawSpline*(F: Figure; M: Display3.Mask; x, y: INTEGER; hint: Point; mode: INTEGER);
-VAR n, i, w, md: INTEGER; pat: LONGINT;
+VAR n, i, w, md: INTEGER; pat: Display.Pattern;
 BEGIN
 	IF mode = trackmode THEN w := 1; pat := Display.solid; md := Display.invert
 	ELSE w := F.width; pat := GetPat(F.patno); md := mode
@@ -1068,7 +1068,7 @@ BEGIN
 END DrawSpline;
 
 PROCEDURE PrintSpline*(F: Figure; M: Display3.Mask; x, y: INTEGER);
-VAR n, i: INTEGER; pat: LONGINT; p, q, lq, to: Point;
+VAR n, i: INTEGER; pat: Display.Pattern; p, q, lq, to: Point;
 BEGIN
 	lq := NIL; p := F.p; to := NIL;
 	WHILE p # NIL DO

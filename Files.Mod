@@ -17,7 +17,6 @@ MODULE Files;	(** portable *)  (*NW 11.1.86 / 28.8.92 / pjm 17.04.97 *)
 
 (* Native file system.  Note: InstFiles contains a copy of this module *)
 
-	IMPORT FileDir, Kernel, SYSTEM;
 
 (** The Files module implements the Oberon file system. *)
 
@@ -36,20 +35,10 @@ TYPE
 	
 		Bytes4 = ARRAY 4 OF BYTE;
 		Bytes8 = ARRAY 8 OF BYTE;
-
-		(*aleng * SS + bleng = length (including header)
-			apos * SS + bpos = current position
-			0 <= bpos <= lim <= SS
-			0 <= apos <= aleng < PgTabSize
-			(apos < aleng) & (lim = SS) OR (apos = aleng) *)
-
-	PROCEDURE *Cleanup(f: Kernel.PTR);
-
-	END Cleanup;
 	
 (** Creates a new file with the specified name. *)
 	PROCEDURE New*(name: ARRAY OF CHAR): File;
-
+  // TODO
 	END New;
 
 (** Open an existing file. The same file descriptor is returned if a file is opened multiple times. *)
@@ -117,53 +106,77 @@ x must be big enough to hold n bytes. *)
 Portable routines to read the standard Oberon types.
 *)
 
+	PROCEDURE ReadChar*(VAR R: Rider; VAR x: CHAR);
+	VAR b: BYTE;
+	BEGIN Read(R, b); x := CHR(b)
+	END ReadChar;
+
+	PROCEDURE ReadSInt*(VAR R: Rider; VAR x: SHORTINT);
+	VAR b: BYTE;
+	BEGIN Read(R, b); x := CAST(SHORTINT,b)
+	END ReadSInt;
+
 	PROCEDURE ReadInt*(VAR R: Rider; VAR x: INTEGER);
-		VAR x0, x1: SHORTINT;
-	BEGIN Read(R, x0); Read(R, x1);
+	VAR x0, x1: SHORTINT;
+	BEGIN ReadSInt(R, x0); ReadSInt(R, x1);
 		x := LONG(x1) * 100H + LONG(x0) MOD 100H
 	END ReadInt;
 
-	PROCEDURE ReadLInt*(VAR R: Rider; VAR x: LONGINT);
-	BEGIN ReadBytes(R, SYSTEM.VAL(Bytes4, x), 4)
-	END ReadLInt;
+  PROCEDURE ReadLInt*(VAR r: Rider; VAR x: LONGINT);
+  VAR tmp: Bytes4;
+  BEGIN
+  	ReadBytes(r, tmp, 4);
+  	NUMBER(x,tmp);
+  END ReadLInt;
 
-	PROCEDURE ReadSet*(VAR R: Rider; VAR x: SET);
-	BEGIN ReadBytes(R, SYSTEM.VAL(Bytes4, x), 4)
-	END ReadSet;
+  PROCEDURE ReadSet*(VAR r: Rider; VAR x: SET);
+  VAR tmp: Bytes4; 
+  BEGIN
+  	ReadBytes(r, tmp, 4);
+  	NUMBER(x,tmp);
+  END ReadSet;
 
 	PROCEDURE ReadBool*(VAR R: Rider; VAR x: BOOLEAN);
-		VAR s: SHORTINT;
-	BEGIN Read(R, s); x := s # 0
+		VAR b: BYTE;
+	BEGIN Read(R, b); x := b # 0
 	END ReadBool;
 
-	PROCEDURE ReadReal*(VAR R: Rider; VAR x: REAL);
-	BEGIN ReadBytes(R, SYSTEM.VAL(Bytes4, x), 4)
-	END ReadReal;
-
-	PROCEDURE ReadLReal*(VAR R: Rider; VAR x: LONGREAL);
-	BEGIN ReadBytes(R, SYSTEM.VAL(Bytes8, x), 8)
-	END ReadLReal;
+  PROCEDURE ReadReal*(VAR r: Rider; VAR x: REAL);
+  VAR tmp: Bytes4;
+  BEGIN
+  	ReadBytes(r, tmp, 4);
+  	NUMBER(x,tmp);
+  END ReadReal;
+  
+  PROCEDURE ReadLReal*(VAR r: Rider; VAR x: LONGREAL);
+  VAR tmp: Bytes8;
+  BEGIN
+  	ReadBytes(r, tmp, 8);
+  	NUMBER(x,tmp);
+  END ReadLReal;
 
 	PROCEDURE ReadString*(VAR R: Rider; VAR x: ARRAY OF CHAR);
-		VAR i: INTEGER; ch: CHAR;
+		VAR i: INTEGER; ch: BYTE;
 	BEGIN i := 0;
 		LOOP
-			Read(R, ch); x[i] := ch; INC(i);
-			IF ch = 0X THEN EXIT END;
+			Read(R, ch); x[i] := CHR(ch); INC(i);
+			IF ch = 0 THEN EXIT END;
 			IF i = LEN(x) THEN x[i-1] := 0X;
-				REPEAT Read(R, ch) UNTIL ch = 0X;
+				REPEAT Read(R, ch) UNTIL ch = 0;
 				EXIT
 			END
 		END
 	END ReadString;
 
 (** Reads a number in compressed variable length notation using the minimum amount of bytes. *)
-	PROCEDURE ReadNum*(VAR R: Rider; VAR x: LONGINT);
-		VAR ch: CHAR; n: INTEGER; y: LONGINT;
-	BEGIN n := 0; y := 0; Read(R, ch);
-		WHILE ch >= 80X DO INC(y, SYSTEM.LSH(LONG(ORD(ch)) - 128, n)); INC(n, 7); Read(R, ch) END;
-		x := ASH(SYSTEM.LSH(LONG(ORD(ch)), 25), n-25) + y
-	END ReadNum;
+  // This is the version from Oberon System V5
+  PROCEDURE ReadNum*(VAR r: Rider; VAR x: LONGINT);
+    VAR n, y: LONGINT; b: BYTE;
+  BEGIN
+  	n := 32; y := 0; Read(r, b);
+    WHILE b >= 80H DO y := ROR(y + b-80H, 7); DEC(n, 7); Read(r, b) END ;
+    IF n <= 4 THEN x := ROR(y + b MOD 10H, 4) ELSE x := ASR(ROR(y + b, 7), n-7) END
+  END ReadNum;
 
 (** Writes a byte into the file at the Rider position, advancing the Rider by one. *)
 	PROCEDURE Write*(VAR r: Rider; x: BYTE);
@@ -183,13 +196,19 @@ Portable routines to write the standard Oberon types.
 	BEGIN Write(R, SHORT(x)); Write(R, SHORT(x DIV 100H))
 	END WriteInt;
 
-	PROCEDURE WriteLInt*(VAR R: Rider; x: LONGINT);
-	BEGIN WriteBytes(R, SYSTEM.VAL(Bytes4, x), 4)
-	END WriteLInt;
-
-	PROCEDURE WriteSet*(VAR R: Rider; x: SET);
-	BEGIN WriteBytes(R, SYSTEM.VAL(Bytes4, x), 4)
-	END WriteSet;
+  PROCEDURE WriteLInt*(VAR r: Rider; x: LONGINT);
+  VAR tmp:Bytes4;
+  BEGIN
+    BYTES(tmp,x);
+  	WriteBytes(r, tmp, 4)
+  END WriteLInt;
+  
+  PROCEDURE WriteSet*(VAR r: Rider; x: SET);
+  VAR tmp:Bytes4;
+  BEGIN
+    BYTES(tmp, x);
+  	WriteBytes(r, tmp, 4)
+  END WriteSet;
 
 	PROCEDURE WriteBool*(VAR R: Rider; x: BOOLEAN);
 	BEGIN
@@ -201,29 +220,36 @@ Portable routines to write the standard Oberon types.
   	Write(R, ORD(x))
 	END WriteChar;
 
-	PROCEDURE WriteReal*(VAR R: Rider; x: REAL);
-	BEGIN WriteBytes(R, SYSTEM.VAL(Bytes4, x), 4)
-	END WriteReal;
+  PROCEDURE WriteReal*(VAR r: Rider; x: REAL);
+  VAR tmp:Bytes4;
+  BEGIN
+    BYTES(tmp,x);
+  	WriteBytes(r, tmp, 4)
+  END WriteReal;
+  
+  PROCEDURE WriteLReal*(VAR r: Rider; x: LONGREAL);
+  VAR tmp:Bytes8;
+  BEGIN
+    BYTES(tmp,x);
+  	WriteBytes(r, tmp, 8)
+  END WriteLReal;
 
-	PROCEDURE WriteLReal*(VAR R: Rider; x: LONGREAL);
-	BEGIN WriteBytes(R, SYSTEM.VAL(Bytes8, x), 8)
-	END WriteLReal;
-
-	PROCEDURE WriteString*(VAR R: Rider; x: ARRAY OF CHAR);
-		VAR i: INTEGER; ch: CHAR;
+	PROCEDURE WriteString*(VAR R: Rider; IN x: ARRAY OF CHAR);
+		VAR i: INTEGER; ch: BYTE;
 	BEGIN i := 0;
-		LOOP ch := x[i]; Write(R, ch); INC(i);
-			IF ch = 0X THEN EXIT END;
-			IF i = LEN(x) THEN Write(R, 0X); EXIT END
+		LOOP ch := ORD(x[i]); Write(R, ch); INC(i);
+			IF ch = 0 THEN EXIT END;
+			IF i = LEN(x) THEN Write(R, 0); EXIT END
 		END
 	END WriteString;
 
 (** Writes a number in a compressed format. *)
-	PROCEDURE WriteNum*(VAR R: Rider; x: LONGINT);
-	BEGIN
-		WHILE (x < - 64) OR (x > 63) DO Write(R, CHR(x MOD 128 + 128)); x := x DIV 128 END;
-		Write(R, CHR(x MOD 128))
-	END WriteNum;
+  // This is the version from Oberon System V5
+  PROCEDURE WriteNum*(VAR r: Rider; x: LONGINT);
+  BEGIN
+    WHILE (x < -40H) OR (x >= 40H) DO Write(r, x MOD 80H + 80H); x := ASR(x, 7) END ;
+    Write(r, x MOD 80H)
+  END WriteNum;
 
 (** Deletes a file. res = 0 indicates success. *)
 	PROCEDURE Delete*(name: ARRAY OF CHAR; VAR res: INTEGER);

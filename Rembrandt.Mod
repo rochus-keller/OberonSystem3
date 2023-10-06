@@ -404,7 +404,7 @@ END Select;
 (** Gibt einen String in den angegebenen Bereich aus *)
 PROCEDURE DisplayText*(sx, sy, sw, sh: INTEGER; text: ARRAY OF CHAR);
 CONST bg= 3;
-VAR i, x: INTEGER; f: Fonts.Font; dx, fx, fy, fw, fh: INTEGER; pat: LONGINT;
+VAR i, x: INTEGER; f: Fonts.Font; dx, fx, fy, fw, fh: INTEGER; pat: Display.Pattern;
 BEGIN
 	Display.ReplConst(bg, sx, sy, sw, sh, Display.replace);
 	i:=0; x:= sx+4; f:= Fonts.Default;

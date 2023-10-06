@@ -640,7 +640,7 @@ MODULE OTSim;	(** eos   **)
 				j := 0; lx := 2;
 				WHILE (str[j] # 0X) & (lx < mv.W) DO
 					Fonts.GetChar(MVFont, str[j], dx, xc, yc, wc, hc, pat);
-					IF pat # 0 THEN
+					IF pat # NIL THEN
 						Pictures.CopyPattern(Buffer, textCol, pat, lx + xc, MVLineY + yc, Display.paint)
 					END;
 					INC(lx, dx); INC(j)
@@ -1104,7 +1104,7 @@ MODULE OTSim;	(** eos   **)
 		i := 0;
 		WHILE s[i] # 0X DO
 			Fonts.GetChar(GVFont, s[i], dx, cx, cy, cw, ch, pat);
-			IF pat # 0 THEN
+			IF pat # NIL THEN
 				Pictures.CopyPattern(GVPict, col, pat, x + cx, y + cy, Display.paint)
 			END;
 			INC(x, dx); INC(i)

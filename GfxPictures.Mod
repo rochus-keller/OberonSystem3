@@ -305,8 +305,11 @@ MODULE GfxPictures;	(** eos   **)
 	PROCEDURE PatternToMap* (pat: Display.Pattern; map: GfxMaps.Map);
 		VAR w, h, y, x: INTEGER; pix: GfxMaps.Pixel;
 	BEGIN
+  	TRAP();
+  	(* TODO
 		ASSERT(pat # 0, 100);
 		IF (1 <= pat) & (pat <= 8) THEN pat := PrntPat[pat] END;
+		*)
 		Display.GetDim(pat, w, h);
 		GfxMaps.Create(map, w, h, GfxMaps.A1);
 		

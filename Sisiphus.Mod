@@ -26,7 +26,7 @@ MODULE Sisiphus;	(** portable *) (* gri 18.3.91 / 30.1.92 / 27.4.92 / jt/jm 7.11
 
 	TYPE
 		Icon = ARRAY 2 OF RECORD
-			addr: LONGINT;
+			addr: Display.Pattern;
 			image: ARRAY Side+1 OF SET
 		END;
 

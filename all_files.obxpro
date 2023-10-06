@@ -395,8 +395,8 @@ size=0
 27\RelPath=Centronics.Mod
 270\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/CLUTs.Mod
 270\RelPath=CLUTs.Mod
-271\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/V24Gadgets.Mod
-271\RelPath=V24Gadgets.Mod
+271\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/ObxPal.obx
+271\RelPath=ObxPal.obx
 272\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/V24Log.Mod
 272\RelPath=V24Log.Mod
 273\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/Viewers.Mod
@@ -671,7 +671,7 @@ size=0
 98\RelPath=GfxPrinter.Mod
 99\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/GfxPS.Mod
 99\RelPath=GfxPS.Mod
-size=270
+size=271
 
 [Packages]
 1\Name=@ByteArray()

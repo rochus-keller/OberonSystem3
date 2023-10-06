@@ -30,7 +30,7 @@ MODULE ASCIITab;	(** portable *) (* EJZ,   *)
 
 	PROCEDURE Restore(F: Frame; Q: Display3.Mask; x, y, w, h: INTEGER);
 		VAR
-			pat: LONGINT;
+			pat: Display.Pattern;
 			i, j, x0, y0, dx, cx, cy, cw, ch, dw, dh: INTEGER;
 	BEGIN
 		Display3.ReplConst(Q, Display3.textbackC, x, y, w, h, Display.replace);
@@ -67,7 +67,7 @@ MODULE ASCIITab;	(** portable *) (* EJZ,   *)
 	PROCEDURE Print (F: Frame; VAR M: Display.DisplayMsg);
 		VAR
 			Q: Display3.Mask;
-			pat: LONGINT;
+			pat: Display.Pattern;
 			x, y, w, h: INTEGER;
 			i, j, x0, y0, dx, cx, cy, cw, ch, dw, dh: INTEGER;
 			str: ARRAY 2 OF CHAR;

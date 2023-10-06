@@ -300,9 +300,11 @@ BEGIN
 	END
 END FillPattern0;
 
-PROCEDURE ReplPattern*(B: Bitmap; col: INTEGER; pat: LONGINT; X, Y, W, H, mode: INTEGER);
+PROCEDURE ReplPattern*(B: Bitmap; col: INTEGER; pat: Display.Pattern; X, Y, W, H, mode: INTEGER);
 VAR px, pw, ph, x, y, x2, y2, w, w0, h, src0, src, dst: LONGINT;  ch: CHAR;
 BEGIN
+  TRAP();
+  (* TODO
 	x := X;  y := Y;  w := W;  h := H;
 	x2 := x+w-1;  y2 := y+h-1;	(* (x,y) bottom left & (x2,y2) top right *)
 	IF (w > 0) & (h > 0) THEN
@@ -322,11 +324,13 @@ BEGIN
 			UNTIL h = 0
 		END
 	END
+	*)
 END ReplPattern;
 
 PROCEDURE DisplayBlock*(B: Bitmap; SX, SY, W, H, DX, DY, mode: INTEGER);
 BEGIN 
-	Display.DisplayBlock(ORD( B), SX, SY, W, H, DX, DY, mode);
+  TRAP();
+	// TODO Display.DisplayBlock(ORD(B), SX, SY, W, H, DX, DY, mode);
 END DisplayBlock;
 
 PROCEDURE GetPix*(VAR addr: LONGINT; VAR buf: BYTE; depth: INTEGER);
