@@ -29,7 +29,7 @@ BEGIN
 END Char;
 
 (** Write a string. *)
-PROCEDURE String*(str: ARRAY OF CHAR);
+PROCEDURE String*(IN str: ARRAY OF CHAR);
 BEGIN
 	Texts.WriteString(W, str); Texts.Append(T, W.buf)
 END String;

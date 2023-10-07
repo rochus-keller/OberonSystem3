@@ -43,14 +43,18 @@ Modification steps:
   access by SYSTEM backdoors; thus replaced all SYSTEM calls with regular language constructs; in consequence patterns are no longer LONGINT but 
   Display.Pattern all over the code.
 - Reimplemented File, Input and MathL module based on ObxPal
-- Replaced all Oberon BYTE and VAR ARRAY OF BYTE tricks by properly typed constructs
+- Replaced all Oberon BYTE and VAR ARRAY OF BYTE tricks by properly typed constructs (this also applies on the following steps, not explicitly mentioned)
 - Redesigned modules to no longer depend on SYSTEM: Objects, Fonts, System
 - Finished minimal system 1 which just paints the screen background and the mouse cursor; git commit
 - Replaced original compiler specific code in System module by dummies, WIP
 - FileDir minimal implementation on ObxPal, WIP
-- Replaced all ARRAY OF CHAR value by IN parameters where possible
+- Replaced all ARRAY OF CHAR value by IN parameters where possible (this also applies to the following steps)
 - Downloaded the Oberon system files (fonts, System.Tool, etc.) required to run the system from this URL:
   https://github.com/OberonSystem3/TheOberonCompanionCD/blob/main/Linux/LinuxOberonSystem3.tgz (no Oberon.Text included)
 - Finished minimal system 2 which paints the right track with operational log and tools viewer; git commit
+- Added minimum modules to decently run gadget system with TextDocs
+- Redesigned modules to no longer depend on SYSTEM: Bitmaps, Pictures
+- Added the Oberon.Text file from https://en.wikibooks.org/wiki/Oberon/ETH_Oberon/Oberon.Text
+- Finished minimal system 3 which uses Gadgets to present the log and tools viewer; git commit
 
 

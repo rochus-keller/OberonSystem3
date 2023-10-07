@@ -996,11 +996,11 @@ END Init;
 
 (* ===================== Menu bar =================================*)
 
-PROCEDURE newMenu(name, menubar: ARRAY OF CHAR): Display.Frame;
+PROCEDURE newMenu(IN name, menubar: ARRAY OF CHAR): Display.Frame;
 VAR obj, list: Objects.Object; P, f: Gadgets.Frame; X, p: INTEGER; cmd, title: ARRAY 64 OF CHAR;
 	C: Display.ConsumeMsg; i: LONGINT;
 	
-	PROCEDURE Button(caption, command: ARRAY OF CHAR);
+	PROCEDURE Button(IN caption, command: ARRAY OF CHAR);
 	BEGIN
 		obj := Gadgets.CreateObject("BasicGadgets.NewButton"); f := obj(Gadgets.Frame);
 		f.X := X; f.Y := p; f.H := menuH - 2*p; f.W := menuButtonW;
@@ -1094,7 +1094,7 @@ END newMenu;
 (** Create a new menubar from the menu string. Menu strings are sequences of names. The caption
 of a menu button can be set by following the name by the caption text in square brackets, for example
 "MyDoc.Do[Do] MyDoc.Undo[Undo]" etc. The complete syntax is: { cmd [ title ] } . cmd = name | string . string = "'" chars "'" . title = "[" chars "]" . *)
-PROCEDURE NewMenu*(menubar: ARRAY OF CHAR): Display.Frame;
+PROCEDURE NewMenu*(IN menubar: ARRAY OF CHAR): Display.Frame;
 BEGIN RETURN newMenu("", menubar)
 END NewMenu;
 
@@ -1204,7 +1204,7 @@ VAR list: Display.Frame; X, Y: INTEGER;C: Display.ConsumeMsg;
 		f.slink := list; list := f;
 	END Title;
 	
-	PROCEDURE Button(caption, command: ARRAY OF CHAR);
+	PROCEDURE Button(IN caption, command: ARRAY OF CHAR);
 	VAR obj: Objects.Object; f: Display.Frame; A: Objects.AttrMsg;
 	BEGIN
 		obj := Gadgets.CreateObject("BasicGadgets.NewButton"); f := obj(Gadgets.Frame);
@@ -1320,7 +1320,7 @@ BEGIN
 		ELSIF IsDesktop(f) THEN
 			obj := Gadgets.CreateObject("PanelDocs.NewDoc");
 			doc := obj(Documents.Document);
-			 doc.name := S.s;
+			doc.name := S.s;
 			doc.Load(doc);
 			(*doc.W := 2*Display.Width; doc.H := 2*Display.Height;*)
 			Documents.Init(doc, doc.dsc(Gadgets.Frame));

@@ -945,7 +945,7 @@ BEGIN
 	END
 END GetSelectedFrames;
 
-PROCEDURE HasCmdAttr(F: Frame; attr: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE HasCmdAttr(F: Frame; IN attr: ARRAY OF CHAR): BOOLEAN;
 VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);

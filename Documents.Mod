@@ -82,11 +82,11 @@ PROCEDURE LoadAttachments*(VAR R: Files.Rider; VAR attr: Attributes.Attr; VAR li
 VAR len: LONGINT; F: Files.File; ch: CHAR; lib: Objects.Library;
 BEGIN
 	F := Files.Base(R);
-	Files.Read(R, ch); ASSERT(ch = 08X);
+	Files.ReadChar(R, ch); ASSERT(ch = 08X);
 	Files.ReadLInt(R, len);
 	Attributes.LoadAttributes(R, attr);
 	NEW(lib); Objects.OpenLibrary(lib);
-	Files.Read(R, ch); ASSERT(ch = Objects.LibBlockId);
+	Files.ReadChar(R, ch); ASSERT(ch = Objects.LibBlockId);
 	Objects.LoadLibrary(lib, F, Files.Pos(R), len);
 	Files.Set(R, F, Files.Pos(R) + len);
 	Links.LoadLinks(R, lib, link)
@@ -97,7 +97,7 @@ VAR r: Files.Rider; F: Files.File; patch, len: LONGINT; lib: Objects.Library; M:
 BEGIN
 	F := Files.Base(R);
 	
-	Files.Write(R, 0F7X); Files.Write(R, 08X);
+	Files.WriteChar(R, 0F7X); Files.WriteChar(R, 08X);
 	patch := Files.Pos(R);
 	Files.WriteLInt(R, 0); (* patch *)
 	Attributes.StoreAttributes(R, attr);
@@ -125,7 +125,7 @@ END StoreAttachments;
 *)
 (* ================ Loading of Document types ================= *)
 
-PROCEDURE SplitName (VAR name, MName, PName: ARRAY OF CHAR);
+PROCEDURE SplitName (IN name: ARRAY OF CHAR; VAR MName, PName: ARRAY OF CHAR);
 VAR i, j: INTEGER;
 BEGIN i := 0;
 	WHILE name[i] # "." DO MName[i] := name[i]; INC(i) END;
@@ -136,7 +136,7 @@ END SplitName;
 	
 (* Try to load generic document *)
 
-PROCEDURE generic(name, newproc: ARRAY OF CHAR; VAR loaderror: BOOLEAN): Document;
+PROCEDURE generic(IN name, newproc: ARRAY OF CHAR; VAR loaderror: BOOLEAN): Document;
 	VAR
 		D: Document;
 		MName, PName: ARRAY 64 OF CHAR;
@@ -158,7 +158,7 @@ BEGIN
 	RETURN D
 END generic;
 
-PROCEDURE Generic(name: ARRAY OF CHAR; VAR loaderror: BOOLEAN): Document;
+PROCEDURE Generic(IN name: ARRAY OF CHAR; VAR loaderror: BOOLEAN): Document;
 VAR D: Document; newproc: ARRAY 64 OF CHAR;
 	F: Files.File; R: Files.Rider; tag: INTEGER;
 BEGIN
@@ -183,7 +183,7 @@ BEGIN
 END Cap;
 
 (** Open the give document with name name. NIL is returned on failure. Unknown document types are opened as text documents. *)
-PROCEDURE Open*(name: ARRAY OF CHAR): Document;
+PROCEDURE Open*(IN name: ARRAY OF CHAR): Document;
 VAR i, j, colonpos: INTEGER; ext: ARRAY 64 OF CHAR; D: Document;
 	loaderror: BOOLEAN;
 BEGIN
@@ -253,7 +253,7 @@ BEGIN
 	END
 END Register;
 
-PROCEDURE RegisterStandardTypes(section: ARRAY OF CHAR;  service: BOOLEAN);
+PROCEDURE RegisterStandardTypes(IN section: ARRAY OF CHAR;  service: BOOLEAN);
 VAR S: Texts.Scanner; ext, newproc: ARRAY 32 OF CHAR;  err: BOOLEAN;
 BEGIN
 	Oberon.OpenScanner(S, section);

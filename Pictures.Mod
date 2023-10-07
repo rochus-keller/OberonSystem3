@@ -18,7 +18,7 @@ MODULE Pictures;	(** portable, except where noted *) (* tn, 1992 *)
 (** Module Pictures implement an abstract data type (and object type) for manipulating colored bitmaps of various color depths.
 *)
 
-IMPORT SYSTEM, Texts, Oberon, Files, Display, Objects, Bitmaps, Modules, Out;
+IMPORT Texts, Oberon, Files, Display, Objects, Bitmaps, Modules, Out;
 
 CONST 
 	TryAll = TRUE;	(* try all converters if first one fails *)
@@ -42,9 +42,9 @@ TYPE
 		width*, height*, depth*: INTEGER;	(** Width, height in pixels, and depth in bits per pixel (1, 4, or 8). *)
 		wth: LONGINT;
 		bitmap: Bitmaps.Bitmap;
-		address*: LONGINT;	(** non-portable *) (** Pointer to bitmap data. *)
+		address*: Bitmaps.Data; (** Pointer to bitmap data. *)
 		ct: ColorTable;
-		refr : Addr
+		refr : Bitmaps.Data
 	END;
 	
 VAR 
@@ -189,21 +189,23 @@ END GetColor;
 PROCEDURE StoreCT(VAR R: Files.Rider; ct: ColorTable; depth: INTEGER);
 VAR i: INTEGER;
 BEGIN 
-	Files.WriteBytes(R,depth,2); depth := ABS(depth);
+	Files.WriteInt(R,depth); depth := ABS(depth);
 	i := 0; 
 	WHILE i < ASH(1,depth) DO 
-		Files.WriteBytes(R,ct[i].red,1);Files.WriteBytes(R,ct[i].green,1);Files.WriteBytes(R,ct[i].blue,1);
+		Files.Write(R,ct[i].red);Files.Write(R,ct[i].green);Files.Write(R,ct[i].blue);
 		INC(i)
 	END
 END StoreCT;
 
 PROCEDURE LoadCT(VAR R: Files.Rider; ct: ColorTable; depth: INTEGER);
-VAR i: INTEGER; 
+VAR i: INTEGER; b: BYTE;
 BEGIN
 	i := 0; 
 	WHILE i < ASH(1,depth) DO 
 		ct[i].red := 0; ct[i].green := 0; ct[i].blue := 0;
-		Files.ReadBytes(R,ct[i].red,1);Files.ReadBytes(R,ct[i].green,1);Files.ReadBytes(R,ct[i].blue,1);
+		Files.Read(R,b); ct[i].red := b;
+		Files.Read(R,b); ct[i].green := b;
+		Files.Read(R,b); ct[i].blue := b;
 		INC(i)
 	END
 END LoadCT;
@@ -235,15 +237,15 @@ BEGIN
 	END
 END DisplayBlock;
 
-PROCEDURE New(VAR P: Picture; width, height, depth: INTEGER; addr: LONGINT);
+PROCEDURE New(VAR P: Picture; width, height, depth: INTEGER; addr: Bitmaps.Data);
 VAR H: LONGINT;
 BEGIN
 	P.handle := handler; 
 	P.depth := 8; P.width := width; P.height := height; P.wth := width;
-	IF addr = 0 THEN 
+	IF addr = NIL THEN 
 		H := P.wth* P.height +10; 
-		SYSTEM.NEW(P.refr, H); 
-		P.address := ORD(P.refr)
+		NEW(P.refr, H); 
+		P.address := P.refr
 	ELSE P.address := addr END;
 	NEW(P.bitmap); 
 	Bitmaps.Define(P.bitmap,P.width,P.height,8,P.address); 
@@ -260,7 +262,7 @@ PROCEDURE Create*(P: Picture; width, height, depth: INTEGER);
 VAR i, r, g, b: INTEGER; 
 BEGIN
 	IF depth > 8 THEN HALT(99) END; (* number too large *)
-	New(P,width,height,depth,0);
+	New(P,width,height,depth,NIL);
 	Clear(P);
 	i := 0;
 	WHILE i < 256 DO Display.GetColor(i, r, g, b); SetColor(P, i, r, g, b); INC(i) END;
@@ -294,35 +296,36 @@ END GetLine;
 PROCEDURE Store* (P: Picture; F : Files.File; pos: LONGINT; VAR len: LONGINT);	
 (* stores picture to run length encoded file F  (including tag *)
 	VAR j, i,a,b,d,wth: INTEGER; adr, OldAdr, size: LONGINT; h: SHORTINT; 
-			buf: ARRAY 129 OF SHORTINT; R: Files.Rider;
-			ch: CHAR;
+			buf: ARRAY 129 OF BYTE; R: Files.Rider;
+			ch: CHAR; tmp: BYTE;
 			help: BOOLEAN;
 BEGIN
 	Files.Set(R, F, pos); 	
-	j := PictFileId; Files.WriteBytes(R,j,2); 
-	Files.WriteBytes(R,P.width,2); Files.WriteBytes(R,P.height,2); StoreCT(R,P.ct,P.depth);
+	j := PictFileId; Files.WriteInt(R,j); 
+	Files.WriteInt(R,P.width); Files.WriteInt(R,P.height); StoreCT(R,P.ct,P.depth);
 	d := P.depth;
 	wth := SHORT(P.wth);
 	IF d=1 THEN wth := SHORT((P.wth+7) DIV 8)
 	ELSIF d=4 THEN wth := SHORT((P.wth+1) DIV 2) END;
 	size := P.wth*P.height; 
 	size := size - P.wth;
-	adr := P.address+size;
+	adr := size; // relative to P.address
 	i := 0; 
 	WHILE i < P.height DO
 		OldAdr := adr;
 		a := 0;
 		j := 1; buf[0] := 0; 
-		Bitmaps.GetPix(adr,buf[j],d); 
+		Bitmaps.GetPix(P.address,adr,tmp,d); buf[j] := tmp;
 		b := a + 1;
 		WHILE b < wth DO
-			Bitmaps.GetPix(adr,h,d); help := (h = buf[j]) & (j = 1);
+			Bitmaps.GetPix(P.address,adr,tmp,d); h := CAST(SHORTINT,tmp); 
+			help := (h = buf[j]) & (j = 1);
 			IF ((b - a) < 127) & ((buf[0] = 0) OR help OR ((h # buf[j]) & (j > 1))) THEN (* same run *)
-					IF h # buf[j] THEN INC(buf[0]); INC(j); buf[j] := h ELSE DEC(buf[0]) END
+					IF h # buf[j] THEN INC(buf[0]); INC(j); buf[j] := CAST(BYTE,h) ELSE DEC(buf[0]) END
 			ELSE (* new run *)
 				IF (buf[j] = h) & (b - a # 127) THEN DEC(buf[0]); Files.WriteBytes(R, buf, j); buf[0] := -1
 				ELSE Files.WriteBytes(R, buf, j + 1); buf[0] := 0 END;
-				j := 1; buf[j] := h; a := b
+				j := 1; buf[j] := CAST(BYTE,h); a := b
 			END; 
 			b := b + 1 
 		END;
@@ -337,7 +340,7 @@ PROCEDURE LoadRLE(P: Picture; VAR R: Files.Rider; rv: BOOLEAN);
 	(* load run length encoded picture *)
 	VAR ch: CHAR; k,d,h: INTEGER; a, b,c,ce: LONGINT; cL,cH: CHAR;
 BEGIN
-	a := P.address;
+	a := 0; // relative to P.address;
 	c := P.wth;
 	b := P.height;
 	c := c*(b-1);
@@ -347,19 +350,18 @@ BEGIN
 	c := P.height; 
 	d := P.depth;
 	WHILE c > 0 DO
-		Files.Read(R, ch); k := ORD(ch);
+		Files.ReadChar(R, ch); k := ORD(ch);
 		IF k < 128 THEN 
 			REPEAT 
-				Files.Read(R, ch); 
-				Bitmaps.PutPix(b,ce,ch,d);
+				Files.ReadChar(R, ch); Bitmaps.PutPix(P.address,b,ce,ORD(ch),d);
 				IF b>=ce THEN ce := ce-P.wth; b := a-P.wth; a := b; c := c-1 END;
 				k := k -1;
 			UNTIL k < 0
 		ELSIF k >= 128 THEN
 			k := 257 - k; 
-			Files.Read(R, ch); 
+			Files.ReadChar(R, ch); 
 			REPEAT 
-				Bitmaps.PutPix(b,ce,ch,d);
+				Bitmaps.PutPix(P.address, b,ce,ORD(ch),d);
 				IF b>=ce THEN ce := ce-P.wth; b := a-P.wth; a := b; c := c-1 END;
 				k := k -1 
 			UNTIL k < 1 
@@ -373,17 +375,17 @@ PROCEDURE Load*(P: Picture; F : Files.File; pos: LONGINT; VAR len: LONGINT);
 			(* buf: ARRAY MaxWth OF CHAR; *) err: ARRAY 32 OF CHAR;
 			size,p,adr,n: LONGINT; rle: BOOLEAN;
 BEGIN	
-	Files.Set(R,F,pos-2); Files.ReadBytes(R,id,2); 
+	Files.Set(R,F,pos-2); Files.ReadInt(R,id); 
 	IF id = PictFileId THEN
-		Files.ReadBytes(R,P.width,2); 
-		Files.ReadBytes(R,P.height,2); 
-		Files.ReadBytes(R,P.depth,2); 
+		Files.ReadInt(R,P.width); 
+		Files.ReadInt(R,P.height); 
+		Files.ReadInt(R,P.depth); 
 		NEW(P.ct); 
 		LoadCT(R,P.ct,P.depth);
 		P.wth := P.width; 
 		size := P.wth * P.height;
-		SYSTEM.NEW(P.refr, size+10); 
-		P.address := ORD(P.refr); 
+		NEW(P.refr, size+10); 
+		P.address := P.refr; 
 		NEW(P.bitmap); 
 		Bitmaps.Define(P.bitmap,P.width,P.height,P.depth,P.address); 
 		LoadRLE(P,R,P.depth = 1)
@@ -392,7 +394,7 @@ BEGIN
 	len := Files.Pos(R) - pos
 END Load;
 
-PROCEDURE SplitName (VAR name, MName, PName: ARRAY OF CHAR);
+PROCEDURE SplitName (IN name: ARRAY OF CHAR; VAR MName, PName: ARRAY OF CHAR);
 	VAR i, j: INTEGER;
 BEGIN i := 0;
 	WHILE name[i] # "." DO MName[i] := name[i]; INC(i) END;
@@ -408,7 +410,7 @@ BEGIN
 	i := 0; WHILE name[j] # 0X DO ext[i] := name[j]; INC(i); INC(j) END; ext[i] := 0X;
 END GetExt;
 
-PROCEDURE TryConverter(newproc: ARRAY OF CHAR);
+PROCEDURE TryConverter(IN newproc: ARRAY OF CHAR);
 	VAR mname, pname: ARRAY 32 OF CHAR; mod: Modules.Module; cmd: Modules.Command; 
 		FM: Objects.FileMsg; F: Files.File;
 BEGIN
@@ -459,7 +461,7 @@ BEGIN
 END ConverterOpen;
 
 (** Open the picture file with name from disk. Any graphic file format listed in the PictureConverters section of Oberon.Text can be loaded (e.g. GIF, JPEG, XBM, BMP). *)
-PROCEDURE Open*(P: Picture; name: ARRAY OF CHAR; color: BOOLEAN);
+PROCEDURE Open*(P: Picture; IN name: ARRAY OF CHAR; color: BOOLEAN);
 	VAR F :Files.File; R: Files.Rider; len: LONGINT; x,depth: INTEGER; P2: Picture;
 	dname: ARRAY 64 OF CHAR; d: INTEGER; (* << jm *)
 BEGIN
@@ -551,17 +553,14 @@ BEGIN
 	s[6] := s[1]; 
 	s[7] := s[1];
 	dots := Display.NewPattern(32,8, s);
-	greyPat[0,0] := 02100000H; greyPat[0,1] :=  0AAAAAAAAH; greyPat[0,2] := 0;
-	greyPat[1,0] := 04100000H; greyPat[1,1] :=  011111111H; greyPat[1,2] := 0; greyPat[1,3] := 0; greyPat[1,4] := 0;
-	greyPat[2,0] := 02100000H; greyPat[2,1] :=  0AAAAAAAAH; greyPat[2,2] := 0FFFFFFFFH;
-	greyPat[3,0] := 04100000H; greyPat[3,1] :=  011111111H; greyPat[3,2] := 0; greyPat[3,3] := 044444444H; greyPat[3,4] := 0;
+	greyPat[0,0] := 02100000H; greyPat[0,1] := CAST(LONGINT,0AAAAAAAAH); greyPat[0,2] := 0;
+	greyPat[1,0] := 04100000H; greyPat[1,1] := 011111111H; greyPat[1,2] := 0; greyPat[1,3] := 0; greyPat[1,4] := 0;
+	greyPat[2,0] := 02100000H; greyPat[2,1] := CAST(LONGINT,0AAAAAAAAH); greyPat[2,2] := CAST(LONGINT,0FFFFFFFFH);
+	greyPat[3,0] := 04100000H; greyPat[3,1] := 011111111H; greyPat[3,2] := 0; greyPat[3,3] := 044444444H; greyPat[3,4] := 0;
 
-  TRAP();
-  (* TODO
-	grey[0] := SYSTEM.ADR(greyPat[1]) +2; 
-	grey[1] := SYSTEM.ADR(greyPat[3]) +2; 
-	grey[2] := SYSTEM.ADR(greyPat[0]) +2; 
-	*)
+	grey[0] := Display.grey0; // TODO SYSTEM.ADR(greyPat[1]) +2; 
+	grey[1] := Display.grey0; // TODO SYSTEM.ADR(greyPat[3]) +2; 
+	grey[2] := Display.grey0; // TODO SYSTEM.ADR(greyPat[0]) +2; 
 	grey[3] := Display.grey1;
 END Init;
 

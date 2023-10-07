@@ -29,7 +29,7 @@ TYPE
 		obj*: Objects.Object
 	END;
 
-PROCEDURE Atom(lib: Objects.Library; name: ARRAY OF CHAR): INTEGER;
+PROCEDURE Atom(lib: Objects.Library; IN name: ARRAY OF CHAR): INTEGER;
 VAR ref: INTEGER;
 BEGIN
 	Objects.GetKey(lib.dict, name, ref); RETURN ref
@@ -79,7 +79,7 @@ END ReadRef;
 (** Store links to a file. Only (ref, lib) references to links are written. *)
 PROCEDURE StoreLinks*(VAR R: Files.Rider; lib: Objects.Library; list: Link);
 BEGIN
-	Files.Write(R, 33X); (* magic number *)
+	Files.WriteChar(R, 33X); (* magic number *)
 	WHILE list # NIL DO
 		Files.WriteString(R, list.name); WriteRef(R, lib, list.obj);
 		list := list.next
@@ -91,7 +91,7 @@ END StoreLinks;
 PROCEDURE LoadLinks*(VAR R: Files.Rider; lib: Objects.Library; VAR list: Link);
 VAR ch: CHAR; s: ARRAY 32 OF CHAR; a, a0: Link;
 BEGIN list := NIL;
-	Files.Read(R, ch);
+	Files.ReadChar(R, ch);
 	ASSERT(ch = 33X);
 	Files.ReadString(R, s);
 	WHILE s # "" DO
@@ -142,7 +142,7 @@ BEGIN
 END BindLinks;
 
 (** Insert a link in a list. An existing link with the same name is discarded. *)
-PROCEDURE InsertLink*(VAR list: Link; name: ARRAY OF CHAR; val: Link);
+PROCEDURE InsertLink*(VAR list: Link; IN name: ARRAY OF CHAR; val: Link);
 VAR l, p0: Link;
 BEGIN
 	IF val # NIL THEN
@@ -167,7 +167,7 @@ BEGIN
 END InsertLink;
 
 (** Link Locate. *)
-PROCEDURE FindLink*(name: ARRAY OF CHAR; list: Link): Link;
+PROCEDURE FindLink*(IN name: ARRAY OF CHAR; list: Link): Link;
 BEGIN
 	WHILE list # NIL DO
 		IF name = list.name THEN RETURN list END;
@@ -177,7 +177,7 @@ BEGIN
 END FindLink;
 
 (** Delete a link. *)
-PROCEDURE DeleteLink*(VAR list: Link; name: ARRAY OF CHAR);
+PROCEDURE DeleteLink*(VAR list: Link; IN name: ARRAY OF CHAR);
 VAR a, p: Link;
 BEGIN
 	a := list; p := NIL; 
@@ -229,7 +229,7 @@ BEGIN
 END Broadcast;
 
 (** Get the named link of obj. *)
-PROCEDURE GetLink*(obj: Objects.Object; name: ARRAY OF CHAR; VAR ob1: Objects.Object);
+PROCEDURE GetLink*(obj: Objects.Object; IN name: ARRAY OF CHAR; VAR ob1: Objects.Object);
 	VAR L: Objects.LinkMsg;
 BEGIN
 	IF obj # NIL THEN
@@ -243,7 +243,7 @@ BEGIN
 END GetLink;
 
 (** Set the named link of obj. *)
-PROCEDURE SetLink*(obj: Objects.Object; name: ARRAY OF CHAR; ob1: Objects.Object);
+PROCEDURE SetLink*(obj: Objects.Object; IN name: ARRAY OF CHAR; ob1: Objects.Object);
 	VAR L: Objects.LinkMsg;
 BEGIN
 	IF obj # NIL THEN

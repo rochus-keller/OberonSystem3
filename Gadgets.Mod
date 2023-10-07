@@ -15,7 +15,7 @@ of the source code to another platform with the name OBERON. *)
 
 MODULE Gadgets;	(** portable *) (*  , jm 18.1.95*)
 
-(**The Gadgets module forms the basis of the Gadgets system. It defines the most important types, provide default message handlers and often used utility procedures. In addition, a few gadget specific messages are defined.
+(**The Gadgets module forms the basis of the Gadgets system. It defines the most important types, provide default message handlers and often used utility procedures. In addition, a few gadget specific messages are defined.
 *)
 
 (*
@@ -242,7 +242,7 @@ BEGIN
 END GetObjName;
 
 (** Name object obj. Sends an Objects.AttrMsg behind the scenes. *)
-PROCEDURE NameObj*(obj: Objects.Object; name: ARRAY OF CHAR);
+PROCEDURE NameObj*(obj: Objects.Object; IN name: ARRAY OF CHAR);
 VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.set;  A.name := "Name"; Objects.Stamp(A); A.class := Objects.String; A.res := -1;  A.s := name;
@@ -250,7 +250,7 @@ BEGIN
 END NameObj;
 
 (** Search for the object "O" in the public library "L.Lib" wherename is specified as "L.O". *)
-PROCEDURE FindPublicObj*(name: ARRAY OF CHAR): Objects.Object; (* Lib.obj format, assumes .Lib extension *)
+PROCEDURE FindPublicObj*(IN name: ARRAY OF CHAR): Objects.Object; (* Lib.obj format, assumes .Lib extension *)
 VAR obj: Objects.Object; libname, objname: ARRAY 64 OF CHAR; i, j, k, ref: INTEGER; lib: Objects.Library;
 BEGIN
 	obj := NIL; i := 0; j := 0;
@@ -269,7 +269,7 @@ BEGIN
 END FindPublicObj;
 
 (** Search for object named name in context. *)
-PROCEDURE FindObj*(context: Objects.Object; name: ARRAY OF CHAR): Objects.Object;
+PROCEDURE FindObj*(context: Objects.Object; IN name: ARRAY OF CHAR): Objects.Object;
 VAR obj: Objects.Object; M: Objects.FindMsg;
 BEGIN
 	obj := NIL;
@@ -466,7 +466,7 @@ BEGIN
 	END;
 END Integrate;
 
-PROCEDURE Atom(lib: Objects.Library; name: ARRAY OF CHAR): INTEGER;
+PROCEDURE Atom(lib: Objects.Library; IN name: ARRAY OF CHAR): INTEGER;
 VAR ref: INTEGER;
 BEGIN
 	Objects.GetKey(lib.dict, name, ref);
@@ -1154,7 +1154,7 @@ BEGIN
 		IF M IS  Objects.FileMsg THEN
 			WITH M: Objects.FileMsg DO
 				IF M.id = Objects.load THEN
-					Files.Read(M.R, ch);
+					Files.ReadChar(M.R, ch);
 					IF (ch = 43X) OR (ch = 42X) THEN
 						Files.Set(M.R, Files.Base(M.R), Files.Pos(M.R) - 1); (* rewind *)
 						Attributes.LoadAttributes(M.R, obj.attr)
@@ -1167,7 +1167,7 @@ BEGIN
 					IF obj.link = NIL THEN (* no links, use old format for compatibility *)
 						Attributes.StoreAttributes(M.R, obj.attr)
 					ELSE
-						Files.Write(M.R, 80X); (* version number *)
+						Files.WriteChar(M.R, 80X); (* version number *)
 						Attributes.StoreAttributes(M.R, obj.attr);
 						Links.StoreLinks(M.R, obj.lib, obj.link);
 					END
@@ -1196,7 +1196,7 @@ BEGIN
 	END
 END ObjectHandler;
 
-PROCEDURE HasCmdAttr(F: Frame; attr: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE HasCmdAttr(F: Frame; IN attr: ARRAY OF CHAR): BOOLEAN;
 VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
@@ -1205,7 +1205,7 @@ BEGIN
 END HasCmdAttr;
 
 (** Execute the attribute with name attr of F as an Oberon command. Sends a Objects.AttrMsg to retrieve the attribute attr of F. The attributed must be of the string class. *)
-PROCEDURE ExecuteAttr*(F: Frame; attr: ARRAY OF CHAR; dlink, sender, receiver: Objects.Object);
+PROCEDURE ExecuteAttr*(F: Frame; IN attr: ARRAY OF CHAR; dlink, sender, receiver: Objects.Object);
 VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
@@ -1392,7 +1392,7 @@ END FrameHandler;
 (* ------- Additional commands -------- *)
 
 (** Look up value of the name alias. Empty string is returned if name is not aliased. *)
-PROCEDURE GetAlias*(name: ARRAY OF CHAR; VAR value: ARRAY OF CHAR);
+PROCEDURE GetAlias*(IN name: ARRAY OF CHAR; VAR value: ARRAY OF CHAR);
 VAR a: Alias;
 BEGIN
 	a := aliases; value[0] := 0X; 
@@ -1403,7 +1403,7 @@ BEGIN
 END GetAlias;
 
 (** Create an object from the generator procedure or alias objname. *)
-PROCEDURE CreateObject*(objname: ARRAY OF CHAR): Objects.Object;
+PROCEDURE CreateObject*(IN objname: ARRAY OF CHAR): Objects.Object;
 VAR genproc: ARRAY 64 OF CHAR; res: INTEGER;
 BEGIN
 	Objects.NewObj := NIL;
@@ -1422,7 +1422,7 @@ BEGIN
 END CreateObject;
 
 (** Create a View/Model pair from the generator procedures viewnewproc and modelnewproc. Aliasing is supported. *)
-PROCEDURE CreateViewModel*(viewnewproc, modelnewproc: ARRAY OF CHAR): Display.Frame;
+PROCEDURE CreateViewModel*(IN viewnewproc, modelnewproc: ARRAY OF CHAR): Display.Frame;
 VAR F: Display.Frame; obj: Objects.Object; L: Objects.LinkMsg;
 BEGIN	
 	obj := CreateObject(viewnewproc);	
@@ -1454,7 +1454,7 @@ BEGIN
 END CreateViewModel;
 
 (** Adds a generator alias. *)
-PROCEDURE AddAlias*(name, value: ARRAY OF CHAR);
+PROCEDURE AddAlias*(IN name, value: ARRAY OF CHAR);
 VAR a, b: Alias;
 BEGIN
 	IF aliases = NIL THEN
@@ -1510,7 +1510,7 @@ BEGIN time := -1; objs := NIL;
 END GetSelection;
 
 (** Search for the object "O" in the public library "L.Lib" where the name is specified as "L.O" and return a deep copy or shallow copy. *)
-PROCEDURE CopyPublicObject*(name: ARRAY OF CHAR; deep: BOOLEAN): Objects.Object;
+PROCEDURE CopyPublicObject*(IN name: ARRAY OF CHAR; deep: BOOLEAN): Objects.Object;
 	VAR
 		C: Objects.CopyMsg;
 		obj: Objects.Object;

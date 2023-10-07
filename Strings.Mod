@@ -36,7 +36,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 		dateform, timeform: ARRAY 32 OF CHAR;
 
 (** Length of str. *)
-	PROCEDURE Length*(VAR str(** in *): ARRAY OF CHAR): LONGINT;
+	PROCEDURE Length*(IN str(** in *): ARRAY OF CHAR): LONGINT;
 		VAR i, l: LONGINT;
 	BEGIN
 		l := LEN(str); i := 0;
@@ -47,7 +47,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END Length;
 
 (** Append this to to. *)
-	PROCEDURE Append*(VAR to(** in/out *): ARRAY OF CHAR; this: ARRAY OF CHAR);
+	PROCEDURE Append*(VAR to(** in/out *): ARRAY OF CHAR; IN this: ARRAY OF CHAR);
 		VAR i, j, l: LONGINT;
 	BEGIN
 		i := 0;
@@ -158,7 +158,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END Upper;
 
 (** Is str prefixed by pre? *)
-	PROCEDURE Prefix*(pre: ARRAY OF CHAR; VAR str(** in *): ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE Prefix*(IN pre: ARRAY OF CHAR; VAR str(** in *): ARRAY OF CHAR): BOOLEAN;
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;
@@ -169,7 +169,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END Prefix;
 
 (** Checks if str is prefixed by pre. The case is ignored. *)
-	PROCEDURE CAPPrefix*(pre: ARRAY OF CHAR; VAR str(** in *): ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE CAPPrefix*(IN pre: ARRAY OF CHAR; VAR str(** in *): ARRAY OF CHAR): BOOLEAN;
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;
@@ -235,7 +235,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END GetSuffix;
 
 (** Change the suffix of str to suf. *)
-	PROCEDURE ChangeSuffix*(VAR str(** in/out *): ARRAY OF CHAR; suf: ARRAY OF CHAR);
+	PROCEDURE ChangeSuffix*(VAR str(** in/out *): ARRAY OF CHAR; IN suf: ARRAY OF CHAR);
 		VAR i, j, l, dot: LONGINT;
 	BEGIN
 		dot := -1; i := 0;
@@ -257,7 +257,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END ChangeSuffix;
 
 (** Search in src starting at pos for the next occurrence of pat.  Returns pos=-1 if not found. *)
-	PROCEDURE Search*(pat: ARRAY OF CHAR; VAR src(** in *): ARRAY OF CHAR; VAR pos(** in/out *): LONGINT);
+	PROCEDURE Search*(IN pat: ARRAY OF CHAR; VAR src(** in *): ARRAY OF CHAR; VAR pos(** in/out *): LONGINT);
 		CONST MaxPat = 128;
 		VAR
 			buf: ARRAY MaxPat OF CHAR;
@@ -318,7 +318,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END Search;
 
 (** Search in src starting at pos for the next occurrence of pat. *)
-	PROCEDURE CAPSearch*(pat: ARRAY OF CHAR; VAR src(** in *): ARRAY OF CHAR; VAR pos(** in/out *): LONGINT);
+	PROCEDURE CAPSearch*(IN pat: ARRAY OF CHAR; VAR src(** in *): ARRAY OF CHAR; VAR pos(** in/out *): LONGINT);
 		CONST MaxPat = 128;
 		VAR
 			buf: ARRAY MaxPat OF CHAR;
@@ -379,7 +379,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END CAPSearch;
 
 (** Convert a string into an integer. Leading white space characters are ignored. *)
-	PROCEDURE StrToInt*(VAR str: ARRAY OF CHAR; VAR val: LONGINT);
+	PROCEDURE StrToInt*(IN str: ARRAY OF CHAR; VAR val: LONGINT);
 		VAR
 			i, d: LONGINT;
 			neg: BOOLEAN;
@@ -583,7 +583,7 @@ BEGIN
 END RealToFixStr;
 
 (** Convert a string into a real. Precondition: s has a well defined real syntax. Scientific notation with D and E to indicate exponents is allowed. *)
-PROCEDURE StrToReal*(s: ARRAY OF CHAR; VAR r: LONGREAL);
+PROCEDURE StrToReal*(IN s: ARRAY OF CHAR; VAR r: LONGREAL);
 VAR p, e: INTEGER; y, g: LONGREAL; neg, negE: BOOLEAN;
 BEGIN
 	p := 0;
@@ -620,7 +620,7 @@ END StrToReal;
 
 (** Convert a string into a boolean. "Yes", "True" and "On" are TRUE all other strings are FALSE.
 	Leading white space characters are ignored. *)
-	PROCEDURE StrToBool*(VAR str: ARRAY OF CHAR; VAR b: BOOLEAN);
+	PROCEDURE StrToBool*(IN str: ARRAY OF CHAR; VAR b: BOOLEAN);
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;
@@ -646,7 +646,7 @@ END StrToReal;
 	END BoolToStr;
 
 (** Convert a string to a set *)
-	PROCEDURE StrToSet* (str: ARRAY OF CHAR; VAR set: SET);
+	PROCEDURE StrToSet* (IN str: ARRAY OF CHAR; VAR set: SET);
 	VAR i, d, d1: INTEGER; ch: CHAR; dot: BOOLEAN;
 	BEGIN
 		set := {}; dot := FALSE;

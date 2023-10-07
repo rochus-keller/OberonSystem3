@@ -149,7 +149,7 @@ BEGIN
 	Texts.WriteObj(w, x)
 END Obj;
 
-PROCEDURE String*(x: ARRAY OF CHAR);
+PROCEDURE String*(IN x: ARRAY OF CHAR);
 BEGIN
 	Texts.WriteString(w, x)
 END String;

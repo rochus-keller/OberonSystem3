@@ -48,7 +48,7 @@ TYPE
       END
   	END Move;
   	
-  	PROCEDURE Move2( IN from: ARRAY OF CHAR; fromoff: LONGINT; VAR to: ARRAY OF BYTE; tooff, w: LONGINT);
+  	PROCEDURE Move2*( IN from: ARRAY OF CHAR; fromoff: LONGINT; VAR to: ARRAY OF BYTE; tooff, w: LONGINT);
   	VAR i: LONGINT;
   	BEGIN
       FOR i := 0 TO w-1 DO
@@ -56,7 +56,7 @@ TYPE
       END;
   	END Move2;
   	
-  	PROCEDURE Move3( IN from: ARRAY OF BYTE; fromoff: LONGINT; VAR to: ARRAY OF CHAR; tooff, w: LONGINT);
+  	PROCEDURE Move3*( IN from: ARRAY OF BYTE; fromoff: LONGINT; VAR to: ARRAY OF CHAR; tooff, w: LONGINT);
   	VAR i: LONGINT;
   	BEGIN
       FOR i := 0 TO w-1 DO

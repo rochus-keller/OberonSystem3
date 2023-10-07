@@ -115,7 +115,7 @@ VAR
 (* --- Conversion handling --- *)
 
 (** Convert a string to a text. *)
-PROCEDURE StrToTxt*(s: ARRAY OF CHAR; VAR T: Texts.Text);
+PROCEDURE StrToTxt*(IN s: ARRAY OF CHAR; VAR T: Texts.Text);
 VAR newtext :Texts.Text; i:INTEGER;
 BEGIN		
 	i := 0;
@@ -384,12 +384,12 @@ END StandardMacros;
 (** Store the atttribute list A. *)
 PROCEDURE StoreAttributes*(VAR R: Files.Rider; A: Attr);
 BEGIN
-	Files.Write(R, 43X); (* magic number *)
+	Files.WriteChar(R, 43X); (* magic number *)
 	WHILE A # NIL DO
 		Files.WriteString(R, A.name);
 		IF A IS BoolAttr THEN Files.Write(R, Sboolean);
-			IF A(BoolAttr).b THEN Files.Write(R, 1X) ELSE Files.Write(R, 0X) END;
-		ELSIF A IS CharAttr THEN Files.Write(R, Schar); Files.Write(R, A(CharAttr).c);
+			IF A(BoolAttr).b THEN Files.WriteChar(R, 1X) ELSE Files.WriteChar(R, 0X) END;
+		ELSIF A IS CharAttr THEN Files.Write(R, Schar); Files.WriteChar(R, A(CharAttr).c);
 		ELSIF A IS IntAttr THEN Files.Write(R, Sint); Files.WriteLInt(R, A(IntAttr).i);
 		ELSIF A IS RealAttr THEN Files.Write(R, Sreal); Files.WriteLReal(R, A(RealAttr).r);
 		ELSIF A IS StringAttr THEN Files.Write(R, Sstring); Files.WriteString(R, A(StringAttr).s);
@@ -397,7 +397,7 @@ BEGIN
 		END;
 		A := A.next
 	 END;
-	 Files.Write(R, 0X);
+	 Files.WriteChar(R, 0X);
 END StoreAttributes;
 
 (** Load attribute list resulting in a list A. *)
@@ -405,15 +405,15 @@ PROCEDURE LoadAttributes*(VAR R: Files.Rider; VAR A: Attr);
 VAR ch: CHAR; name: ARRAY 32 OF CHAR; b: BoolAttr; c: CharAttr; i: IntAttr; r: RealAttr; s: StringAttr; a, a0: Attr;
 BEGIN
 	A := NIL;
-	Files.Read(R, ch);
+	Files.ReadChar(R, ch);
 	IF ch = 43X THEN (* new format *)
 		Files.ReadString(R, name);
 		WHILE name # "" DO
-			Files.Read(R, ch);
+			Files.ReadChar(R, ch);
 			IF ORD(ch) = Sboolean THEN
-				Files.Read(R, ch); NEW(b);  b.name := name; b.b := (ch = 1X); a := b;
+				Files.ReadChar(R, ch); NEW(b);  b.name := name; b.b := (ch = 1X); a := b;
 			ELSIF ORD(ch) = Schar THEN
-				NEW(c);  c.name := name; Files.Read(R, c.c); a := c;
+				NEW(c);  c.name := name; Files.ReadChar(R, c.c); a := c;
 			ELSIF ORD(ch) = Sint THEN
 				NEW(i);  i.name := name; Files.ReadLInt(R, i.i); a := i;
 			ELSIF ORD(ch) = Sreal THEN
@@ -455,7 +455,7 @@ BEGIN
 END CopyAttributes;
 
 (** Insert an attribute in a list. An existing attribute with the same name is discarded. *)
-PROCEDURE InsertAttr*(VAR list: Attr; name: ARRAY OF CHAR; val: Attr);
+PROCEDURE InsertAttr*(VAR list: Attr; IN name: ARRAY OF CHAR; val: Attr);
 VAR l, p0: Attr;
 BEGIN
 	IF val # NIL THEN
@@ -480,7 +480,7 @@ BEGIN
 END InsertAttr;
 
 (** Search for an attribute name in list. *)
-PROCEDURE FindAttr*(name: ARRAY OF CHAR; list: Attr): Attr;
+PROCEDURE FindAttr*(IN name: ARRAY OF CHAR; list: Attr): Attr;
 BEGIN
 	WHILE list # NIL DO
 		IF name = list.name THEN RETURN list END;
@@ -490,7 +490,7 @@ BEGIN
 END FindAttr;
 
 (** Delete an attribute. *)
-PROCEDURE DeleteAttr*(VAR list: Attr; name: ARRAY OF CHAR);
+PROCEDURE DeleteAttr*(VAR list: Attr; IN name: ARRAY OF CHAR);
 VAR a, p: Attr;
 BEGIN
 	a := list; p := NIL; 
@@ -503,7 +503,7 @@ BEGIN
 END DeleteAttr;
 
 (** Write the attribute attr of object obj to the writer W. Format conversion to strings are automatic.*)
-PROCEDURE WriteAttr*(obj: Objects.Object; attr: ARRAY OF CHAR; VAR W: Texts.Writer);
+PROCEDURE WriteAttr*(obj: Objects.Object; IN attr: ARRAY OF CHAR; VAR W: Texts.Writer);
 VAR A: Objects.AttrMsg; s: ARRAY 64 OF CHAR;
 BEGIN
 	IF obj # NIL THEN
@@ -532,7 +532,7 @@ END WriteAttr;
 	String	ARRAY OF CHAR	String, Int, Bool, Real, LongReal, Bool
 *)
 
-	PROCEDURE GetBool*(obj: Objects.Object; name: ARRAY OF CHAR; VAR b: BOOLEAN);
+	PROCEDURE GetBool*(obj: Objects.Object; IN name: ARRAY OF CHAR; VAR b: BOOLEAN);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		b := FALSE;
@@ -551,7 +551,7 @@ END WriteAttr;
 		END
 	END GetBool;
 
-	PROCEDURE GetInt*(obj: Objects.Object; name: ARRAY OF CHAR; VAR i: LONGINT);
+	PROCEDURE GetInt*(obj: Objects.Object; IN name: ARRAY OF CHAR; VAR i: LONGINT);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		i := 0;
@@ -571,7 +571,7 @@ END WriteAttr;
 		END
 	END GetInt;
 
-	PROCEDURE GetReal*(obj: Objects.Object; name: ARRAY OF CHAR; VAR x: REAL);
+	PROCEDURE GetReal*(obj: Objects.Object; IN name: ARRAY OF CHAR; VAR x: REAL);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		x := 0.0;
@@ -591,7 +591,7 @@ END WriteAttr;
 		END
 	END GetReal;
 
-	PROCEDURE GetLongReal*(obj: Objects.Object; name: ARRAY OF CHAR; VAR y: LONGREAL);
+	PROCEDURE GetLongReal*(obj: Objects.Object; IN name: ARRAY OF CHAR; VAR y: LONGREAL);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		y := 0.0;
@@ -611,7 +611,7 @@ END WriteAttr;
 		END
 	END GetLongReal;
 
-	PROCEDURE GetString*(obj: Objects.Object; name: ARRAY OF CHAR; VAR s: ARRAY OF CHAR);
+	PROCEDURE GetString*(obj: Objects.Object; IN name: ARRAY OF CHAR; VAR s: ARRAY OF CHAR);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		 s := "";
@@ -645,7 +645,7 @@ END WriteAttr;
 	String	ARRAY OF CHAR	String, Int, Bool, Real, LongReal, Bool
 *)
 
-	PROCEDURE SetBool*(obj: Objects.Object; name: ARRAY OF CHAR; b: BOOLEAN);
+	PROCEDURE SetBool*(obj: Objects.Object; IN name: ARRAY OF CHAR; b: BOOLEAN);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		IF obj # NIL THEN
@@ -665,7 +665,7 @@ END WriteAttr;
 		END
 	END SetBool;
 
-	PROCEDURE SetInt*(obj: Objects.Object; name: ARRAY OF CHAR; i: LONGINT);
+	PROCEDURE SetInt*(obj: Objects.Object; IN name: ARRAY OF CHAR; i: LONGINT);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		IF obj # NIL THEN
@@ -686,7 +686,7 @@ END WriteAttr;
 		END
 	END SetInt;
 
-	PROCEDURE SetReal*(obj: Objects.Object; name: ARRAY OF CHAR; x: REAL);
+	PROCEDURE SetReal*(obj: Objects.Object; IN name: ARRAY OF CHAR; x: REAL);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		IF obj # NIL THEN
@@ -707,7 +707,7 @@ END WriteAttr;
 		END
 	END SetReal;
 
-	PROCEDURE SetLongReal*(obj: Objects.Object; name: ARRAY OF CHAR; y: LONGREAL);
+	PROCEDURE SetLongReal*(obj: Objects.Object; IN name: ARRAY OF CHAR; y: LONGREAL);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		IF obj # NIL THEN
@@ -728,7 +728,7 @@ END WriteAttr;
 		END
 	END SetLongReal;
 
-	PROCEDURE SetString*(obj: Objects.Object; name, s: ARRAY OF CHAR);
+	PROCEDURE SetString*(obj: Objects.Object; IN name, s: ARRAY OF CHAR);
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		IF obj # NIL THEN

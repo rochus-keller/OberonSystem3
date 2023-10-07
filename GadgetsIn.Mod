@@ -51,7 +51,7 @@ END OpenPar;
 The syntax for gadgetlist in BNF is:  name ["." attr] { "," name ["." attr] }.  
 The default attr is "Value". *)
 
-PROCEDURE OpenGadget(gadgetlist: ARRAY OF CHAR);
+PROCEDURE OpenGadget(IN gadgetlist: ARRAY OF CHAR);
 VAR
 	t: Texts.Text;  i, j: LONGINT;  str: ARRAY 128 OF CHAR;
 	a: Objects.AttrMsg;  field: Objects.Object;
@@ -111,7 +111,7 @@ parameter.  If a "^" follows the command, start input from the latest selection.
 If a "*" follows the command, start input from the marked viewer.  Otherwise, 
 start input from the text following the command. *)
 
-PROCEDURE Open*(gadgetlist: ARRAY OF CHAR);
+PROCEDURE Open*(IN gadgetlist: ARRAY OF CHAR);
 BEGIN
 	IF gadgetlist = "" THEN OpenPar
 	ELSE OpenGadget(gadgetlist)

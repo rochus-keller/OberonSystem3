@@ -622,7 +622,7 @@ BEGIN
 END Lookup;
 
 (** Returns the size of a string on the printer. Width is w, height is h, and the descender offset is dsr. *)
-PROCEDURE StringSize*(s: ARRAY OF CHAR; fnt: Fonts.Font; VAR w, h, dsr: INTEGER);
+PROCEDURE StringSize*(IN s: ARRAY OF CHAR; fnt: Fonts.Font; VAR w, h, dsr: INTEGER);
 VAR p, dx, d: INTEGER;
 BEGIN
 	w := 0;
@@ -638,7 +638,7 @@ BEGIN
 	END
 END StringSize;
 
-PROCEDURE StringSize0(fnt: Fonts.Font; s: ARRAY OF CHAR; VAR x, y, w, h: INTEGER; VAR dx: ARRAY OF INTEGER);
+PROCEDURE StringSize0(fnt: Fonts.Font; IN s: ARRAY OF CHAR; VAR x, y, w, h: INTEGER; VAR dx: ARRAY OF INTEGER);
 VAR i, minY, maxY, cdx, d: INTEGER; 
 BEGIN
 	w := 0; i := 0; x := 0;  
@@ -656,7 +656,7 @@ BEGIN
 END StringSize0;
 		
 (** Print string s using font fnt in color col at X, Y. *)
-	PROCEDURE String*(M: Display3.Mask; col: Display.Color; X, Y: INTEGER; fnt: Fonts.Font; s: ARRAY OF CHAR; mode: INTEGER);
+	PROCEDURE String*(M: Display3.Mask; col: Display.Color; X, Y: INTEGER; fnt: Fonts.Font; IN s: ARRAY OF CHAR; mode: INTEGER);
 	VAR W, H, x, y, i: INTEGER; dX: ARRAY 256 OF  INTEGER; t: ARRAY 2 OF CHAR;
 	BEGIN
 		StringSize0(fnt, s, x, y, W, H, dX);

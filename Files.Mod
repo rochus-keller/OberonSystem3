@@ -165,6 +165,14 @@ x must be big enough to hold n bytes. *)
     END
 	END ReadBytes;
 
+	PROCEDURE ReadFixString*(VAR r: Rider; VAR x: ARRAY OF CHAR; n: LONGINT);
+  VAR b: BYTE; i: LONGINT;
+  BEGIN
+    FOR i := 0 TO n-1 DO 
+      Read(r,b); x[i] := CHR(b); IF r.res # 0 THEN RETURN END 
+    END
+	END ReadFixString;
+
 (**
 Portable routines to read the standard Oberon types.
 *)
@@ -264,6 +272,13 @@ Portable routines to read the standard Oberon types.
   BEGIN i := 0; 
     WHILE i < n DO Write(r, x[i]); INC(i) END
 	END WriteBytes;
+
+	PROCEDURE WriteFixString*(VAR r: Rider; VAR x: ARRAY OF CHAR; n: LONGINT);
+  VAR i: LONGINT;
+  BEGIN i := 0; 
+    WHILE i < n DO Write(r, ORD(x[i])); INC(i) END
+	END WriteFixString;
+
 
 (**
 Portable routines to write the standard Oberon types.

@@ -22,17 +22,23 @@ o get rid of buffer
 o ASSERT bounds everywhere
 *)
 
-IMPORT Display, SYSTEM;
+// TODO: the original version of this and some other modules are representative examples how
+// in Oberon despite static typing people do low-level byte fiddling and pointer arithmetics
+// (even assuming 32 bit width) evading the type checker without necessity; worth an article.
+
+IMPORT Display, Displays;
 
 CONST
 	BufSize = 10000H;
-
+	
 TYPE	
+  Data* = POINTER TO ARRAY OF CHAR;
 	Bitmap* = POINTER TO BitmapDesc;
 	BitmapDesc* = RECORD	(* cf. Display.DisplayBlock  *)
 		width*, height*, depth*: INTEGER;	(* offset 0, 2, 4 *)
-		wth*, address*: LONGINT;	(* offset 8, 12 *)
-		size: LONGINT
+		wth*: LONGINT;	(* offset 8 *)
+		data*: Data; (* offset 12 *) 
+		// size is just LEN(data) which is just width*height
 	END;
 
 	Buffer = RECORD bytes: ARRAY BufSize OF CHAR END;
@@ -40,55 +46,48 @@ TYPE
 VAR
 	buffer: POINTER TO Buffer;
 	
-PROCEDURE Define*(B: Bitmap; width, height, depth: INTEGER; address: LONGINT);
+PROCEDURE Define*(B: Bitmap; width, height, depth: INTEGER; data: Data);
 BEGIN 
 	B.width := width;
 	B.wth := width;
 	B.height := height;
 	B.depth := depth;
-	B.address := address;
-	B.size := LONG(width)*height
+	B.data := data;
 END Define;
 
 PROCEDURE Get*(B: Bitmap; X, Y: INTEGER): INTEGER;
 VAR ofs: LONGINT; ch: CHAR;
 BEGIN
-	ofs := Y*B.wth + X;  ASSERT((ofs >= 0) & (ofs < B.size));
-	SYSTEM.GET(B.address + ofs, ch);
+	ofs := Y*B.wth + X;  ASSERT((ofs >= 0) & (ofs < LEN(B.data)));
+	ch := B.data[ofs];
 	RETURN ORD(ch)
 END Get;
 
 PROCEDURE Clear*(B: Bitmap);
-VAR adr, size: LONGINT;
+VAR i: LONGINT;
 BEGIN 
-	size := B.size;  adr := B.address;
-	WHILE size >= 4 DO
-		SYSTEM.PUT(adr, ORD( 0));
-		INC(adr, 4);  DEC(size, 4)
-	END;
-	WHILE size > 0 DO SYSTEM.PUT(adr, 0X);  INC(adr);  DEC(size) END
+  FOR i := 0 TO LEN(B.data)-1 DO B.data[i] := 0X END;
 END Clear;
 
 PROCEDURE Dot*(B: Bitmap; col, X, Y, mode: INTEGER);
-VAR adr: LONGINT;  ch: CHAR;
+VAR i: LONGINT;  ch: CHAR;
 BEGIN
-	adr := Y*B.wth + X;  ASSERT((adr >= 0) & (adr < B.size));
-	INC(adr, B.address);
+	i := Y*B.wth + X;  ASSERT((i >= 0) & (i < LEN(B.data)));
 	IF mode = Display.invert THEN
-		SYSTEM.GET(adr, ch);
-		SYSTEM.PUT(adr, CHR(ORD( 
-				BITS( LONG(ORD(ch))) / BITS( LONG(col)))))
+  	ch := B.data[i];
+		B.data[i] := CHR(ORD(BITS( LONG(ORD(ch))) / BITS( LONG(col))))
 	ELSE
-		SYSTEM.PUT(adr, CHR(col))
+		B.data[i] := CHR(col)
 	END
 END Dot;
 
-PROCEDURE CopyBlock0(n, w, adr, buf,width: LONGINT;  from: BOOLEAN);
+PROCEDURE CopyBlock0(n, w: LONGINT; VAR src: ARRAY OF CHAR; srcoff: LONGINT; 
+                                    VAR dest: ARRAY OF CHAR; destoff,width: LONGINT;  from: BOOLEAN);
 BEGIN
 	IF from THEN
-		REPEAT SYSTEM.MOVE(adr, buf, w); DEC(n);  INC(adr, width);  INC(buf, w) UNTIL n = 0
+		REPEAT Displays.Move(src, srcoff, dest, destoff, w); DEC(n); INC(srcoff, width); INC(destoff, w) UNTIL n = 0
 	ELSE
-		REPEAT SYSTEM.MOVE(buf, adr, w); DEC(n);  INC(adr, width);  INC(buf, w) UNTIL n = 0
+		REPEAT Displays.Move(dest, destoff, src, srcoff, w); DEC(n); INC(srcoff, width); INC(destoff, w) UNTIL n = 0
 	END
 END CopyBlock0;
 
@@ -104,8 +103,8 @@ BEGIN	(* only the destination block is clipped *)
 		IF dx+w-1 > dB.width-1 THEN DEC(w, dx+w-1 - (dB.width-1)) END;
 		IF dy+h-1 > dB.height-1 THEN DEC(h, dy+h-1 - (dB.height-1)) END;
 		IF (w > 0) & (h > 0) & (w <= w0) & (h <= h0) THEN
-			src := sy*SourceWth + sx;  ASSERT((src >= 0) & (src < sB.size));
-			dst := dy*DestWth + dx;  ASSERT((dst >= 0) & (dst < dB.size));
+			src := sy*SourceWth + sx;  ASSERT((src >= 0) & (src < LEN(sB.data)));
+			dst := dy*DestWth + dx;  ASSERT((dst >= 0) & (dst < LEN(dB.data)));
 			bufLines := BufSize DIV w;	(* lines to copy at a time *)
 			IF bufLines > h THEN bufLines := h END;
 				(* adjust direction for overlap *)
@@ -113,16 +112,16 @@ BEGIN	(* only the destination block is clipped *)
 				n := h-bufLines;
 				INC(src, SourceWth*n);  INC(dst, DestWth*n);
 				REPEAT
-					CopyBlock0(bufLines, w, sB.address+src, SYSTEM.ADR(buffer.bytes[0]), SourceWth, TRUE);
-					CopyBlock0(bufLines, w, dB.address+dst, SYSTEM.ADR(buffer.bytes[0]), DestWth, FALSE);
+					CopyBlock0(bufLines, w, sB.data, src, buffer.bytes, 0, SourceWth, TRUE);
+					CopyBlock0(bufLines, w, dB.data, dst, buffer.bytes, 0, DestWth, FALSE);
 					DEC(h, bufLines);
 					IF bufLines > h THEN bufLines := h END;
 					DEC(src, bufLines * SourceWth);  DEC(dst, bufLines * DestWth)
 				UNTIL h = 0
 			ELSE	(* start at top *)
 				REPEAT
-					CopyBlock0(bufLines, w, sB.address+src, SYSTEM.ADR(buffer.bytes[0]), SourceWth, TRUE);
-					CopyBlock0(bufLines, w, dB.address+dst, SYSTEM.ADR(buffer.bytes[0]), DestWth, FALSE);
+					CopyBlock0(bufLines, w, sB.data, src, buffer.bytes, 0, SourceWth, TRUE);
+					CopyBlock0(bufLines, w, dB.data, dst, buffer.bytes, 0, DestWth, FALSE);
 					INC(src, bufLines * SourceWth);  INC(dst, bufLines * DestWth);
 					DEC(h, bufLines);
 					IF bufLines > h THEN bufLines := h END
@@ -132,51 +131,54 @@ BEGIN	(* only the destination block is clipped *)
 	END
 END CopyBlock;
 
-PROCEDURE CopyPattern0(ofs, src, dst, w, col, mode: LONGINT);
-VAR ch: CHAR;  m, i: LONGINT;  s: SET;
+PROCEDURE CopyPattern0(ofs: LONGINT; VAR src: ARRAY OF CHAR; srcoff: LONGINT;
+                                      VAR dst: ARRAY OF CHAR; dstoff, w, col, mode: LONGINT);
+VAR ch,tmp: CHAR;  m, i: LONGINT;  s: SET;
 BEGIN
 	IF mode = Display.invert THEN
 		REPEAT	(* loop over w pixels *)
-			SYSTEM.GET(src, ch);
+			ch := src[srcoff];
 			i := ofs;	(* start bit *)
 			m := 8;	(* stop bit *)
 			IF m > ofs+w THEN m := ofs+w END;
 			REPEAT	(* loop over bits *)
 				IF ODD(ASH(ORD(ch), -i)) THEN	(* pixel on *)
-					SYSTEM.GET(dst, ( s)); 
-					SYSTEM.PUT(dst, ( BITS( col) / s))
+				  // NOTE: the original uses SYSTEM.GET/PUT(dst,SET), i.e. 4 byte operations, but
+				  // dst is only incremented by one byte per iteration, so apparently the 3 upper bytes are ignored!
+					tmp := dst[dstoff]; s := BITS(ORD(tmp));
+					dst[dstoff] := CHR(ORD( BITS(col) / s))
 				END;	
-				INC(dst);  INC(i)
+				INC(dstoff);  INC(i)
 			UNTIL i = m;
-			INC(src);  DEC(w, m-ofs);  ofs := 0
+			INC(srcoff);  DEC(w, m-ofs);  ofs := 0
 		UNTIL w = 0
 	ELSE (* paint, replace *)
 		REPEAT	(* loop over w pixels *)
-			SYSTEM.GET(src, ch);
+			ch := src[srcoff];
 			i := ofs;	(* start bit *)
 			m := 8;	(* stop bit *)
 			IF m > ofs+w THEN m := ofs+w END;
 			REPEAT	(* loop over bits *)
 				IF ODD(ASH(ORD(ch), -i)) THEN	(* pixel on *)
 					(* paint & replace *) 
-					SYSTEM.PUT(dst, CHR(col))
+					dst[dstoff] := CHR(col)
 				ELSIF mode = Display.replace THEN	(* pixel off *)
-					SYSTEM.PUT(dst, CHR(Display.BG))
+					dst[dstoff] := CHR(Display.BG)
 				ELSE (* skip *)
 				END;	
-				INC(dst);  INC(i)
+				INC(dstoff);  INC(i)
 			UNTIL i = m;
-			INC(src);  DEC(w, m-ofs);  ofs := 0
+			INC(srcoff);  DEC(w, m-ofs);  ofs := 0
 		UNTIL w = 0
 	END;
 END CopyPattern0;
 
-PROCEDURE CopyPattern1(B: Bitmap; src, x, y, w, col, mode: LONGINT); 
+PROCEDURE CopyPattern1(B: Bitmap; VAR src: ARRAY OF CHAR; srcoff, x, y, w, col, mode: LONGINT); 
 VAR ch: CHAR;  m, i: LONGINT;
 BEGIN
 	IF (y < 0) OR (y > B.height-1) THEN RETURN END;
 	REPEAT	(* loop over w pixels *)
-		SYSTEM.GET(src, ch);
+		ch := src[srcoff];
 		i := 0;	(* start bit *)
 		m := 8;	(* stop bit *)
 		IF m > w THEN m := w END;
@@ -189,29 +191,28 @@ BEGIN
 			END;
 			INC(x);  INC(i)
 		UNTIL i = m;
-		INC(src);  DEC(w, m)
+		INC(srcoff);  DEC(w, m)
 	UNTIL w = 0
 END CopyPattern1;
 
-PROCEDURE CopyPattern*(B: Bitmap; col: INTEGER; pat: LONGINT; X, Y, mode: INTEGER);
-VAR BitmapWth, PatWth, DestAdr, PatHeight, DestinationWth: LONGINT;
+PROCEDURE CopyPattern*(B: Bitmap; col: INTEGER; pat: Display.Pattern; X, Y, mode: INTEGER);
 VAR x, y, x2, y2, w, w0, h, src, dst: LONGINT;  ch: CHAR;
 BEGIN
-	SYSTEM.GET(pat, ch);  w := ORD(ch);
-	SYSTEM.GET(pat+1, ch);  h := ORD(ch);
+	w := ORD(pat[0]);
+	h := ORD(pat[1]);
 	IF (w > 0) & (h > 0) THEN
 		x := X;  y := Y;  x2 := x+w-1;  y2 := y+h-1;	(* (x,y) bottom left & (x2,y2) top right *)
-		src := pat+2;	(* first line of pattern *)
+		src := 2;	(* first line of pattern *)
 		w0 := (w+7) DIV 8;	(* bytes in pattern line *)
 		IF (x >= 0) & (y >= 0) & (x2 < B.width) & (y2 < B.height) THEN	(* fully visible - common case *)
-			dst := y * B.wth + x + B.address;
+			dst := y * B.wth + x;
 			REPEAT	(* loop over h lines *)
-				CopyPattern0(0, src, dst, w, col, mode);
+				CopyPattern0(0, pat, src, B.data, dst, w, col, mode);
 				DEC(h);  INC(dst, B.wth);  INC(src, w0)
 			UNTIL h = 0
 		ELSIF (x2 >= 0) & (y2 >= 0) & (x < B.width) & (y < B.height) THEN	(* partially visible *)
 			REPEAT	(* loop over h lines *)
-				CopyPattern1(B, src, x, y, w, col, mode);
+				CopyPattern1(B, pat, src, x, y, w, col, mode);
 				INC(y);  INC(src, w0);  DEC(h)
 			UNTIL h = 0
 		ELSE (* invisible *)
@@ -220,82 +221,89 @@ BEGIN
 END CopyPattern;
 
 PROCEDURE ReplConst*(B: Bitmap; col, X, Y, W, H, mode: INTEGER);
-VAR addr, addr0, pat, w: LONGINT; s: SET;
+VAR boff, boff0, pat, w: LONGINT; s: SET; ch: CHAR;
 BEGIN 
-	addr := B.address + B.wth*Y + X;
+	boff := B.wth*Y + X;
 	pat := col + ASH(col, 8) + ASH(col, 16) + ASH(col, 24);
 	IF mode = Display.invert THEN
-		WHILE H > 0 DO w := W; addr0 := addr;
+		WHILE H > 0 DO w := W; boff0 := boff;
 			WHILE w # 0 DO
-				SYSTEM.GET(addr0, (s));
-				SYSTEM.PUT(addr0, CHR(ORD( s/BITS( col))));
-				DEC(w); INC(addr0)
+  			// again in original SYSTEM.GET/PUT(addr0,SET) is used, i.e. a 4 byte operation,
+  			// but col only has 2 bytes and addr0 is incremented bytewise; from that
+  			// we conclude that it's actually a one byte operation 
+  			ch := B.data[boff0];
+  			s := BITS(ORD(ch));
+				B.data[boff0] := CHR(ORD( s/BITS( col)));
+				DEC(w); INC(boff0)
 			END;
-			INC(addr, B.wth); DEC(H)
+			INC(boff, B.wth); DEC(H)
 		END
 	ELSE
-		WHILE H > 0 DO w := W; addr0 := addr;
-			WHILE w # 0 DO SYSTEM.PUT(addr0, CHR(col)); DEC(w); INC(addr0) END;
-			INC(addr, B.wth); DEC(H)
+		WHILE H > 0 DO w := W; boff0 := boff;
+			WHILE w # 0 DO B.data[boff0] := CHR(col); DEC(w); INC(boff0) END;
+			INC(boff, B.wth); DEC(H)
 		END
 	END;
 END ReplConst;
 
-PROCEDURE FillPattern0(ofs, src, dst, w, pw, col, mode: LONGINT);
-VAR ch: CHAR;  m, i, src0, left: LONGINT;  s: SET;
+PROCEDURE FillPattern0(ofs: LONGINT; VAR src: ARRAY OF CHAR; srcoff: LONGINT;
+                        VAR dst: ARRAY OF CHAR; dstoff, w, pw, col, mode: LONGINT);
+VAR ch, tmp: CHAR;  m, i, src0, left: LONGINT;  s: SET;
 BEGIN
 	left := pw-ofs;	(* pixels left to do in pattern *)
-	src0 := src;  INC(src, ofs DIV 8);  ofs := ofs MOD 8;	(* start position *)
+	src0 := srcoff;  INC(srcoff, ofs DIV 8);  ofs := ofs MOD 8;	(* start position *)
 	IF mode = Display.invert THEN
 		REPEAT	(* loop over w pixels *)
-			SYSTEM.GET(src, ch);
+			ch := src[srcoff];
 			i := ofs;	(* start bit *)
 			m := 8;	(* stop bit *)
 			IF m > ofs+left THEN m := ofs+left END;	(* max left times *)
 			IF m > ofs+w THEN m := ofs+w END;	(* max w times *)
 			REPEAT	(* loop over bits *)
 				IF ODD(ASH(ORD(ch), -i)) THEN	(* pixel on *)
-					SYSTEM.GET(dst, ( s));
-					SYSTEM.PUT(dst, ( BITS( col) / s))
+				  // dito concerning actual number of bytes involved in the operation (see above)
+				  tmp := dst[dstoff];
+				  s := BITS(ORD(tmp));
+					dst[dstoff] := CHR(ORD(BITS(col) / s))
 				END;
-				INC(dst);  INC(i)
+				INC(dstoff);  INC(i)
 			UNTIL i = m;
-			INC(src);  DEC(left, m-ofs);  DEC(w, m-ofs);  ofs := 0;
-			IF left = 0 THEN src := src0;  left := pw END	(* wrap to start of pattern *)
+			INC(srcoff);  DEC(left, m-ofs);  DEC(w, m-ofs);  ofs := 0;
+			IF left = 0 THEN srcoff := src0;  left := pw END	(* wrap to start of pattern *)
 		UNTIL w = 0
 	ELSIF mode = Display.paint THEN
 		REPEAT	(* loop over w pixels *)
-			SYSTEM.GET(src, ch);
+			ch := src[srcoff];
 			i := ofs;	(* start bit *)
 			m := 8;	(* stop bit *)
 			IF m > ofs+left THEN m := ofs+left END;	(* max left times *)
 			IF m > ofs+w THEN m := ofs+w END;	(* max w times *)
 			REPEAT	(* loop over bits *)
 				IF ODD(ASH(ORD(ch), -i)) THEN	(* pixel on *)
-					SYSTEM.PUT(dst, CHR(col))
+					dst[dstoff] := CHR(col)
 				END;
-				INC(dst);  INC(i)
+				INC(dstoff);  INC(i)
 			UNTIL i = m;
-			INC(src);  DEC(left, m-ofs);  DEC(w, m-ofs);  ofs := 0;
-			IF left = 0 THEN src := src0;  left := pw END	(* wrap to start of pattern *)
+			INC(srcoff);  DEC(left, m-ofs);  DEC(w, m-ofs);  ofs := 0;
+			IF left = 0 THEN srcoff := src0;  left := pw END	(* wrap to start of pattern *)
 		UNTIL w = 0
 	ELSE (* replace *)
 		REPEAT	(* loop over w pixels *)
-			SYSTEM.GET(src, ch);
+			ch := src[srcoff];
 			i := ofs;	(* start bit *)
 			m := 8;	(* stop bit *)
 			IF m > ofs+left THEN m := ofs+left END;	(* max left times *)
 			IF m > ofs+w THEN m := ofs+w END;	(* max w times *)
 			REPEAT	(* loop over bits *)
 				IF ODD(ASH(ORD(ch), -i)) THEN	(* pixel on *)
-					SYSTEM.PUT(dst, CHR(col))
+					dst[dstoff] := CHR(col)
 				ELSE (* pixel off *)
-					SYSTEM.PUT(dst, CHR(Display.BG))
+					dst[dstoff] := CHR(Display.BG)
 				END;
-				INC(dst);  INC(i)
+				INC(dstoff);  INC(i)
 			UNTIL i = m;
-			INC(src);  DEC(left, m-ofs);  DEC(w, m-ofs);  ofs := 0;
-			IF left = 0 THEN src := src0;  left := pw END	(* wrap to start of pattern *)
+			INC(srcoff);  DEC(left, m-ofs);  DEC(w, m-ofs);  ofs := 0;
+			IF left = 0 THEN srcoff := src0;  left := pw END	(* wrap to start of pattern *)
 		UNTIL w = 0
 	END
 END FillPattern0;
@@ -303,62 +311,57 @@ END FillPattern0;
 PROCEDURE ReplPattern*(B: Bitmap; col: INTEGER; pat: Display.Pattern; X, Y, W, H, mode: INTEGER);
 VAR px, pw, ph, x, y, x2, y2, w, w0, h, src0, src, dst: LONGINT;  ch: CHAR;
 BEGIN
-  TRAP();
-  (* TODO
 	x := X;  y := Y;  w := W;  h := H;
 	x2 := x+w-1;  y2 := y+h-1;	(* (x,y) bottom left & (x2,y2) top right *)
 	IF (w > 0) & (h > 0) THEN
-		SYSTEM.GET(pat, ch);  pw := ORD(ch);
-		SYSTEM.GET(pat+1, ch);  ph := ORD(ch);
+		ch := pat[0];  pw := ORD(ch);
+		ch := pat[1];  ph := ORD(ch);
 		IF (pw > 0) & (ph > 0) THEN
-			INC(pat, 2);	(* adr of bitmap *)
 			w0 := (pw+7) DIV 8;	(* bytes in pattern line *)
-			src0 := pat + (ph-1)*w0;	(* last line of pattern *)
-			src := pat;	(* start line of pattern *)
+			src0 := (ph-1)*w0;	(* last line of pat *)
+			src := 2;	(* start line of pat *)
 			px := x MOD pw;	(* start pixel offset *)
-			dst := y * B.wth + x + B.address;
+			dst := y * B.wth + x; // index into B.data
 			REPEAT	(* loop over h lines *)
-				FillPattern0(px, src, dst, w, pw, col, mode);
+				FillPattern0(px, pat, src, B.data, dst, w, pw, col, mode);
 				DEC(h);  INC(dst, B.wth);
-				IF src = src0 THEN src := pat ELSE INC(src, w0) END
+				IF src = src0 THEN src := 0 ELSE INC(src, w0) END
 			UNTIL h = 0
 		END
 	END
-	*)
 END ReplPattern;
 
 PROCEDURE DisplayBlock*(B: Bitmap; SX, SY, W, H, DX, DY, mode: INTEGER);
 BEGIN 
-  TRAP();
-	// TODO Display.DisplayBlock(ORD(B), SX, SY, W, H, DX, DY, mode);
+	Display.DisplayBlock(B.data, B.depth, B.wth, SX, SY, W, H, DX, DY, mode);
 END DisplayBlock;
 
-PROCEDURE GetPix*(VAR addr: LONGINT; VAR buf: BYTE; depth: INTEGER);
-VAR s1, s2, s3: SHORTINT;
+PROCEDURE GetPix*(addr: Data; i: LONGINT; VAR buf: BYTE; depth: INTEGER);
+VAR s1, s2, s3: SHORTINT; 
 BEGIN 
-	IF depth = 8 THEN SYSTEM.GET(addr, buf); INC(addr)
+	IF depth = 8 THEN buf := ORD(addr[i]); INC(i)
 	ELSIF depth = 4 THEN 
-		SYSTEM.GET(addr, s1); INC(addr); SYSTEM.GET(addr, s2); INC(addr); buf := s2*16 + (s1 MOD 16)
+		s1 := ORD(addr[i]); INC(i); s2 := ORD(addr[i]); INC(i); buf := s2*16 + (s1 MOD 16)
 	ELSE (* depth = 1 *)
 		s1 := 0; s2 := 0;
-		WHILE s1 < 8 DO SYSTEM.GET(addr, s3); INC(addr); INC(s1); s2 := s2*2 + s3 MOD 2 END; buf := s2
+		WHILE s1 < 8 DO s3 := ORD(addr[i]); INC(i); INC(s1); s2 := s2*2 + s3 MOD 2 END; buf := s2
 	END;
 END GetPix;
 
-PROCEDURE PutPix*(VAR addr: LONGINT; border: LONGINT; buf: BYTE; depth: INTEGER);
-VAR s1: SHORTINT;
+PROCEDURE PutPix*(addr: Data; i: LONGINT; border: LONGINT; buf: BYTE; depth: INTEGER);
+VAR s1: SHORTINT; 
 BEGIN 
-	IF (depth = 8) & (addr < border) THEN SYSTEM.PUT(addr, buf); INC(addr)
+	IF (depth = 8) & (i < border) THEN addr[i] := CHR(buf); INC(i)
 	ELSIF depth = 4 THEN 
-		IF addr < border THEN SYSTEM.PUT(addr, SYSTEM.VAL(SHORTINT, buf) MOD 16); INC(addr) END; 
-		IF addr < border THEN SYSTEM.PUT(addr, SYSTEM.VAL(SHORTINT, buf) DIV 16 MOD 16); INC(addr) END; 
+		IF i < border THEN addr[i] := CHR(buf MOD 16); INC(i) END; 
+		IF i < border THEN addr[i] := CHR(buf DIV 16 MOD 16); INC(i) END; 
 	ELSE (* depth = 1 *)
 		s1 := 0;
 		WHILE s1 < 8 DO 
-			IF addr < border THEN 
-				IF ODD(SYSTEM.VAL(SHORTINT, buf)) THEN SYSTEM.PUT(addr, 15) ELSE SYSTEM.PUT(addr, 0) END
+			IF i < border THEN 
+				IF ODD(buf) THEN addr[i] := CHR(15) ELSE addr[i] := CHR(0) END
 			END;
-			INC(s1); INC(addr); buf := SYSTEM.VAL(SHORTINT, buf) DIV 2;
+			INC(s1); INC(i); buf := buf DIV 2;
 		END
 	END;
 END PutPix;

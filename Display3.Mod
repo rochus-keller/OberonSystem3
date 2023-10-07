@@ -1192,7 +1192,7 @@ END Circle;
 (* ---- end of scanline primitives ---- *)
 
 (** Draw string s in font fnt and color col at position X, Y. *)
-PROCEDURE String*(M: Mask; col: Display.Color; X, Y: INTEGER; fnt: Fonts.Font; s: ARRAY OF CHAR; mode: INTEGER);
+PROCEDURE String*(M: Mask; col: Display.Color; X, Y: INTEGER; fnt: Fonts.Font; IN s: ARRAY OF CHAR; mode: INTEGER);
 VAR r: Objects.Object; p: INTEGER;
 BEGIN
 	p := 0;
@@ -1254,7 +1254,7 @@ BEGIN
 END CenterString;
 
 (** Return the size of a string in width w and height h. dsr returns the baseline offset as a positive value. *)
-PROCEDURE StringSize*(s: ARRAY OF CHAR; fnt: Fonts.Font; VAR w, h, dsr: INTEGER);
+PROCEDURE StringSize*(IN s: ARRAY OF CHAR; fnt: Fonts.Font; VAR w, h, dsr: INTEGER);
 VAR p: INTEGER; r: Objects.Object;
 BEGIN
 	w := 0; h := fnt.height; dsr := ABS(fnt.minY);

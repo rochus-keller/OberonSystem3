@@ -33,7 +33,7 @@ TYPE
 		Unit*: LONGINT;	(** Printer resolution in 1/36000 mm per pixel. *)
 		
 		InitMetrics*: PROCEDURE (P: Printer);
-		Open*: PROCEDURE (P: Printer; printer, options: ARRAY OF CHAR); (** Initialize printer & set result code. *)
+		Open*: PROCEDURE (P: Printer; IN printer, options: ARRAY OF CHAR); (** Initialize printer & set result code. *)
 		Close*: PROCEDURE (P: Printer);	(** Stop printing & set result code. *)
 		Page*: PROCEDURE (P: Printer; nofcopies: INTEGER);	(** End of page reached. *)
 		ReplConst*: PROCEDURE (P: Printer; x, y, w, h: INTEGER);	(** Block fill. *)
@@ -43,9 +43,9 @@ TYPE
 		Ellipse*: PROCEDURE (P: Printer; x0, y0, a, b: INTEGER);
 		Spline*: PROCEDURE (P: Printer; x0, y0, n, open: INTEGER; VAR X, Y: ARRAY OF INTEGER);
 		Picture*: PROCEDURE (P: Printer; pict: Pictures.Picture; sx, sy, sw, sh, dx, dy, dw, dh, mode: INTEGER);
-		UseListFont*: PROCEDURE (P: Printer; name: ARRAY OF CHAR);
-		String*: PROCEDURE (P: Printer; x, y: INTEGER; str: ARRAY OF CHAR; fnt: Fonts.Font);
-		ContString*: PROCEDURE (P: Printer; str: ARRAY OF CHAR; fnt: Fonts.Font);
+		UseListFont*: PROCEDURE (P: Printer; IN name: ARRAY OF CHAR);
+		String*: PROCEDURE (P: Printer; x, y: INTEGER; IN str: ARRAY OF CHAR; fnt: Fonts.Font);
+		ContString*: PROCEDURE (P: Printer; IN str: ARRAY OF CHAR; fnt: Fonts.Font);
 		UseColor*: PROCEDURE (P: Printer; red, green, blue: INTEGER);
 		GetMetric*: PROCEDURE (P: Printer; fnt: Fonts.Font): Fonts.Font
 	END;
@@ -116,7 +116,7 @@ BEGIN
 END Install;
 
 (** Open specified printer.  res code is set. *)
-PROCEDURE Open* (printer, options: ARRAY OF CHAR);
+PROCEDURE Open* (IN printer, options: ARRAY OF CHAR);
 VAR P: Printer;
 BEGIN
 	IF current # NIL THEN
@@ -174,15 +174,15 @@ PROCEDURE Picture* (P: Pictures.Picture; sx, sy, sw, sh, dx, dy, dw, dh, mode: I
 BEGIN current.Picture(current, P, sx, sy, sw, sh, dx, dy, dw, dh, mode)
 END Picture;
 
-PROCEDURE UseListFont* (name: ARRAY OF CHAR);
+PROCEDURE UseListFont* (IN name: ARRAY OF CHAR);
 BEGIN current.UseListFont(current, name)
 END UseListFont;
 
-PROCEDURE String* (x, y: INTEGER; str: ARRAY OF CHAR; fnt: Fonts.Font);
+PROCEDURE String* (x, y: INTEGER; IN str: ARRAY OF CHAR; fnt: Fonts.Font);
 BEGIN current.String(current, x, y, str, fnt)
 END String;
 
-PROCEDURE ContString* (str: ARRAY OF CHAR; fnt: Fonts.Font);
+PROCEDURE ContString* (IN str: ARRAY OF CHAR; fnt: Fonts.Font);
 BEGIN current.ContString(current, str, fnt)
 END ContString;
 
@@ -269,7 +269,7 @@ VAR s: SET;  err: LONGINT;
 BEGIN
 	V24.GetMC(port, s);
 	IF V24.CTS IN s THEN
-		V24.Send(port, ch, err);
+		V24.Send(port, ORD(ch), err);
 		done := err = 0
 	ELSE
 		done := FALSE
@@ -285,7 +285,7 @@ BEGIN
 			spool.send(spool.port, spool.ch, spool.done);
 			IF Input.Time() - t > timeslice THEN EXIT END	(* end of timeslice *)
 		END;
-		Files.Read(spool.r, spool.ch);
+		Files.ReadChar(spool.r, spool.ch);
 		INC(spoolpos);
 		IF spool.r.eof THEN
 			EndJob(spool);

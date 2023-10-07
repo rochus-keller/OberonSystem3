@@ -1242,7 +1242,7 @@ BEGIN
 END ChangeBackdrop;
 
 (* Top, Bottom, Left, Right, Vertical, Horizontal, Width, Height, Size *)
-PROCEDURE Align0(type: ARRAY OF CHAR);
+PROCEDURE Align0(IN type: ARRAY OF CHAR);
 VAR M: Display.SelectMsg; obj, n: Objects.Object; x, y, w, h, maxW, maxH, px , py, count: INTEGER; A: Display.ModifyMsg;
 	L, p, q: Objects.Object; vertical: BOOLEAN;
 	

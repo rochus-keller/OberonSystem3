@@ -91,7 +91,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 
 	PROCEDURE Ch (VAR R: Files.Rider; ch: CHAR);
 	BEGIN
-		Files.Write(R, ch)
+		Files.WriteChar(R, ch)
 	END Ch;
 
 	PROCEDURE Str (VAR R: Files.Rider; s: ARRAY OF CHAR);
@@ -123,14 +123,14 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 	BEGIN
 		xi := SHORT(ENTIER(x));
 		IF x = xi THEN Int(R, xi); RETURN END;
-		IF x < 0 THEN Files.Write(R, "-"); x := -x; xi := -xi END;
-		Int(R, xi); Files.Write(R, "."); x := x-xi;
+		IF x < 0 THEN Files.WriteChar(R, "-"); x := -x; xi := -xi END;
+		Int(R, xi); Files.WriteChar(R, "."); x := x-xi;
 		n := SHORT(ENTIER(x*1000));
 		i := 0;
 		REPEAT
 			d[i] := CHR(n MOD 10+30H); n := n DIV 10; INC(i)
 		UNTIL i = 3;
-		WHILE i > 0 DO DEC(i); Files.Write(R, d[i]) END
+		WHILE i > 0 DO DEC(i); Files.WriteChar(R, d[i]) END
 	END Real;
 
 	PROCEDURE Ln(VAR R: Files.Rider);
@@ -284,11 +284,11 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 
 	BEGIN
 		Str(fontR, "% Conversion of the Oberon font "); Str(fontR, fd.name); Ln(fontR);
-		Files.Read(R, ch);
+		Files.ReadChar(R, ch);
 		IF ch = fontFileId THEN
-			Files.Read(R, ch); Str(fontR, "% abstraction: "); Int(fontR, ORD(ch)); 
-			Files.Read(R, ch); Str(fontR, ", family: "); Ch(fontR, ch); 
-			Files.Read(R, ch); Str(fontR, ", variant: "); Int(fontR, ORD(ch)); Ln(fontR);
+			Files.ReadChar(R, ch); Str(fontR, "% abstraction: "); Int(fontR, ORD(ch)); 
+			Files.ReadChar(R, ch); Str(fontR, ", family: "); Ch(fontR, ch); 
+			Files.ReadChar(R, ch); Str(fontR, ", variant: "); Int(fontR, ORD(ch)); Ln(fontR);
 			Files.ReadInt(R, height); Str(fontR, "% height: "); Int(fontR, height); Ln(fontR); Ln(fontR);
 			Files.ReadInt(R, minX); Files.ReadInt(R, maxX);
 			Files.ReadInt(R, minY); Files.ReadInt(R, maxY);
@@ -349,14 +349,14 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 						n := pixmapDX * metrics[m].h;
 						b := 0;
 						WHILE b < n DO
-							Files.Read(R, ch); Hex2(fontR, Flip(ch));
+							Files.ReadChar(R, ch); Hex2(fontR, Flip(ch));
 							INC(b);
 							IF b MOD 32 = 0 THEN Ln(fontR); Str(fontR, " ") END
 						END;
 						Str(fontR, ">] bdef"); Ln(fontR);
 					ELSE
 						n := (metrics[m].w + 7) DIV 8 * metrics[m].h;
-						b := 0; WHILE b < n DO Files.Read(R, ch); INC(b) END;
+						b := 0; WHILE b < n DO Files.ReadChar(R, ch); INC(b) END;
 					END;
 					INC(m);
 				END;
@@ -502,8 +502,8 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 
 	BEGIN
 		F.type := type;
-		Files.Read(R, ch); (*family*)
-		Files.Read(R, ch); (*variant*)
+		Files.ReadChar(R, ch); (*family*)
+		Files.ReadChar(R, ch); (*variant*)
 		NEW(raster); F.ind := raster;
 		Files.ReadInt(R, F.height);
 		Files.ReadInt(R, F.minX); Files.ReadInt(R, F.maxX);
@@ -564,8 +564,8 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 				BuildName(family, size, style, prClass, tmp);
 				f := Files.Old(tmp);
 				IF f # NIL THEN
-					Files.Set(R, f, 0); Files.Read(R, id);
-					IF id = Fonts.FontId THEN Files.Read(R, L.type);
+					Files.Set(R, f, 0); Files.ReadChar(R, id);
+					IF id = Fonts.FontId THEN Files.ReadSInt(R, L.type);
 						IF L.type = Fonts.font THEN
 							Load(L, R, L.name, Fonts.metric);	(* only read the metrics *)
 							RETURN
@@ -575,8 +575,8 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 				
 				f := Files.Old(L.name);
 				IF f # NIL THEN
-					Files.Set(R, f, 0); Files.Read(R, id);
-					IF id = Fonts.FontId THEN Files.Read(R, L.type);
+					Files.Set(R, f, 0); Files.ReadChar(R, id);
+					IF id = Fonts.FontId THEN Files.ReadSInt(R, L.type);
 						IF L.type = Fonts.metric THEN Load(L, R, L.name, Fonts.metric)
 						ELSE Substitute(L)
 						END
@@ -659,7 +659,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 		END
 	END InitMetrics;
 	
-	PROCEDURE GetSuffix(VAR str(** in *), suf(** out *): ARRAY OF CHAR);
+	PROCEDURE GetSuffix(IN str(** in *): ARRAY OF CHAR; VAR suf(** out *): ARRAY OF CHAR);
 		VAR i, j, dot: LONGINT;
 	BEGIN
 		dot := -1; i := 0;
@@ -695,7 +695,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 		setR := 255;  setG := 255;  setB := 255	(* different from cur *)
 	END ResetColor;
 
-	PROCEDURE Open*(P: Printer.Printer; printer, options: ARRAY OF CHAR);
+	PROCEDURE Open*(P: Printer.Printer; IN printer, options: ARRAY OF CHAR);
 	VAR suffix: ARRAY 32 OF CHAR;  i: LONGINT;
 	BEGIN
 		WITH P: PSPrinter DO
@@ -729,7 +729,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 		END
 	END Open;
 	
-	PROCEDURE UseListFont*(P: Printer.Printer; name: ARRAY OF CHAR);
+	PROCEDURE UseListFont*(P: Printer.Printer; IN name: ARRAY OF CHAR);
 	BEGIN
 		 listFont := name; curFont := -1
 	END UseListFont;
@@ -761,7 +761,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 		END
 	END ReplConst;
 		
-	PROCEDURE StringSize(VAR s: ARRAY OF CHAR; fnt: Fonts.Font; VAR w, h, dsr: INTEGER);
+	PROCEDURE StringSize(IN s: ARRAY OF CHAR; fnt: Fonts.Font; VAR w, h, dsr: INTEGER);
 	VAR p: INTEGER; obj: Objects.Object;
 	BEGIN
 		w := 0; h := 0; dsr := 0;
@@ -778,7 +778,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 		END
 	END StringSize;
 
-	PROCEDURE ContString*(P: Printer.Printer; s: ARRAY OF CHAR; fnt: Fonts.Font);
+	PROCEDURE ContString*(P: Printer.Printer; IN s: ARRAY OF CHAR; fnt: Fonts.Font);
 		VAR fNo, i, n, w, h, dsr: INTEGER; ch: CHAR; family: ARRAY 7 OF CHAR;
 
 		PROCEDURE Use(ch: CHAR);
@@ -828,7 +828,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 		END
 	END ContString;
 	
-	PROCEDURE String*(P: Printer.Printer; x, y: INTEGER; s: ARRAY OF CHAR; fnt: Fonts.Font);
+	PROCEDURE String*(P: Printer.Printer; x, y: INTEGER; IN s: ARRAY OF CHAR; fnt: Fonts.Font);
 	VAR w, h, dsr: INTEGER;
 	BEGIN
 		WITH P: PSPrinter DO
@@ -879,7 +879,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 		BEGIN
 			d0 := n MOD 16; IF d0 > 9 THEN INC(d0, 7) END;
 			d1 := n DIV 16; IF d1 > 9 THEN INC(d1, 7) END;
-			Files.Write(bodyR, CHR(d1+30H)); Files.Write(bodyR, CHR(d0+30H))
+			Files.WriteChar(bodyR, CHR(d1+30H)); Files.WriteChar(bodyR, CHR(d0+30H))
 		END H;
 		
 		PROCEDURE Out;
@@ -1196,8 +1196,8 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 			Texts.OpenReader(R, headerT, 0);
 			Texts.Read(R, ch);
 			WHILE ~R.eot DO
-				Files.Write(printR, ch);
-				IF ch = 0DX THEN Files.Write(printR, 0AX) END;
+				Files.WriteChar(printR, ch);
+				IF ch = 0DX THEN Files.WriteChar(printR, 0AX) END;
 				Texts.Read(R, ch)
 			END;
 			Str(printR, "/factor1 ");
@@ -1293,7 +1293,10 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 			END;
 			
 			Files.Set(srcR, bodyF, 0);
-			REPEAT Files.ReadBytes(srcR, buffer, bufSize); Files.WriteBytes(printR, buffer, bufSize-srcR.res) UNTIL srcR.eof;
+			REPEAT 
+  			Files.ReadFixString(srcR, buffer, bufSize); 
+  			Files.WriteFixString(printR, buffer, bufSize-srcR.res) 
+  		UNTIL srcR.eof;
 			Printer.Spool(P.printF);  P.res := Printer.res;
 			
 			Files.Set(bodyR, NIL, 0);

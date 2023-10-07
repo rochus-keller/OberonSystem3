@@ -60,7 +60,7 @@ VAR
 	W: Texts.Writer;
 	FixedDocs: BOOLEAN;
 	
-PROCEDURE open(D: Documents.Document; T: Texts.Text; name: ARRAY OF CHAR; VAR w, h: INTEGER);
+PROCEDURE open(D: Documents.Document; T: Texts.Text; IN name: ARRAY OF CHAR; VAR w, h: INTEGER);
 VAR F: Files.File; R: Files.Rider; tag: INTEGER; ch: CHAR; s: ARRAY 64 OF CHAR; len: LONGINT;
 	x, y: INTEGER; CM: Gadgets.CmdMsg;
 BEGIN
@@ -74,7 +74,7 @@ BEGIN
 		IF (tag = Documents.Id) OR (tag = 0727H) THEN
 			Files.ReadString(R, s);
 			Files.ReadInt(R, x); Files.ReadInt(R, y); Files.ReadInt(R, w); Files.ReadInt(R, h);
-			Files.Read(R, ch);
+			Files.ReadChar(R, ch);
 			
 			IF (ch = 0F7X) THEN (* attachments *)
 				Documents.LoadAttachments(R, D.attr, D.link);
@@ -82,7 +82,7 @@ BEGIN
 					CM.cmd := "PREPARE"; CM.res := -1; CM.dlink := D; Objects.Stamp(CM);
 					Links.Broadcast(D.link, CM)
 				END;
-				Files.Read(R, ch)
+				Files.ReadChar(R, ch)
 			END;
 			
 			IF (ch = Texts.TextBlockId) OR (ch = 01X) THEN
@@ -329,14 +329,14 @@ BEGIN
 		IF (id = Documents.Id) OR (id = 0727H) THEN
 			Files.ReadString(R, name);
 			Files.ReadInt(R, x); Files.ReadInt(R, y); Files.ReadInt(R, w); Files.ReadInt(R, h);
-			Files.Read(R, ch);
+			Files.ReadChar(R, ch);
 			IF (ch = 0F7X) THEN (* attachments *)
 				Documents.LoadAttachments(R, D.attr, D.link);
 				IF D.link # NIL THEN
 					CM.cmd := "PREPARE"; CM.res := -1; CM.dlink := D; Objects.Stamp(CM);
 					Links.Broadcast(D.link, CM)
 				END;
-				Files.Read(R, ch)
+				Files.ReadChar(R, ch)
 			END;
 			IF FixedDocs THEN
 				h := InitLogH	(* ps - 29.1.97 *)
@@ -401,9 +401,11 @@ BEGIN
 END SetCaret;
 
 (** Open a text in a TextDoc. W, H is used to determine the original size of the document. *)
-PROCEDURE ShowText*(title: ARRAY OF CHAR; T: Texts.Text; W, H: INTEGER);
+PROCEDURE ShowText*(IN title0: ARRAY OF CHAR; T: Texts.Text; W, H: INTEGER);
 VAR D: Documents.Document; f: TextGadgets.Frame; i: INTEGER;  log: BOOLEAN;
+    title: ARRAY VAR STRLEN(title0)+1 OF CHAR;
 BEGIN
+  title := title0;
 	i := 0;  WHILE (title[i] # 0X) & (title[i] # "|") DO INC(i) END;  title[i] := 0X;
 	WHILE (i > 0) & ((title[i] = " ") OR (title[i] = 0X)) DO DEC(i) END;
 	log := (i > 3) & (title[i-3] = ".") & (title[i-2] = "L") & (title[i-1] = "o") & (title[i] = "g");
