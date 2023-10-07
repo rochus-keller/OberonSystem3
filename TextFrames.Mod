@@ -531,7 +531,7 @@ MODULE TextFrames;	(** portable *) (* JG / pjm *)
   BEGIN Texts.OpenScanner(S, F.text, 0); Texts.Scan(S);  s := S.s
   END GetAttr;
 
-  PROCEDURE CallCmd (cmd: ARRAY OF CHAR; F: Frame; pos: LONGINT; new: BOOLEAN);
+  PROCEDURE CallCmd (IN cmd: ARRAY OF CHAR; F: Frame; pos: LONGINT; new: BOOLEAN);
     VAR res: INTEGER; par: Oberon.ParList;
   BEGIN
     NEW(par); par.vwr := Viewers.This(F.X, F.Y);
@@ -917,7 +917,7 @@ MODULE TextFrames;	(** portable *) (* JG / pjm *)
 
   (*creation*)
 
-  PROCEDURE Menu (name, commands: ARRAY OF CHAR): Texts.Text;
+  PROCEDURE Menu (IN name, commands: ARRAY OF CHAR): Texts.Text;
     VAR T: Texts.Text;
   BEGIN
     NEW(T); Texts.Open(T, "");
@@ -926,12 +926,12 @@ MODULE TextFrames;	(** portable *) (* JG / pjm *)
     RETURN T
  END Menu;
 
-  PROCEDURE Text* (name: ARRAY OF CHAR): Texts.Text;
+  PROCEDURE Text* (IN name: ARRAY OF CHAR): Texts.Text;
     VAR T: Texts.Text;
   BEGIN NEW(T); Texts.Open(T, name); RETURN T
   END Text;
 
-  PROCEDURE NewMenu* (name, commands: ARRAY OF CHAR): Frame;
+  PROCEDURE NewMenu* (IN name, commands: ARRAY OF CHAR): Frame;
     VAR F: Frame;
   BEGIN NEW(F);
     IF Modern THEN Open(F, Handle, Menu(name, commands), 0, MenuBG, left DIV 4, 0, 3, 1, lsp)
@@ -947,8 +947,9 @@ MODULE TextFrames;	(** portable *) (* JG / pjm *)
     RETURN F
   END NewText;
 
-PROCEDURE *ShowText(title: ARRAY OF CHAR; T: Texts.Text; W, H: INTEGER);
-	VAR X, Y: INTEGER; V: Viewers.Viewer; menu: ARRAY 100 OF CHAR;
+PROCEDURE *ShowText(IN title0: ARRAY OF CHAR; T: Texts.Text; W, H: INTEGER);
+	VAR X, Y: INTEGER; V: Viewers.Viewer; menu: ARRAY 100 OF CHAR; 
+	    title: ARRAY VAR STRLEN(title0)+1 OF CHAR;
 BEGIN
 	X := 0; WHILE (title[X] # 0X) & (title[X] # "|") DO INC(X) END;
 	IF title[X] = "|" THEN

@@ -15,6 +15,8 @@ of the source code to another platform with the name OBERON. *)
 
 MODULE FileDir; (** non-portable *)   (*NW 12.1.86 / 23.8.90 / pjm 09.02.96 *)
 
+  IMPORT P := ObxPal;
+  
 (* Note: InstFileDir module contains copy of this module *)
 
 (** The FileDir module implements the naming of files in directories. *)
@@ -30,7 +32,7 @@ MODULE FileDir; (** non-portable *)   (*NW 12.1.86 / 23.8.90 / pjm 09.02.96 *)
 (* An EntryHandler is used by the Enumerate operation.  name contains the name of the file.
 time, date and size are only used if the detail flag was specified in Enumerate.  continue may
 be set to FALSE to stop the Enumerate operation mid-way. *)
-		EntryHandler* = PROCEDURE (name: ARRAY OF CHAR; time, date, size: LONGINT; VAR continue: BOOLEAN);
+		EntryHandler* = PROCEDURE (IN name: ARRAY OF CHAR; time, date, size: LONGINT; VAR continue: BOOLEAN);
 
 	VAR
 		prefix*: ARRAY 10 OF CHAR;
@@ -38,16 +40,25 @@ be set to FALSE to stop the Enumerate operation mid-way. *)
 
 	(*Exported procedures: Search, Insert, Delete, Enumerate, Init*)
 
-	PROCEDURE Enumerate*(mask: ARRAY OF CHAR; detail: BOOLEAN; proc: EntryHandler);
-
+	PROCEDURE Enumerate*(IN mask: ARRAY OF CHAR; detail: BOOLEAN; proc: EntryHandler);
+  VAR n,i: LONGINT;
+	    b: BOOLEAN;
+	    str: ARRAY 64 OF CHAR;
+  BEGIN
+		n := P.file_list();
+		FOR i := 0 TO n-1 DO
+		  str := P.file_list_item(i);
+		  proc(str,0,0,0,b); // TODO: detail flag not considered yet
+		  // TODO: mask not considered yet
+		END
 	END Enumerate;
 
 	PROCEDURE Init*;
-
+  // NOP
 	END Init;
 
   PROCEDURE *Cleanup;
-  
+  // NOP
   END Cleanup;
 
 BEGIN

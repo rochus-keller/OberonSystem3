@@ -17,8 +17,8 @@ MODULE System; (** portable, except where noted *) (* pjm *)
 
 (* contributions: JG 3.10.90 / NW 26.11.91 / ARD 4. 2. 93 / nm / jm / ejz *)
 
-IMPORT SYSTEM, Kernel, FileDir, Files, Modules, Objects, Display, Input, Fonts, 
-	Viewers, Reals, Texts, Oberon, TextFrames;
+IMPORT Kernel, FileDir, Files, Modules, Objects, Display, Input, Fonts, 
+	Viewers, Texts, Oberon, TextFrames;
 
 CONST
 	MaxString = 64;
@@ -36,7 +36,7 @@ VAR
 	task: Oberon.Task;
 	log: Texts.Text;
 
-PROCEDURE OpenText(title: ARRAY OF CHAR; T: Texts.Text; system: BOOLEAN);
+PROCEDURE OpenText(IN title: ARRAY OF CHAR; T: Texts.Text; system: BOOLEAN);
 VAR W: INTEGER;
 BEGIN	
 	IF system THEN W := Display.Width DIV 8*3 ELSE W := 400 END;
@@ -290,7 +290,7 @@ BEGIN
 	M := Kernel.modules; n := 0; var := 0; const := 0; code := 0;
 	WHILE M # NIL DO
 		Texts.WriteString(W, M.name);  Texts.Write(W, 9X);
-		dsize := M.sb - SYSTEM.ADR(M.data[0]);	(* data size *)
+		dsize := 0;	(* data size *)
 		(*Texts.WriteInt(W, dsize, 1);  Texts.Write(W, 9X);*)
 		INC(var, dsize);  csize := LEN(M.data)-dsize;
 		(*Texts.WriteInt(W, csize, 1);  Texts.Write(W, 9X);*)	(* const size *)
@@ -356,7 +356,7 @@ END FreeLibraries;
 
 (* --- Toolbox of file system *)
 
-PROCEDURE *List(name: ARRAY OF CHAR;  time, date, size: LONGINT; VAR cont: BOOLEAN);
+PROCEDURE *List(IN name: ARRAY OF CHAR;  time, date, size: LONGINT; VAR cont: BOOLEAN);
 BEGIN
 	INC(count);
 	Texts.WriteString(W, name);
@@ -400,9 +400,9 @@ BEGIN
 	OpenText("Directory", t, TRUE)
 END Directory;
 
-PROCEDURE CopyFile(name: ARRAY OF CHAR; VAR S: Texts.Scanner);
+PROCEDURE CopyFile(IN name: ARRAY OF CHAR; VAR S: Texts.Scanner);
 CONST BufLen = 8000;
-VAR f, g: Files.File; Rf, Rg: Files.Rider; buf : ARRAY BufLen OF CHAR; i: LONGINT;
+VAR f, g: Files.File; Rf, Rg: Files.Rider; buf : ARRAY BufLen OF BYTE; i: LONGINT;
 BEGIN
 	Texts.Scan(S);
 	IF (S.class = Texts.Char) & (S.c = "=") THEN
@@ -449,7 +449,7 @@ BEGIN
 	END
 END CopyFiles;
 
-PROCEDURE RenameFile (name: ARRAY OF CHAR; VAR S: Texts.Scanner);
+PROCEDURE RenameFile (IN name: ARRAY OF CHAR; VAR S: Texts.Scanner);
 VAR res: INTEGER;
 BEGIN
 	Texts.Scan(S);
@@ -584,146 +584,6 @@ BEGIN
 	RETURN proc
 END FindProc;
 
-PROCEDURE WriteProc(mod: Modules.Module;  pc, fp: LONGINT;  VAR refs: Bytes;  VAR refpos, base: LONGINT);
-VAR ch: CHAR;
-BEGIN
-	refpos := -1;
-	IF mod = NIL THEN
-		Texts.WriteString(W, "Unknown EIP =");  Texts.WriteHex(W, pc);  Texts.Write(W, "H");
-		IF fp # -1 THEN
-			Texts.WriteString(W, " EBP =");  Texts.WriteHex(W, fp);  Texts.Write(W, "H")
-		END
-	ELSE
-		Texts.WriteString(W, mod.name);
-		DEC(pc, SYSTEM.ADR(mod.code[0]));
-		refs := SYSTEM.VAL(Bytes, mod.refs);
-		IF (refs # NIL) & (LEN(mod.refs) # 0) THEN
-			refpos := FindProc(refs, pc);
-			IF refpos # -1 THEN
-				Texts.Write(W, ".");
-				ch := refs[refpos];  INC(refpos);
-				IF ch = "$" THEN base := mod.sb ELSE base := fp END;	(* for variables *)
-				WHILE ch # 0X DO Texts.Write(W, ch);  ch := refs[refpos];  INC(refpos) END
-			END
-		END;
-		Texts.WriteString(W, "  PC = "); Texts.WriteInt(W, pc, 1)
-	END
-END WriteProc;
-
-PROCEDURE Variables(refs: Bytes;  i, base: LONGINT);
-VAR
-	mode, ch: CHAR;  m, adr, type, n, lval, size, tmp1, tmp2: LONGINT;  etc: BOOLEAN;
-	sval: SHORTINT;  ival: INTEGER;  mod: Modules.Module;  tmp: Bytes;  set: SET;
-	rval: REAL;  lrval: LONGREAL;
-BEGIN
-	m := LEN(refs^);  mode := refs[i];  INC(i);
-	WHILE (i < m) & (mode >= 1X) & (mode <= 3X) DO	(* var *)
-		type := ORD(refs[i]);  INC(i);  etc := FALSE;
-		IF type > 80H THEN
-			IF type = 83H THEN type := 15 ELSE DEC(type, 80H) END;
-			GetNum(refs, i, n)
-		ELSE
-			IF type = 15 THEN n := MaxString (* best guess *) ELSE n := 1 END
-		END;
-		GetNum(refs, i, adr);
-		Texts.Write(W, 9X);  ch := refs[i];  INC(i);
-		WHILE ch # 0X DO Texts.Write(W, ch);  ch := refs[i];  INC(i) END;
-		Texts.WriteString(W, " = ");
-		INC(adr, base);
-		IF n = 0 THEN	(* open array *)
-			SYSTEM.GET(adr+4, n)	(* real LEN from stack *)
-		END;
-		IF type = 15 THEN
-			IF n > MaxString THEN etc := TRUE;  n := MaxString END
-		ELSE
-			IF n > MaxArray THEN etc := TRUE;  n := MaxArray END
-		END;
-		IF mode # 1X THEN SYSTEM.GET(adr, adr) END;	(* indirect *)
-		IF (adr >= -4) & (adr < 4096) THEN
-			Texts.WriteString(W, "NIL reference (");  Texts.WriteHex(W, adr);  Texts.WriteString(W, "H )")
-		ELSE
-			IF type = 15 THEN
-				Texts.Write(W, 22X);
-				LOOP
-					IF n = 0 THEN EXIT END;
-					SYSTEM.GET(adr, ch);  INC(adr);
-					IF (ch < " ") OR (ch > "~") THEN EXIT END;
-					Texts.Write(W, ch);  DEC(n)
-				END;
-				Texts.Write(W, 22X);  etc := (ch # 0X)
-			ELSE
-				CASE type OF
-					1..4: size := 1
-					|5: size := 2
-					|6..7,9,13,14: size := 4
-					|8: size := 8
-				ELSE
-					Texts.WriteString(W, "bad type ");  Texts.WriteInt(W, type, 1);  n := 0
-				END;
-				WHILE n > 0 DO
-					CASE type OF
-						1,3:	(* BYTE, CHAR *)
-							SYSTEM.GET(adr, ch);
-							IF (ch > " ") & (ch <= "~") THEN Texts.Write(W, ch)
-							ELSE Texts.WriteHex(W, ORD(ch));  Texts.Write(W, "X")
-							END
-						|2:	(* BOOLEAN *)
-							SYSTEM.GET(adr, ch);
-							IF ch = 0X THEN Texts.WriteString(W, "FALSE")
-							ELSIF ch = 1X THEN Texts.WriteString(W, "TRUE")
-							ELSE Texts.WriteInt(W, ORD(ch), 1)
-							END
-						|4:	(* SHORTINT *)
-							SYSTEM.GET(adr, sval);  Texts.WriteInt(W, sval, 1)
-						|5:	(* INTEGER *)
-							SYSTEM.GET(adr, ival);  Texts.WriteInt(W, ival, 1)
-						|6:	(* LONGINT *)
-							SYSTEM.GET(adr, lval);  Texts.WriteInt(W, lval, 1)
-						|7:	(* REAL *)
-							SYSTEM.GET(adr, rval);  Texts.WriteReal(W, rval, 15)
-						|8:	(* LONGREAL *)
-							SYSTEM.GET(adr, lrval);  Texts.WriteLongReal(W, lrval, 24)
-						|9:	(* SET *)
-							SYSTEM.GET(adr, set);  Texts.WriteSet(W, set)
-						|13:	(* POINTER *)
-							SYSTEM.GET(adr, lval);  Texts.WriteHex(W, lval);  Texts.Write(W, "H")
-						|14:	(* PROC *)
-							SYSTEM.GET(adr, lval);  WriteProc(Kernel.GetMod(lval), lval, -1, tmp, tmp1, tmp2)
-					END;
-					DEC(n);  INC(adr, size);
-					IF n > 0 THEN Texts.WriteString(W, ", ") END
-				END
-			END
-		END;
-		IF etc THEN Texts.WriteString(W, " ...") END;
-		Texts.WriteLn(W);
-		IF i < m THEN mode := refs[i];  INC(i) END
-	END
-END Variables;
-
-PROCEDURE OutState (VAR name: ARRAY OF CHAR; t: Texts.Text);
-VAR mod: Modules.Module; refpos, i: LONGINT; refs: Bytes;  ch: CHAR;
-BEGIN
-	i := 0;  WHILE (name[i] # 0X) & (name[i] # ".") DO INC(i) END;
-	name[i] := 0X;
-	Texts.WriteString(W, name); mod := Kernel.modules;
-	WHILE (mod # NIL) & (mod.name # name) DO mod := mod.next END;
-	IF mod # NIL THEN
-		Texts.WriteString(W, "  SB ="); Texts.WriteHex(W, mod.sb); Texts.Write(W, "H");  Texts.WriteLn(W);
-		refs := SYSTEM.VAL(Bytes, mod.refs);
-		IF (refs # NIL) & (LEN(mod.refs) # 0) THEN
-			refpos := FindProc(refs, 0);	(* assume module body is at PC = 0 (not true for OMI) *)
-			IF refpos # -1 THEN
-				REPEAT ch := refs[refpos];  INC(refpos) UNTIL ch = 0X;
-				Variables(refs, refpos, mod.sb)
-			END
-		END
-	ELSE
-		Texts.WriteString(W, " not loaded");  Texts.WriteLn(W)
-	END;
-	Texts.Append(t, W.buf)
-END OutState;
-
 PROCEDURE State*;
 VAR T: Texts.Text; S: Texts.Scanner; beg, end, time: LONGINT;
 BEGIN
@@ -733,7 +593,7 @@ BEGIN
 		IF time >= 0 THEN Texts.OpenScanner(S, T, beg); Texts.Scan(S) END
 	END;
 	IF S.class = Texts.Name THEN
-		T := TextFrames.Text(""); OutState(S.s, T);
+		T := TextFrames.Text("State not supported"); 
 		OpenText("State", T, TRUE)
 	END
 END State;
@@ -774,7 +634,7 @@ BEGIN
 		ofs := 0; // TODO ORD( n.handle);  
 		m := Kernel.GetMod(ofs);
 		Texts.WriteString(W, m.name);  Texts.WriteString(W, "  PC = ");  
-		Texts.WriteInt(W, ofs-SYSTEM.ADR(m.code[0]), 1);
+		Texts.WriteInt(W, 0, 1);
 		IF n.safe THEN Texts.WriteString(W, "  safe  ")
 		ELSE Texts.WriteString(W, "  unsafe  ")
 		END;
@@ -843,41 +703,10 @@ END WriteTrap;
 
 PROCEDURE Trap*(error, fp, pc, page: LONGINT);	(** non-portable *)	(* exported for Debug debugger *)
 VAR
-	T: Texts.Text;  refpos, limit: LONGINT;  ch, ch0: CHAR;
-	mod: Modules.Module;  procstart, lastfp, base: LONGINT;  refs: Bytes;
 BEGIN
-	IF trapped = 0 THEN
-		trapped := 1;
-		Display.ResetClip;
-		IF Kernel.copro THEN Reals.SetFCR(Reals.DefaultFCR) ELSE resetfp() END;
-		IF error # MAX(INTEGER) THEN Viewers.Close(NIL) END;	(* close offending viewer, if any *)
-		T := TextFrames.Text("");
-		mod := Kernel.GetMod(pc);
-		WriteTrap(W, error, page); Texts.WriteLn(W);
-		LOOP
-			WriteProc(mod, pc, fp, refs, refpos, base);  Texts.WriteLn(W);
-			IF refpos # -1 THEN Variables(refs, refpos, base) END;
-			lastfp := fp;
-			SYSTEM.GET(fp+4, pc);  SYSTEM.GET(fp, fp); (* return addr from stack *)
-			IF (fp < lastfp) OR (fp >= Kernel.StackOrg) THEN EXIT END; (* not called from stack *)
-			mod := Kernel.GetMod(pc)
-		END;
-		Texts.Append(T, W.buf);
-		OpenText("Trap", T, TRUE)
-	ELSIF trapped = 1 THEN
-		trapped := 2;
-		T := TextFrames.Text(""); Texts.WriteLn(W);
-		Texts.WriteString(W, "TRAP "); Texts.WriteInt(W, error, 3);  Texts.WriteString(W, " (recursive)");
-		Texts.WriteLn(W); Texts.Append(T, W.buf);
-		OpenText("Trap", T, TRUE)
-	ELSIF trapped = 2 THEN
-		trapped := 3;
-		Texts.WriteLn(W);  Texts.WriteString(W, "TRAP "); Texts.WriteInt(W, error, 3);
-		Texts.WriteString(W, " (recursive)");  Texts.WriteLn(W);  Texts.Append(Oberon.Log, W.buf)
-	ELSE (* skip *)
-	END;
-	trapped := 0
+	TRAP();
 END Trap;
+
 
 PROCEDURE Quit*;
 BEGIN
@@ -951,7 +780,7 @@ BEGIN
 END Init;
 
 BEGIN 
-	Kernel.EnableGC;
+	// Kernel.EnableGC;
 	Texts.OpenWriter(W);
 	init := FALSE;  trapped := 0;  trap := 0;
 	task := NIL;  log := NIL;
@@ -965,6 +794,7 @@ BEGIN
 		Texts.WriteLn(W)
 	END;
 	Texts.WriteString(W, Kernel.version);  Texts.WriteLn(W);
+	(*
 	IF Kernel.copro THEN
 		resetfp := NIL
 	ELSE
@@ -973,5 +803,6 @@ BEGIN
 			Texts.WriteString(W, "Floating-point emulator loaded");  Texts.WriteLn(W)
 		END
 	END;
-    Texts.Append(Oberon.Log, W.buf)
+	*)
+  Texts.Append(Oberon.Log, W.buf)
 END System.

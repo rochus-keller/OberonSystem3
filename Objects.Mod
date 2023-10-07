@@ -222,7 +222,7 @@ Most entities in Oberon are derived from this base type.
 
 (* Check if end of s matches ext.  len returns length of ext. *)
 
-	PROCEDURE Match(VAR s, ext: ARRAY OF CHAR; VAR len: INTEGER): BOOLEAN;
+	PROCEDURE Match(IN s, ext: ARRAY OF CHAR; VAR len: INTEGER): BOOLEAN;
 	VAR i, j: INTEGER;
 	BEGIN
 		i := 0; WHILE ext[i] # 0X DO INC(i) END; len := i;
@@ -233,7 +233,7 @@ Most entities in Oberon are derived from this base type.
 	END Match;
 
 (** Search, load and cache a public library. *)
-  PROCEDURE ThisLibrary* (name: ARRAY OF CHAR): Library;
+  PROCEDURE ThisLibrary* (IN name: ARRAY OF CHAR): Library;
     VAR L: Library; len, n, n0, t, i, j: INTEGER; proc: NewProc;  A: Alias;
   BEGIN
     A := FirstAlias.next;
@@ -290,7 +290,7 @@ Most entities in Oberon are derived from this base type.
   END Enumerate;
 
 (** Register a new library file extension and its associated generator procedure. *)
-  PROCEDURE Register* (ext: ARRAY OF CHAR; new: NewProc);
+  PROCEDURE Register* (IN ext: ARRAY OF CHAR; new: NewProc);
     VAR n, len: INTEGER; L: Library;
   BEGIN n := 0;
     WHILE (n # nofreg) & (ext # LibExt[n]) DO INC(n) END;

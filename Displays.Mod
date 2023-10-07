@@ -38,13 +38,13 @@ TYPE
   	PROCEDURE Move*( IN from: ARRAY OF CHAR; fromoff: LONGINT; VAR to: ARRAY OF CHAR; tooff, w: LONGINT);
   	VAR i, lf: LONGINT;
   	BEGIN
-  	  //lf := LEN(from);
+  	  lf := LEN(from);
       FOR i := 0 TO w-1 DO
-        //IF fromoff+i >= lf THEN // TODO check whether still necessary
-        //  to[tooff+i] := 0x
-        //ELSE
+        IF fromoff+i >= lf THEN 
+          to[tooff+i] := 0X
+        ELSE
           to[tooff+i] := from[fromoff+i];
-        //END
+        END
       END
   	END Move;
   	
