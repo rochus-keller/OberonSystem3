@@ -509,7 +509,7 @@ MODULE Finder;	(** portable *) (* ejz 3.1.95 / jm - adapted for ver 1.6 / ps ext
 		END
 	END Minimize;
 
-	PROCEDURE * RegEnum (key, value: ARRAY OF CHAR);
+	PROCEDURE * RegEnum (IN key, value: ARRAY OF CHAR);
 	VAR t: Template;
 	BEGIN
 		NEW(t);  t.next := NIL;

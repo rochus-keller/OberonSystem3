@@ -302,7 +302,7 @@ BEGIN
 END Updatebar;
 
 (** Insert an item into the list. Entry comes at the end if the list is unsorted. *)
-PROCEDURE InsertItem*(F: List; s: ARRAY OF CHAR);
+PROCEDURE InsertItem*(F: List; IN s: ARRAY OF CHAR);
 VAR p, i, j: Item;
 BEGIN
 	IF F.sorted THEN
@@ -741,7 +741,7 @@ END DeleteSelection;
 PROCEDURE GetSelection*(F: List; VAR T: Texts.Text);
 VAR W: Texts.Writer; i: Item; count: INTEGER;
 
-  PROCEDURE WriteString(VAR W: Texts.Writer; s: ARRAY OF CHAR);
+  PROCEDURE WriteString(VAR W: Texts.Writer; IN s: ARRAY OF CHAR);
   VAR i: INTEGER;
   BEGIN i := 0;
   	WHILE (s[i] >= " ") OR (s[i] = 9X) DO Texts.Write(W, s[i]); INC(i) END	(* << jm *)
@@ -1047,7 +1047,7 @@ END NewList;
 (* --- tools for lists --- *)
 
 (* Native-Oberon version *)
-PROCEDURE *ListFiles(name: ARRAY OF CHAR; time, date, size: LONGINT; VAR cont: BOOLEAN);
+PROCEDURE *ListFiles(IN name: ARRAY OF CHAR; time, date, size: LONGINT; VAR cont: BOOLEAN);
 VAR i0, i1, j0, j1: INTEGER; f: BOOLEAN; 
 BEGIN i0 := pos; j0 := pos; f := TRUE;
 	LOOP
@@ -1074,7 +1074,7 @@ BEGIN i0 := pos; j0 := pos; f := TRUE;
 	END
 END ListFiles;
 
-PROCEDURE GetDir(mask : ARRAY OF CHAR; text : Texts.Text);
+PROCEDURE GetDir(IN mask : ARRAY OF CHAR; text : Texts.Text);
 	VAR pre : ARRAY 32 OF CHAR; i : INTEGER; 
 BEGIN
 	i := 0;
@@ -1087,7 +1087,7 @@ BEGIN
 	Texts.Append(text,W.buf);
 END GetDir;
 
-PROCEDURE Copy(source : ARRAY OF CHAR; VAR dest : ARRAY OF CHAR);
+PROCEDURE Copy(IN source : ARRAY OF CHAR; VAR dest : ARRAY OF CHAR);
 	VAR i,j : INTEGER;
 BEGIN
 	j := 0; WHILE (source[j] = " ") DO INC(j); END;
@@ -1120,7 +1120,7 @@ BEGIN
 	END
 END Directory;
 
-PROCEDURE Match(name,pat : ARRAY OF CHAR): BOOLEAN;
+PROCEDURE Match(IN name,pat : ARRAY OF CHAR): BOOLEAN;
 	CONST  VAR i0, i1, j0, j1,pos: INTEGER; f: BOOLEAN; 
 BEGIN pos := 0;
 	pos := 0; WHILE (pat[pos] # "*") & (pat[pos] # 0X) & (pat[pos] = name[pos]) DO INC(pos) END;
@@ -1150,7 +1150,7 @@ BEGIN pos := 0;
 	RETURN f
 END Match;
 
-PROCEDURE *EntryHandler(name: ARRAY OF CHAR; date, time, size: LONGINT);
+PROCEDURE *EntryHandler(IN name: ARRAY OF CHAR; date, time, size: LONGINT);
 BEGIN
 	IF (name[0] > " ") & (name[0] < CHR(127)) & Match(name,pat) THEN Texts.WriteString(W,name); Texts.WriteLn(W) END
 END EntryHandler;

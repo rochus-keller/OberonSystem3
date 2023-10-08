@@ -103,7 +103,7 @@ BEGIN
 	RETURN new
 END DuplicateNode;
 
-PROCEDURE IsUnique (n: Node; val: ARRAY OF CHAR; acceptSelf: BOOLEAN): BOOLEAN;
+PROCEDURE IsUnique (n: Node; IN val: ARRAY OF CHAR; acceptSelf: BOOLEAN): BOOLEAN;
 VAR cur: Node;
 BEGIN
 	cur := n;
@@ -345,8 +345,8 @@ PROCEDURE WriteList (obj: List; VAR M: Objects.FileMsg);
 		n := n.next;
 		WHILE n.key # NoKey DO
 			Files.WriteLInt(M.R, n.key); Files.WriteString(M.R, n.s); Files.WriteLInt(M.R, n.state);
-			IF n.dsc # NIL THEN Files.Write(M.R, 0FFX); WriteNodes(n.dsc)
-			ELSE Files.Write(M.R, 0X)
+			IF n.dsc # NIL THEN Files.WriteChar(M.R, 0FFX); WriteNodes(n.dsc)
+			ELSE Files.WriteChar(M.R, 0X)
 			END;
 			n := n.next
 		END;
@@ -374,7 +374,7 @@ VAR ver: LONGINT;
 			n.key := key; n.pos := n.prev.pos + 1;
 			Files.ReadString(M.R, n.s); NEW(str);  str.s := n.s; n.d := str;
 			Files.ReadLInt(M.R, n.state);
-			Files.Read(M.R, ch);
+			Files.ReadChar(M.R, ch);
 			IF ch = 0FFX THEN
 				n.dsc := NewNode(NIL, NoKey); n.dsc.pos := -1; n.dsc.dsc := n;
 				ReadNodes(n.dsc)

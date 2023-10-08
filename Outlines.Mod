@@ -398,7 +398,7 @@ BEGIN
 					ELSE Files.ReadInt(M.R, F.fstate)
 					END;
 					Files.ReadLInt(M.R, F.len);
-					Files.Read(M.R, ch);
+					Files.ReadChar(M.R, ch);
 					IF (F.fstate = folded) & (ch = Texts.TextBlockId) THEN
 						NEW(F.buf); Texts.OpenBuf(F.buf);
 						file := Files.Base(M.R); pos := Files.Pos(M.R);

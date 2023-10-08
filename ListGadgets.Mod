@@ -351,7 +351,7 @@ END WritePath;
 PROCEDURE GetSelection (F: Frame; VAR T: Texts.Text);
 VAR L: Line; cnt: LONGINT; R: ListRiders.Rider; str: ARRAY 64 OF CHAR; incl: BOOLEAN;
 
-	PROCEDURE Space (s: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE Space (IN s: ARRAY OF CHAR): BOOLEAN;
 	VAR i: LONGINT;
 	BEGIN
 		i := 0; WHILE (s[i] # 0X) & (s[i] # " ") & (s[i] # 9X) DO INC(i) END;
@@ -1460,7 +1460,7 @@ BEGIN
 END NewFrame;
 
 (* ------------ Commands to create list with scrollbar(s) ------------ *)
-PROCEDURE MakeSimpleList (frame, model: ARRAY OF CHAR; VAR P: Display.Frame; VAR F: Frame; VAR vBar: Display.Frame);
+PROCEDURE MakeSimpleList (IN frame, model: ARRAY OF CHAR; VAR P: Display.Frame; VAR F: Frame; VAR vBar: Display.Frame);
 VAR obj: Objects.Object;
 BEGIN
 	F := NIL; P := NIL; vBar := NIL;
@@ -1580,7 +1580,7 @@ BEGIN
 	Texts.OpenWriter(W);
 	NEW(pointText); Texts.Open(pointText, "");
 
-	WaitTime := 75 * Input.TimeUnit DIV 1000; mayscroll := Oberon.Time();
+	WaitTime := 75I * Input.TimeUnit DIV 1000; mayscroll := Oberon.Time();
 
 	NEW(methods);
 	methods.GetRider := GetStandardRider;

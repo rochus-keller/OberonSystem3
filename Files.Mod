@@ -137,7 +137,7 @@ at different locations in a file. A Rider cannot be positioned beyond the end of
 (** Read a byte from a file, advancing the Rider one byte further.  R.eof indicates if the end 
 of the file has been passed. *)
 	PROCEDURE Read*(VAR r: Rider; VAR x: BYTE);
-	VAR pos: INTEGER;
+	VAR pos: LONGINT;
   BEGIN
     x := 0;
     IF r.file # NIL THEN
@@ -145,7 +145,7 @@ of the file has been passed. *)
 	      r.res := 0; r.eof := FALSE;
 	      IF P.file_eof(r.file.id) # 0 THEN r.eof := TRUE; r.res := 1
 	      ELSE
-	        x := CAST(BYTE,P.file_read_byte(r.file.id))
+	        x := P.file_read_byte(r.file.id)
 	        pos := P.file_pos(r.file.id)
 	        IF pos = r.pos THEN r.res := 1 ELSE r.pos := pos END
 	      END
@@ -240,18 +240,21 @@ Portable routines to read the standard Oberon types.
 	END ReadString;
 
 (** Reads a number in compressed variable length notation using the minimum amount of bytes. *)
-  // This is the version from Oberon System V5
-  PROCEDURE ReadNum*(VAR r: Rider; VAR x: LONGINT);
-  VAR n, y: LONGINT; b: BYTE;
-  BEGIN
-  	n := 32; y := 0; Read(r, b);
-    WHILE b >= 80H DO y := ROR(y + b-80H, 7); DEC(n, 7); Read(r, b) END ;
-    IF n <= 4 THEN x := ROR(y + b MOD 10H, 4) ELSE x := ASR(ROR(y + b, 7), n-7) END
-  END ReadNum;
+	PROCEDURE ReadNum*(VAR R: Rider; VAR x: LONGINT);
+		VAR ch: CHAR; n: INTEGER; y: LONGINT;
+	BEGIN 
+  	n := 0; y := 0; ReadChar(R, ch);
+		WHILE ch >= 80X DO 
+  		INC(y, LSL(LONG(ORD(ch)) - 128, n)); 
+  		INC(n, 7); 
+  		ReadChar(R, ch) 
+  	END;
+    x := ASH(LSL(LONG(ORD(ch)), 25), n-25) + y
+	END ReadNum;
 
 (** Writes a byte into the file at the Rider position, advancing the Rider by one. *)
 	PROCEDURE Write*(VAR r: Rider; x: BYTE);
-  VAR pos: INTEGER
+  VAR pos: LONGINT
   BEGIN
     IF r.file # NIL THEN
       IF P.file_seek(r.file.id, r.pos) # 0 THEN 
@@ -336,12 +339,14 @@ Portable routines to write the standard Oberon types.
 	END WriteString;
 
 (** Writes a number in a compressed format. *)
-  // This is the version from Oberon System V5
-  PROCEDURE WriteNum*(VAR r: Rider; x: LONGINT);
-  BEGIN
-    WHILE (x < -40H) OR (x >= 40H) DO Write(r, x MOD 80H + 80H); x := ASR(x, 7) END ;
-    Write(r, x MOD 80H)
-  END WriteNum;
+	PROCEDURE WriteNum*(VAR R: Rider; x: LONGINT);
+	BEGIN
+		WHILE (x < - 64) OR (x > 63) DO 
+  		WriteChar(R, CHR(x MOD 128 + 128)); 
+  		x := x DIV 128 
+  	END;
+		WriteChar(R, CHR(x MOD 128))
+	END WriteNum;
 
 (** Deletes a file. res = 0 indicates success. *)
 	PROCEDURE Delete*(IN name: ARRAY OF CHAR; VAR res: INTEGER);

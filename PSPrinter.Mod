@@ -34,7 +34,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 		
 		PSPrinter* = POINTER TO PSPrinterDesc;
 		PSPrinterDesc* = RECORD (Printer.PrinterDesc)
-			Escape*: PROCEDURE (P: Printer.Printer; s: ARRAY OF CHAR);
+			Escape*: PROCEDURE (P: Printer.Printer; IN s: ARRAY OF CHAR);
 			printF*: Files.File;
 			eps*: BOOLEAN; (** Is EPS output being written? *)
 			pno*: INTEGER; (** Current page being printer on (starts with 1) *)
@@ -94,7 +94,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 		Files.WriteChar(R, ch)
 	END Ch;
 
-	PROCEDURE Str (VAR R: Files.Rider; s: ARRAY OF CHAR);
+	PROCEDURE Str (VAR R: Files.Rider; IN s: ARRAY OF CHAR);
 		VAR i: INTEGER;
 	BEGIN
 		i := 0;
@@ -141,7 +141,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 
 	(* -- Error handling -- *)
 
-	PROCEDURE Error(s0, s1: ARRAY OF CHAR);
+	PROCEDURE Error(IN s0, s1: ARRAY OF CHAR);
 		VAR error, f: ARRAY 32 OF CHAR;
 	BEGIN  error := s0;  f := s1; HALT(99)
 	END Error;
@@ -163,7 +163,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 	
 	(* -- Font Mapping -- *)
 
-	PROCEDURE SetMappedFont(VAR fontR: Files.Rider; fname: ARRAY OF CHAR);
+	PROCEDURE SetMappedFont(VAR fontR: Files.Rider; IN fname: ARRAY OF CHAR);
 		VAR family: ARRAY 7 OF CHAR;
 	BEGIN
 		 family := fname;
@@ -437,7 +437,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 		class[j] := 0X;
 	END ParseName;
 
-	PROCEDURE BuildName (family: ARRAY OF CHAR; size: LONGINT; style: SET; class: ARRAY OF CHAR; VAR name: ARRAY OF CHAR);
+	PROCEDURE BuildName (IN family: ARRAY OF CHAR; size: LONGINT; style: SET; IN class: ARRAY OF CHAR; VAR name: ARRAY OF CHAR);
 	VAR i, j: INTEGER;
 	
 		(* Convert an integer into a string *)
@@ -479,7 +479,7 @@ MODULE PSPrinter;	(** portable *)  (*UNIX version: JT 11.5.90, RC 2.7.93,  JS 29
 		L.ind := Fonts.Default.ind
 	END Substitute;
 
-PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SHORTINT);
+PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; IN subst: ARRAY OF CHAR; type: SHORTINT);
 	TYPE
 		RunRec = RECORD beg, end: INTEGER END;
 		BoxRec = RECORD dx, x, y, w, h: INTEGER END;
@@ -596,7 +596,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 
 	(* -- Exported Procedures -- *)
 
-	PROCEDURE GetDim(P: Printer.Printer;  label: ARRAY OF CHAR;  def: INTEGER;  VAR val: INTEGER);
+	PROCEDURE GetDim(P: Printer.Printer; IN label: ARRAY OF CHAR;  def: INTEGER;  VAR val: INTEGER);
 	VAR v: REAL; S: Texts.Scanner;
 	BEGIN
 		Oberon.OpenScanner(S, label);
@@ -735,7 +735,7 @@ PROCEDURE Load(F: Fonts.Font; VAR R: Files.Rider; subst: ARRAY OF CHAR; type: SH
 	END UseListFont;
 
 	(** Don't forget to update the bounding box of eps files by calling procedure Box. *)
-	PROCEDURE Escape*(P: Printer.Printer; s: ARRAY OF CHAR);
+	PROCEDURE Escape*(P: Printer.Printer; IN s: ARRAY OF CHAR);
 	BEGIN
 		WITH P: PSPrinter DO
 			(* Don't make more that one page when making eps *)

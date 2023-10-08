@@ -417,13 +417,13 @@ BEGIN
 	Files.ReadNum(M.R, ver);
 	IF (ver = 4) OR (ver = 5) THEN
 		IF ver = 5 THEN Files.ReadNum(M.R, ver); F.underlined:=(ver=1) END;
-		Files.Read(M.R, chr); (* read TextBlockId *)
+		Files.ReadChar(M.R, chr); (* read TextBlockId *)
 		IF chr # Texts.TextBlockId THEN HALT(99) END;
 		Texts.Load(F.text, Files.Base(M.R), Files.Pos(M.R), len);
 		Files.Set(M.R, Files.Base(M.R), Files.Pos(M.R)+len);
 		Gadgets.framehandle(F, M);
 	ELSIF (ver = 2) OR (ver = 3) THEN
-		Files.Read(M.R, chr); (* read TextBlockId *)
+		Files.ReadChar(M.R, chr); (* read TextBlockId *)
 		IF (chr = 01X) OR (chr  = Texts.TextBlockId) THEN
 			Texts.Load(F.text, Files.Base(M.R), Files.Pos(M.R), len);
 			Files.Set(M.R, Files.Base(M.R), Files.Pos(M.R)+len);
@@ -436,8 +436,8 @@ BEGIN
 			fnt := Objects.ThisLibrary(name);
 			Texts.SetFont(W, fnt); Texts.SetColor(W, SHORT(col)); 
 			
-			i := 0; Files.Read(M.R, ch);
-			WHILE ch # 0X DO Texts.Write(W, ch); Files.Read(M.R, ch) END;
+			i := 0; Files.ReadChar(M.R, ch);
+			WHILE ch # 0X DO Texts.Write(W, ch); Files.ReadChar(M.R, ch) END;
 			Texts.Append(F.text, W.buf);
 			Texts.SetFont(W, Fonts.Default); Texts.SetColor(W, Display.FG);
 			F.state := F.state + {Gadgets.transparent, Gadgets.lockedsize};
@@ -1058,7 +1058,7 @@ BEGIN
 	END
 END Field;
 
-PROCEDURE SetValue(obj: Objects.Object; field, value: ARRAY OF CHAR; dlink: Objects.Object; VAR res: INTEGER);
+PROCEDURE SetValue(obj: Objects.Object; IN field, value: ARRAY OF CHAR; dlink: Objects.Object; VAR res: INTEGER);
 VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.set;  A.name := field;  A.s := value; A.class := Objects.String; A.res := -1; A.dlink := dlink;
@@ -1066,7 +1066,7 @@ BEGIN
 	res := A.res
 END SetValue;
 
-PROCEDURE GetValue(obj: Objects.Object; field: ARRAY OF CHAR; VAR value: ARRAY OF CHAR);
+PROCEDURE GetValue(obj: Objects.Object; IN field: ARRAY OF CHAR; VAR value: ARRAY OF CHAR);
 VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.get;  A.name := field; A.class := Objects.Inval; A.s := ""; A.res := -1;

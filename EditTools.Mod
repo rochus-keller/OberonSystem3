@@ -35,7 +35,7 @@ VAR
 	W, WR: Texts.Writer;
 	lastTime: LONGINT;
 
-	PROCEDURE Plural (n: LONGINT; s: ARRAY OF CHAR);
+	PROCEDURE Plural (n: LONGINT; IN s: ARRAY OF CHAR);
 	BEGIN Texts.WriteInt(W, n, 0); Texts.Write(W, " "); Texts.WriteString(W, s);
 		IF n # 1 THEN Texts.Write(W, "s") END;
 		Texts.Append(Oberon.Log, W.buf);
@@ -51,7 +51,7 @@ VAR
 			
 	(* string primitives *)
 
-	PROCEDURE SplitFontName (fn: ARRAY OF CHAR; VAR i, j, size: INTEGER);
+	PROCEDURE SplitFontName (IN fn: ARRAY OF CHAR; VAR i, j, size: INTEGER);
 		VAR k: INTEGER;
 	BEGIN i := 0; size := 0;
 		WHILE (fn[i] # 0X) & ((fn[i] < "0") OR ("9" < fn[i])) DO INC(i) END;
@@ -59,7 +59,7 @@ VAR
 		k := i; WHILE k < j DO size := size * 10 + ORD(fn[k]) - 30H; INC(k) END
 	END SplitFontName;
 
-	PROCEDURE CombineFontName (prefix, suffix: ARRAY OF CHAR; i, j, size: INTEGER; VAR fn: ARRAY OF CHAR);
+	PROCEDURE CombineFontName (IN prefix, suffix: ARRAY OF CHAR; i, j, size: INTEGER; VAR fn: ARRAY OF CHAR);
 		VAR k: INTEGER; ch: CHAR; dig: ARRAY 10 OF CHAR;
 	BEGIN  fn := prefix; k := 0;
 		IF size < 6 THEN size := 6 ELSIF size > 128 THEN size := 128 END;
@@ -72,7 +72,7 @@ VAR
 	BEGIN RETURN (lib # NIL) & (lib IS Fonts.Font)
 	END IsFont;
 	
-	PROCEDURE ThisFont(name: ARRAY OF CHAR): Fonts.Font;
+	PROCEDURE ThisFont(IN name: ARRAY OF CHAR): Fonts.Font;
 		VAR fnt: Fonts.Font;
 	BEGIN
 		fnt := Fonts.This(name);
@@ -116,7 +116,7 @@ VAR
 		END
 	END ChangeFontSize;
 
-	PROCEDURE ChangeFontFamily* (T: Texts.Text; beg, end: LONGINT; old, new: ARRAY OF CHAR);
+	PROCEDURE ChangeFontFamily* (T: Texts.Text; beg, end: LONGINT; IN old, new: ARRAY OF CHAR);
 		VAR R: Texts.Reader; fnt: Objects.Library; fn: Objects.Name; org: LONGINT; i, i1, j, j1, size, size1: INTEGER; ch: CHAR;
 	BEGIN Texts.OpenReader(R, T, beg); Texts.Read(R, ch);
 		WHILE ~R.eot & (beg < end) DO org := beg; fnt := R.lib;
@@ -151,7 +151,7 @@ VAR
 		END
 	END ChangeFontStyle;
 
-	PROCEDURE ChangeFont* (T: Texts.Text; beg, end: LONGINT; old, new: ARRAY OF CHAR);
+	PROCEDURE ChangeFont* (T: Texts.Text; beg, end: LONGINT; IN old, new: ARRAY OF CHAR);
 		VAR R: Texts.Reader; fnt: Objects.Library; org: LONGINT; ch: CHAR;
 	BEGIN Texts.OpenReader(R, T, beg); Texts.Read(R, ch);
 		WHILE ~R.eot & (beg < end) DO org := beg; fnt := R.lib;
@@ -427,10 +427,10 @@ VAR
 			F := Files.Old(S.s);
 			IF F # NIL THEN
 				Files.Set(R, F, 0);
-				Files.Read(R, ch);
+				Files.ReadChar(R, ch);
 				WHILE ~R.eof DO
 					IF ch # 0AX THEN Texts.Write(W, Strings.ISOToOberon[ORD(ch)]) END;
-					Files.Read(R, ch);
+					Files.ReadChar(R, ch);
 				END;
 				Texts.Append(T, W.buf)
 			END;
@@ -454,11 +454,11 @@ VAR
 			F := Files.Old(S.s);
 			IF F # NIL THEN
 				Files.Set(R, F, 0);
-				Files.Read(R, ch);
+				Files.ReadChar(R, ch);
 				WHILE ~R.eof DO
 					IF ch = 0AX THEN ch := 0DX END;
 					Texts.Write(W, Strings.ISOToOberon[ORD(ch)]);
-					Files.Read(R, ch);
+					Files.ReadChar(R, ch);
 				END;
 				Texts.Append(T, W.buf)
 			END;
@@ -507,10 +507,10 @@ VAR
 					WHILE ~R.eot DO
 						IF (R.lib # NIL) & (R.lib IS Fonts.Font) THEN
 							IF ch = 0DX THEN
-								IF os = Ascii THEN Files.Write(r, ch) END;
+								IF os = Ascii THEN Files.WriteChar(r, ch) END;
 								IF os # Mac THEN ch := 0AX END
 							END;
-							Files.Write(r, Strings.OberonToISO[ORD(ch)])
+							Files.WriteChar(r, Strings.OberonToISO[ORD(ch)])
 						END;
 						Texts.Read(R, ch)
 					END;

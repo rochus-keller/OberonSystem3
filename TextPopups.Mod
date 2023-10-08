@@ -156,7 +156,7 @@ MODULE TextPopups;	(** portable *)	(* tk 6.12.95 *)
 		END;
 	END ExtractHistory;
 	
-	PROCEDURE CreateMenuItems(listR: ListRiders.Rider; T: Texts.Text; ext: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE CreateMenuItems(listR: ListRiders.Rider; T: Texts.Text; IN ext: ARRAY OF CHAR): BOOLEAN;
 		VAR p: MenuItem; w, h, dsr: INTEGER; R: Texts.Reader; cmd: CmdMenuItem; text: Texts.Text;
 			s: ARRAY 128 OF CHAR; ch: CHAR; d: ListRiders.String;
 			plist, tlist, plast, tlast: MenuItem; parsed: BOOLEAN;
@@ -205,7 +205,7 @@ MODULE TextPopups;	(** portable *)	(* tk 6.12.95 *)
 		RETURN TRUE
 	END CreateMenuItems;
 	
-	PROCEDURE GetFileExtension(name: ARRAY OF CHAR; VAR ext: ARRAY OF CHAR);
+	PROCEDURE GetFileExtension(IN name: ARRAY OF CHAR; VAR ext: ARRAY OF CHAR);
 		VAR i, j, l: INTEGER;
 	BEGIN	i:=0; l:=0;
 		WHILE name[i]#0X DO 

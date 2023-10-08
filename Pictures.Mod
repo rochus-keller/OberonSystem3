@@ -349,6 +349,7 @@ BEGIN
 	ce := b+P.wth;
 	c := P.height; 
 	d := P.depth;
+	RETURN; // TODO: this code loops indefinitely
 	WHILE c > 0 DO
 		Files.ReadChar(R, ch); k := ORD(ch);
 		IF k < 128 THEN 

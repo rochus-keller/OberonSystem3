@@ -260,7 +260,7 @@ BEGIN
 	END
 END ToIcon;
 
-PROCEDURE StringSize(s: ARRAY OF CHAR; VAR w, h: INTEGER);
+PROCEDURE StringSize(IN s: ARRAY OF CHAR; VAR w, h: INTEGER);
 VAR r: Objects.Object; p: INTEGER;
 BEGIN
 	w := 6; h := 0;
@@ -509,7 +509,7 @@ BEGIN
 	IF Effects.Inside(M.X, M.Y, x, y, w, h) & (keysum = {1}) THEN Gadgets.ExecuteAttr(F, "Cmd", M.dlink, NIL, NIL) END;
 END IconTrack;
 
-PROCEDURE HasCmdAttr(F: Display.Frame; attr: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE HasCmdAttr(F: Display.Frame; IN attr: ARRAY OF CHAR): BOOLEAN;
 VAR A: Objects.AttrMsg;
 BEGIN
 	A.id := Objects.get;  A.name := attr; A.class := Objects.Inval; A.res := -1; A.dlink := NIL; Objects.Stamp(A);
@@ -656,7 +656,7 @@ BEGIN
 END IconHandler;
 
 (** Manufacture an icon with caption name and icon as content. Icon must be of type frame. Icons is typically a simple camera-view created by ViewOf. *)
-PROCEDURE MakeIcon*(F: Icon; name: ARRAY OF CHAR; icon: Objects.Object);
+PROCEDURE MakeIcon*(F: Icon; IN name: ARRAY OF CHAR; icon: Objects.Object);
 BEGIN
 	F.handle := IconHandler; F.obj := icon; F.col := Display3.groupC;
 	 F.caption := name; IconSize(F, F.W, F.H); F.state := {Gadgets.lockedsize, Gadgets.transparent}
@@ -1473,7 +1473,7 @@ END Break;
 (* ---------------------- Making an icon out of a document ------------- *)
 
 (** Initialize a new icon for a document. Icon should be in "Library.ObjName" format. The Cmd attribute is initialized to "Desktops.OpenDoc '#Caption '". *)
-PROCEDURE CreateIcon*(F: Icon; caption, icon: ARRAY OF CHAR);
+PROCEDURE CreateIcon*(F: Icon; IN caption, icon: ARRAY OF CHAR);
 VAR A: Objects.AttrMsg; obj: Objects.Object;
 BEGIN
 	obj := Gadgets.FindPublicObj(icon);

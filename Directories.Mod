@@ -76,11 +76,11 @@ BEGIN
 END IsDriveAvailable;
 *)
 
-PROCEDURE IsOnlyDrive (path: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE IsOnlyDrive (IN path: ARRAY OF CHAR): BOOLEAN;
 BEGIN RETURN (path[0] # 0X) & (path[1] = ":") & (path[2] = 0X)
 END IsOnlyDrive;
 
-PROCEDURE IsDirectory (path: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE IsDirectory (IN path: ARRAY OF CHAR): BOOLEAN;
 VAR attrs: LONGINT; res: BOOLEAN;
 BEGIN
 	RETURN FALSE
@@ -116,7 +116,7 @@ END GetKey;
 
 (*========== Item handling ==========*)
 (* creates a new item *)
-PROCEDURE NewItem (name: ARRAY OF CHAR; key: LONGINT): Item;
+PROCEDURE NewItem (IN name: ARRAY OF CHAR; key: LONGINT): Item;
 VAR n: Item;
 BEGIN
 	NEW(n);  n.s := name; n.key := key; n.stamp := -1;
@@ -158,12 +158,12 @@ BEGIN
 END Enum;
 *)
 
-PROCEDURE * Enum (name: ARRAY OF CHAR; time, date, size: LONGINT; VAR continue: BOOLEAN);
+PROCEDURE * Enum (IN name: ARRAY OF CHAR; time, date, size: LONGINT; VAR continue: BOOLEAN);
 BEGIN
 	InsertItem(root.prev, NewItem(name, GetKey(model)))
 END Enum;
 
-PROCEDURE BuildList (obj: Model; tail: Item; path, mask: ARRAY OF CHAR);
+PROCEDURE BuildList (obj: Model; tail: Item; IN path, mask: ARRAY OF CHAR);
 BEGIN
 	model := obj; root := tail;
 (*
@@ -380,10 +380,10 @@ BEGIN
 END ModelHandler;
 
 (** Initialize a directory model *)
-PROCEDURE InitModel* (obj: Model; rootDir, mask: ARRAY OF CHAR);
+PROCEDURE InitModel* (obj: Model; IN rootDir, mask: ARRAY OF CHAR);
 VAR tail: Item; i: LONGINT; drvName: ARRAY 4 OF CHAR;
 
-	PROCEDURE NewDrv (name: ARRAY OF CHAR);
+	PROCEDURE NewDrv (IN name: ARRAY OF CHAR);
 	VAR drv, dsc: Item;
 	BEGIN
 		drv := NewItem(name, GetKey(obj));
@@ -572,7 +572,7 @@ BEGIN
 END EnumForList;
 *)
 
-PROCEDURE * EnumForList (name: ARRAY OF CHAR; time, date, size: LONGINT; VAR continue: BOOLEAN);
+PROCEDURE * EnumForList (IN name: ARRAY OF CHAR; time, date, size: LONGINT; VAR continue: BOOLEAN);
 VAR d: ListRiders.String;
 BEGIN
 	NEW(d);

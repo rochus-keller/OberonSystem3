@@ -158,7 +158,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END Upper;
 
 (** Is str prefixed by pre? *)
-	PROCEDURE Prefix*(IN pre: ARRAY OF CHAR; VAR str(** in *): ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE Prefix*(IN pre: ARRAY OF CHAR; IN str(** in *): ARRAY OF CHAR): BOOLEAN;
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;
@@ -180,7 +180,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END CAPPrefix;
 
 (** Compare str1 to str2. The case is ignored. *)
-	PROCEDURE CAPCompare*(VAR str1(** in *), str2(** in *): ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE CAPCompare*(IN str1(** in *), str2(** in *): ARRAY OF CHAR): BOOLEAN;
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;

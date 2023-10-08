@@ -15,7 +15,7 @@ of the source code to another platform with the name OBERON. *)
 
 MODULE Columbus;	(** portable *)	(* PS   *)
 
-(**  - an inspector tool for objects and libraries. *)
+(**  - an inspector tool for objects and libraries. *)
 
 (*
 	5.6.96	opens a new document not at the pointer's position anymore (thanks pm)
@@ -165,7 +165,7 @@ PROCEDURE Char(ch: CHAR);	(*  writes a char to W *)
 BEGIN Texts.Write(W, ch)
 END Char;
 
-PROCEDURE String(str: ARRAY OF CHAR);	(*  writes a string to W *)
+PROCEDURE String(IN str: ARRAY OF CHAR);	(*  writes a string to W *)
 BEGIN Texts.WriteString(W, str)
 END String;
 
@@ -345,7 +345,7 @@ END Max;
 
 	(* ---------------------- frame generators ----------------------- *)
 
-PROCEDURE MakeCaption(s: ARRAY OF CHAR; col: SHORTINT; bold: BOOLEAN): Display.Frame;
+PROCEDURE MakeCaption(IN s: ARRAY OF CHAR; col: SHORTINT; bold: BOOLEAN): Display.Frame;
 	VAR F: TextFields.Caption; nolines: INTEGER;
 BEGIN
 	TextFields.NewCaption; F:= Objects.NewObj(TextFields.Caption);
@@ -359,7 +359,7 @@ BEGIN
 END MakeCaption;
 
 (* Makes a button. If <isPict> is true,  <caption> is interpreted as name of a public picture. *) 
-PROCEDURE MakeCmd(caption, cmd: ARRAY OF CHAR; isPict: BOOLEAN): Display.Frame;
+PROCEDURE MakeCmd(IN caption, cmd: ARRAY OF CHAR; isPict: BOOLEAN): Display.Frame;
 	VAR F: BasicGadgets.Button; A: Objects.AttrMsg;
 BEGIN
 	BasicGadgets.NewButton; F:= Objects.NewObj(BasicGadgets.Button);
@@ -383,7 +383,7 @@ BEGIN
 	RETURN F
 END MakeBool;
 
-PROCEDURE MakeString(val: ARRAY OF CHAR): Display.Frame;
+PROCEDURE MakeString(IN val: ARRAY OF CHAR): Display.Frame;
 	VAR F: TextFields.TextField;
 BEGIN
 	TextFields.NewTextField; F:= Objects.NewObj(TextFields.TextField);
@@ -517,7 +517,7 @@ BEGIN
 	F.slink:= L.frames; L.frames:= F
 END WriteLine;
 
-PROCEDURE WriteCaption(VAR L: Layout; s: ARRAY OF CHAR; col: SHORTINT; bold: BOOLEAN);
+PROCEDURE WriteCaption(VAR L: Layout; IN s: ARRAY OF CHAR; col: SHORTINT; bold: BOOLEAN);
 	VAR F: Display.Frame;
 BEGIN 
 	F:= MakeCaption(s, col, bold);
@@ -525,7 +525,7 @@ BEGIN
 	F.slink:= L.frames; L.frames:= F
 END WriteCaption;
 
-PROCEDURE WriteCmd(VAR L: Layout; caption, cmd: ARRAY OF CHAR; isPict: BOOLEAN);
+PROCEDURE WriteCmd(VAR L: Layout; IN caption, cmd: ARRAY OF CHAR; isPict: BOOLEAN);
 	VAR F: Display.Frame;
 BEGIN
 	F:= MakeCmd(caption, cmd, isPict);
@@ -653,7 +653,7 @@ END WriteItems;
 
 	(* ---------------------- procs to create new items and add them to a layout ----------------------- *)
 
-PROCEDURE AddItem(VAR L: Layout; name: ARRAY OF CHAR; class: INTEGER; val: Display.Frame);
+PROCEDURE AddItem(VAR L: Layout; IN name: ARRAY OF CHAR; class: INTEGER; val: Display.Frame);
 	VAR new: Item;
 BEGIN
 	val.next:= MakeCaption(name, Display.FG, FALSE);
@@ -661,7 +661,7 @@ BEGIN
 	new.next:= L.items; L.items:= new
 END AddItem; 
 
-PROCEDURE AddTitleItem(VAR L: Layout; str: ARRAY OF CHAR; cmds: Display.Frame);
+PROCEDURE AddTitleItem(VAR L: Layout; IN str: ARRAY OF CHAR; cmds: Display.Frame);
 	VAR f: Display.Frame; new: Item; 
 BEGIN
 	f:= MakeCaption(str, Display.FG, TRUE); f.next:= cmds;
@@ -669,7 +669,7 @@ BEGIN
 	new.next:= L.items; L.items:= new
 END AddTitleItem;
 
-PROCEDURE AddControlItem(VAR L: Layout; name, caption: ARRAY OF CHAR; val: Display.Frame);
+PROCEDURE AddControlItem(VAR L: Layout; IN name, caption: ARRAY OF CHAR; val: Display.Frame);
 	VAR new: Item; 
 BEGIN
 	val.next:= MakeCaption(caption, Display.FG, FALSE);
@@ -681,7 +681,7 @@ END AddControlItem;
 	(* ---------------------- enumerators ----------------------- *)
 
 (* Attribute enumerator: an attr. item is added to <layout>, if not already there. *)
-PROCEDURE EnumAttr(name: ARRAY OF CHAR);
+PROCEDURE EnumAttr(IN name: ARRAY OF CHAR);
 	VAR A: Objects.AttrMsg; i: Item; val: Display.Frame; s: ARRAY 2 OF CHAR;
 BEGIN
 	i:= layout.items; WHILE (i # NIL) & ((i.name # name) OR (i.class # Attribute)) DO i:= i.next END;
@@ -703,13 +703,13 @@ BEGIN
 END EnumAttr;
 
 (* Link enumerator: a link item is add to <layout>, if not already there. *)
-PROCEDURE EnumLink(name: ARRAY OF CHAR);
+PROCEDURE EnumLink(IN name: ARRAY OF CHAR);
 	VAR L: Objects.LinkMsg; i: Item;
 BEGIN
 	i:= layout.items; WHILE (i # NIL) & ((i.name # name) OR (i.class # Link)) DO i:= i.next END;
 	IF i # NIL THEN RETURN END;
 
-	L.id:= Objects.get; COPY (name, L.name); L.obj:= NIL; L.res := -1;
+	L.id:= Objects.get; L.name := name; L.obj:= NIL; L.res := -1;
 	enumObj.handle(enumObj, L);
 	AddItem(layout, name, Link, MakeLink(L.obj, FALSE))
 END EnumLink;
@@ -1185,7 +1185,7 @@ BEGIN
 	 param0 := lib.name;
 	i:= 0; WHILE (param0[i] # ".") & (param0[i] # 0X) DO INC(i) END;
 	param0[i]:= 0X; Append(".&", param0); 
-	COPY (param0, param); Append(ObjNameObj, param); Append(".Value", param);
+	param := param0; Append(ObjNameObj, param); Append(".Value", param);
 
 	cmd:= "Columbus.GetObj "; Append(param, cmd);
 	WriteTab(L); WriteCmd(L, "Retrieve", cmd, FALSE);
@@ -1290,7 +1290,7 @@ END MakeLibView;
 
 (* ---------------------- set & store procs ----------------------- *)
 
-PROCEDURE EnumOldAttrValues (name: ARRAY OF CHAR);
+PROCEDURE EnumOldAttrValues (IN name: ARRAY OF CHAR);
 VAR A: Objects.AttrMsg; i: Item;
 BEGIN
 	i:= oldValues; WHILE (i # NIL) & ((i.name # name) OR (i.class # Attribute)) DO i:= i.next END;
@@ -1318,12 +1318,12 @@ BEGIN
 	END
 END EnumOldAttrValues;
 
-PROCEDURE EnumOldLinkValues (name: ARRAY OF CHAR);
+PROCEDURE EnumOldLinkValues (IN name: ARRAY OF CHAR);
 VAR L: Objects.LinkMsg; i: Item;
 BEGIN
 	i:= oldValues; WHILE (i # NIL) & ((i.name # name) OR (i.class # Link)) DO i:= i.next END;
 	IF i = NIL THEN
-		L.id:= Objects.get; COPY (name, L.name); L.obj:= NIL; L.res := -1;
+		L.id:= Objects.get; L.name := name; L.obj:= NIL; L.res := -1;
 		enumObj.handle(enumObj, L);
 		NEW(i); i.class := Link;  i.name := name; i.val := L.obj; i.next := oldValues; oldValues := i
 	END
@@ -1793,7 +1793,7 @@ END Backup;
 (* Splits <name> into two parts. First part starts at the beginning of <name> and ends at the first
 	occurance of a "." or at the end of <name>. This part of the string will be copied to <libname>
 	and the ".Lib" extension is added. The rest of <name> is copied to <objname>. *)
-PROCEDURE SplitName(name: ARRAY OF CHAR; VAR libname, objname: ARRAY OF CHAR);
+PROCEDURE SplitName(IN name: ARRAY OF CHAR; VAR libname, objname: ARRAY OF CHAR);
 	VAR i, j, k: INTEGER;
 BEGIN
 	i := 0; j := 0;
@@ -1805,7 +1805,7 @@ BEGIN
 	libname[k] := "."; libname[k+1] := "L"; libname[k+2] := "i"; libname[k+3] := "b"; libname[k+4] := 0X
 END SplitName;
 
-PROCEDURE OpenText(name: ARRAY OF CHAR; T: Texts.Text);
+PROCEDURE OpenText(IN name: ARRAY OF CHAR; T: Texts.Text);
 	VAR D: Objects.Object; F: TextGadgets.Frame;
 BEGIN
 	D := Gadgets.CreateObject("TextDocs.NewDoc");

@@ -41,7 +41,7 @@ BEGIN
 	FOR i:= 0 TO d DO Display.GetColor(i,dr[i],dg[i],db[i]); END;
 END LoadPalette;
 
-PROCEDURE LoadColorSymbols(VAR sym: ColorSym; model: ARRAY OF CHAR);
+PROCEDURE LoadColorSymbols(VAR sym: ColorSym; IN model: ARRAY OF CHAR);
 	(* Parse Oberon.Text for color names. The chapter is "ColorSystem", model
 	specifies the section *)
 VAR
@@ -66,7 +66,7 @@ BEGIN
 	END
 END LoadColorSymbols;
 
-PROCEDURE FindColorSymbol(sym: ColorSym; s: ARRAY OF CHAR): ColorSym;
+PROCEDURE FindColorSymbol(sym: ColorSym; IN s: ARRAY OF CHAR): ColorSym;
 	(* find the colorsymbol s in the symbol list sym, returns NIL if not found *)
 BEGIN
 	WHILE (sym # NIL) & ~Strings.CAPCompare(sym.name,s) DO sym:= sym.next; END;
@@ -75,7 +75,7 @@ END FindColorSymbol;
 
 (** Searches in ColorSymbols.RGB of Oberon.Text for color S and returns the associated RGB values.
 ok is set to TRUE if S has been found and to FALSE otherwise. r, g and b are left unchanged if ok is FALSE. *)
-PROCEDURE StrToRGB*(S: ARRAY OF CHAR; VAR r,g,b: REAL; VAR ok: BOOLEAN);
+PROCEDURE StrToRGB*(IN S: ARRAY OF CHAR; VAR r,g,b: REAL; VAR ok: BOOLEAN);
 VAR
 	sym: ColorSym;
 BEGIN
@@ -87,7 +87,7 @@ END StrToRGB;
 
 (** Searches in ColorSymbols.HSV of Oberon.Text for color S and returns the associated HSV values.
 ok is set to TRUE if S has been found and to FALSE otherwise. h, s and v are left unchanged if ok is FALSE. *)
-PROCEDURE StrToHSV*(S: ARRAY OF CHAR; VAR h,s,v: REAL; VAR ok: BOOLEAN);
+PROCEDURE StrToHSV*(IN S: ARRAY OF CHAR; VAR h,s,v: REAL; VAR ok: BOOLEAN);
 VAR
 	sym: ColorSym;
 BEGIN
@@ -99,7 +99,7 @@ END StrToHSV;
 
 (** Searches in ColorSymbols.CMY of Oberon.Text for color S and returns the associated CMY values.
 ok is set to TRUE if S has been found and to FALSE otherwise. c, m and y are left unchanged if ok is FALSE. *)
-PROCEDURE StrToCMY*(S: ARRAY OF CHAR; VAR c,m,y: REAL; VAR ok: BOOLEAN);
+PROCEDURE StrToCMY*(IN S: ARRAY OF CHAR; VAR c,m,y: REAL; VAR ok: BOOLEAN);
 VAR
 	sym: ColorSym;
 BEGIN

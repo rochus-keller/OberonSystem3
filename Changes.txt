@@ -56,5 +56,11 @@ Modification steps:
 - Redesigned modules to no longer depend on SYSTEM: Bitmaps, Pictures
 - Added the Oberon.Text file from https://en.wikibooks.org/wiki/Oberon/ETH_Oberon/Oberon.Text
 - Finished minimal system 3 which uses Gadgets to present the log and tools viewer; git commit
+- Downloaded Oberon documentation files referenced by several tools from this URL:
+  https://github.com/OberonSystem3/TheOberonCompanionCD/blob/main/Linux/LinuxOberonDocu.tgz
+- Added more modules to show built-in documentation like GettingStarted.text
+- Remplemented module Math based on ObxPal
+- Finished minimal system 4 which demonstrates a representative subset of all Gadgets and nicely displays documentation files with 
+  embedded Gadgets; successfully tested on the Mono CLR and with a native C based cross-platform build using ObxIDE 0.9.94.
 
 

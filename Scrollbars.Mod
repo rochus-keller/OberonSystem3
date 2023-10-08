@@ -670,6 +670,6 @@ MODULE Scrollbars;	(** portable *)		(** ps (based on sources of rv and Effects),
 	END New;
 
 BEGIN
-	WaitTime := 50 * Input.TimeUnit DIV 1000; HoldTime :=  500 * Input.TimeUnit DIV 1000;
+	WaitTime := 50I * Input.TimeUnit DIV 1000; HoldTime :=  500I * Input.TimeUnit DIV 1000;
 	mayscroll := Oberon.Time()
 END Scrollbars.

@@ -505,9 +505,9 @@ BEGIN
 	F:= Files.Old("Rembrandt0.Pal");
 	Files.Set(R, F, 0);
 	FOR i:= 0 TO maxnoc-1 DO
-		Files.Read(R, r);
-		Files.Read(R, g);
-		Files.Read(R, b);
+		Files.ReadChar(R, r);
+		Files.ReadChar(R, g);
+		Files.ReadChar(R, b);
 		coltable[i].r:= ORD(r); coltable[i].g:= ORD(g); coltable[i].b:=ORD(b);
 		Display.SetColor(i, ORD(r), ORD(g), ORD(b));
 	END;
@@ -523,9 +523,9 @@ BEGIN
 	F:= Files.Old("Rembrandt0.Pal");
 	Files.Set(R, F, 0);
 	FOR i:= 0 TO maxnoc-1 DO
-		Files.Read(R, r);
-		Files.Read(R, g);
-		Files.Read(R, b);
+		Files.ReadChar(R, r);
+		Files.ReadChar(R, g);
+		Files.ReadChar(R, b);
 		IF i=color.col THEN
 			coltable[i].r:= ORD(r); coltable[i].g:= ORD(g); coltable[i].b:=ORD(b);
 			Display.SetColor(i, ORD(r), ORD(g), ORD(b))

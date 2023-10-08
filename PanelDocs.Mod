@@ -42,7 +42,7 @@ BEGIN
 END Explain;
 
 (** Loads a panel from disk. VW, VH indicate the prefered size of the panel. *)
-PROCEDURE OpenPanel*(D: Documents.Document; name: ARRAY OF CHAR; VAR VW, VH: INTEGER): Gadgets.Frame;
+PROCEDURE OpenPanel*(D: Documents.Document; IN name: ARRAY OF CHAR; VAR VW, VH: INTEGER): Gadgets.Frame;
 TYPE EmptyMsg = RECORD (Display.FrameMsg) END;
 VAR lib: Objects.Library; root: Objects.Object; J: EmptyMsg; fp: Files.File; R: Files.Rider; ch: CHAR;
 	len: LONGINT; i, x, y: INTEGER; s: ARRAY 64 OF CHAR; old: BOOLEAN;
@@ -56,23 +56,23 @@ BEGIN
 		IF (i = Documents.Id) OR (i = 0727H) THEN
 			Files.ReadString(R, s); (* skip over tag *)
 			Files.ReadInt(R, x); Files.ReadInt(R, y); Files.ReadInt(R, VW); Files.ReadInt(R, VH);
-			Files.Read(R, ch);
+			Files.ReadChar(R, ch);
 			IF (ch = 0F7X) THEN (* attachments *)
 				Documents.LoadAttachments(R, D.attr, D.link);
 				IF D.link # NIL THEN
 					CM.cmd := "PREPARE"; CM.res := -1; CM.dlink := D; Objects.Stamp(CM);
 					Links.Broadcast(D.link, CM)
 				END;
-				Files.Read(R, ch)
+				Files.ReadChar(R, ch)
 			END;
 			old := FALSE
 		ELSE
-			Files.Set(R, fp, 0); Files.Read(R, ch);
+			Files.Set(R, fp, 0); Files.ReadChar(R, ch);
 			old := TRUE
 		END;
 
 		IF (ch = 04X) OR (ch = 02X) THEN (* super or drawings format *)
-			Files.Read(R, ch);
+			Files.ReadChar(R, ch);
 			IF (ch = Objects.LibBlockId) OR (ch = 0DBX) THEN
 				NEW(lib); Objects.OpenLibrary(lib);
 				Objects.LoadLibrary(lib, fp, Files.Pos(R), len);
@@ -139,7 +139,7 @@ BEGIN
 			IF (D.attr # NIL) OR (D.link # NIL) THEN (* attachments *)
 				Documents.StoreAttachments(R, D.attr, D.link)
 			END;
-			Files.Write(R, (* SuperId *) 02X);
+			Files.WriteChar(R, (* SuperId *) 02X);
 			Objects.StoreLibrary(lib, f, Files.Pos(R), len);
 			Files.Register(f);
 			
