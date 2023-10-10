@@ -38,19 +38,19 @@ VAR
 	italic: BOOLEAN;
 	sep: CHAR;
 
-PROCEDURE S(s: ARRAY OF CHAR);
+PROCEDURE S(IN s: ARRAY OF CHAR);
 VAR i: INTEGER;
 BEGIN
 	i := 0;
-	WHILE s[i] # 0X DO Files.Write(out, s[i]); INC(i) END
+	WHILE s[i] # 0X DO Files.WriteChar(out, s[i]); INC(i) END
 END S;
 
-PROCEDURE C(ch: CHAR); BEGIN Files.Write(out, ch) END C;
+PROCEDURE C(ch: CHAR); BEGIN Files.WriteChar(out, ch) END C;
 
-PROCEDURE L; BEGIN Files.Write(out, sep); END L;
+PROCEDURE L; BEGIN Files.WriteChar(out, sep); END L;
 
 (* Check if font matches type.  type = digit { digit } ("." | "b" | "i"). *)
-PROCEDURE MatchFont(font: ARRAY OF CHAR;  type: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE MatchFont(IN font: ARRAY OF CHAR;IN type: ARRAY OF CHAR): BOOLEAN;
 VAR i, j: LONGINT;
 BEGIN
 	i := 0;

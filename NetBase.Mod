@@ -15,7 +15,7 @@ of the source code to another platform with the name OBERON. *)
 
 MODULE NetBase;	(** non-portable *)	(* 12.09.96 mg *)
 
-IMPORT SYSTEM, Kernel;
+IMPORT Kernel;
 	
 CONST
 	closed* = 0; open* = 1; pending* = 2;
@@ -77,6 +77,9 @@ VAR
 	freeList: Queue;
 
 PROCEDURE CheckSum* (VAR data: ARRAY OF BYTE; len: INTEGER; base: LONGINT): LONGINT;
+BEGIN
+  TRAP();
+  RETURN 0
 (*CODE {SYSTEM.i386}
 	MOV EAX, base[EBP]
 	MOV EBX, data[EBP]
@@ -100,6 +103,9 @@ csloop:
 END CheckSum;
 
 PROCEDURE ByteSum* (VAR data: ARRAY OF BYTE; len: INTEGER): LONGINT;
+BEGIN
+  TRAP();
+  RETURN 0;
 (*CODE {SYSTEM.i386}
 	XOR EAX, EAX
 	MOV EBX, data[EBP]
@@ -114,11 +120,11 @@ sloop:
 END ByteSum;
 
 PROCEDURE NetToHost* (VAR i: INTEGER);
-BEGIN i := SYSTEM.ROT(i, 8)
+BEGIN i := ROR(i, -8)
 END NetToHost;
 
 PROCEDURE HostToNet* (VAR i: INTEGER);
-BEGIN i := SYSTEM.ROT(i, 8)
+BEGIN i := ROR(i, -8)
 END HostToNet;
 
 PROCEDURE NetLToHost* (VAR l: ARRAY OF BYTE);
@@ -141,12 +147,17 @@ BEGIN
 END Equal;
 
 PROCEDURE Copy* (VAR src, dst: ARRAY OF BYTE; len: INTEGER);
-BEGIN SYSTEM.MOVE(SYSTEM.ADR(src[0]), SYSTEM.ADR(dst[0]), len)
+VAR i: LONGINT;
+BEGIN 
+  i := 0;
+  WHILE i < len DO dst[i] := src[i]; INC(i) END;
 END Copy;
 
 (* FastCopy - Copy size bytes from source to dest.  (No overlap allowed) *)
 
 PROCEDURE FastCopy*(source, dest, size: LONGINT);
+BEGIN
+  TRAP();
 (*CODE {SYSTEM.i386}
 	MOV ESI, source[EBP]
 	MOV EDI, dest[EBP]
@@ -329,6 +340,6 @@ END Stop;
 
 BEGIN
 	nofDevices := 0; nofProtocols := 0; nofTasks := 0;
-	anyadr[0] := 0X; anyadr[1] := 0X; anyadr[2] := 0X;
-	anyadr[3] := 0X; anyadr[4] := 0X; anyadr[5] := 0X
+	anyadr[0] := 0H; anyadr[1] := 0H; anyadr[2] := 0H;
+	anyadr[3] := 0H; anyadr[4] := 0H; anyadr[5] := 0H
 END NetBase.

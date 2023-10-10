@@ -64,7 +64,7 @@ MODULE HTTPDocs0;	(** portable *)
 		W: Texts.Writer;
 		curNode*: HyperDocs.Node;
 		httpProxy*: Proxy;
-		requestDoc*: PROCEDURE (D: Documents.Document; proxy: Proxy; VAR key: LONGINT; method: ARRAY OF CHAR; main: BOOLEAN; E: Entry; query: Texts.Text);
+		requestDoc*: PROCEDURE (D: Documents.Document; proxy: Proxy; VAR key: LONGINT; IN method: ARRAY OF CHAR; main: BOOLEAN; E: Entry; query: Texts.Text);
 
 	PROCEDURE StripLoc*(key: LONGINT): LONGINT;
 		VAR i: LONGINT;
@@ -467,7 +467,7 @@ MODULE HTTPDocs0;	(** portable *)
 	END Install;
 
 (** Requests the document ientified by key. *)
-	PROCEDURE RequestDoc*(D: Documents.Document; proxy: Proxy; VAR key: LONGINT; method: ARRAY OF CHAR; 
+	PROCEDURE RequestDoc*(D: Documents.Document; proxy: Proxy; VAR key: LONGINT; IN method: ARRAY OF CHAR; 
 		main: BOOLEAN; E: Entry; query: Texts.Text);
 		VAR
 			s: HyperDocs.LinkScheme;

@@ -16,7 +16,7 @@ of the source code to another platform with the name OBERON. *)
 MODULE Sisiphus;	(** portable *) (* gri 18.3.91 / 30.1.92 / 27.4.92 / jt/jm 7.11.95*)
 
 	IMPORT
-		SYSTEM, Modules, Objects, Input, Display, Oberon, Math, Files, Gadgets, Display3, Printer;
+		Modules, Objects, Input, Display, Oberon, Math, Files, Gadgets, Display3, Printer;
 
 	CONST
 		IStag = 753; (* icon stretch tag *)
@@ -56,13 +56,13 @@ MODULE Sisiphus;	(** portable *) (* gri 18.3.91 / 30.1.92 / 27.4.92 / jt/jm 7.11
 		Fig[0, 1].addr := Display.NewPattern(HSide, Side, Fig[0, 1].image)
 	END EmptyFig;
 
-	PROCEDURE LoadFig (file: ARRAY OF CHAR); (* read portable file format *)
+	PROCEDURE LoadFig (IN file: ARRAY OF CHAR); (* read portable file format *)
 		VAR F: Files.File; R: Files.Rider; i, j: INTEGER;
 
 		PROCEDURE ReadInt (VAR x: LONGINT);
 			VAR n: LONGINT; i: SHORTINT; ch: CHAR;
-		BEGIN i := 0; n := 0; Files.Read(R, ch);
-			WHILE ORD(ch) >= 128 DO INC(n, ASH(ORD(ch) - 128, i)); INC(i, 7); Files.Read(R, ch) END;
+		BEGIN i := 0; n := 0; Files.ReadChar(R, ch);
+			WHILE ORD(ch) >= 128 DO INC(n, ASH(ORD(ch) - 128, i)); INC(i, 7); Files.ReadChar(R, ch) END;
 			x := n + ASH(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64, i)
 		END ReadInt;
 
@@ -84,7 +84,7 @@ MODULE Sisiphus;	(** portable *) (* gri 18.3.91 / 30.1.92 / 27.4.92 / jt/jm 7.11
 			WHILE j <= Side DO
 				ReadSet(Fig[i, 0].image[j]);
 				ReadSet(Fig[i, 1].image[j]);
-				Fig[i, 1].image[j] := SYSTEM.LSH(Fig[i, 1].image[j], 1) + SYSTEM.LSH(Fig[i, 0].image[j], -31);
+				Fig[i, 1].image[j] := LSL(ORD(Fig[i, 1].image[j]), 1) + LSL(ORD(Fig[i, 0].image[j]), -31);
 				INC(j)
 			END;
 			Fig[i, 0].addr := Display.NewPattern(HSide, Side, Fig[i, 0].image);
@@ -151,17 +151,17 @@ MODULE Sisiphus;	(** portable *) (* gri 18.3.91 / 30.1.92 / 27.4.92 / jt/jm 7.11
 			Block(x2-r, y2-r, 2*r+1, 2*r+1, col, mode)
 		END Dot4;
 		
-		PROCEDURE Circle (X, Y, R, col, mode: INTEGER);
+		PROCEDURE Circle (XX, YY, R, col, mode: INTEGER);
 			VAR x, y, dx, dy, d: INTEGER;
 		BEGIN
 			x := R; y := 0; dx := 8*(x-1); dy := 8*y+4; d := 1 - 4*R;
 			WHILE x > y DO
-				Dot4(X-x-1, X+x, Y-y-1, Y+y, col, mode);
-				Dot4(X-y-1, X+y, Y-x-1, Y+x, col, mode);
+				Dot4(XX-x-1, XX+x, YY-y-1, YY+y, col, mode);
+				Dot4(XX-y-1, X+y, YY-x-1, YY+x, col, mode);
 				INC(d, dy); INC(dy, 8); INC(y);
 				IF d >= 0 THEN DEC(d, dx); DEC(dx, 8); DEC(x) END
 			END;
-			IF x = y THEN Dot4(X-x-1, X+x, Y-y-1, Y+y, col, mode) END
+			IF x = y THEN Dot4(XX-x-1, XX+x, YY-y-1, YY+y, col, mode) END
 		END Circle;
 		
 	BEGIN
@@ -335,7 +335,7 @@ VAR msg: NotifyMsg;
 BEGIN
 	msg.x := 0;  msg.y := 0;
 	msg.F := NIL; Display.Broadcast(msg);
-	me.time := Oberon.Time() + Sleep*Input.TimeUnit DIV 1000
+	me.time := Oberon.Time() + Sleep*Input.TimeUnit DIV 1000I
 END Step;
 	
 PROCEDURE *Cleanup;

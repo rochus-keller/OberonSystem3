@@ -17,7 +17,7 @@ MODULE NetSystem;	(** portable *)	(* mg 16.08.96 *)
 
 (* A Portable Oberon Interface to Internet Protocols *)
 
-IMPORT SYSTEM, Kernel, NetBase, Input, Texts, Oberon, TextFrames, Strings, Fonts;
+IMPORT Kernel, NetBase, Input, Texts, Oberon, TextFrames, Strings, Fonts;
 
 CONST
 	anyport* = 0;	(** any port value *)
@@ -34,6 +34,8 @@ CONST
 	inout* = 4;	(** sending and receiving is possible *)
 	waitCon* =  5;	(** still waiting to be connected *)
 	errorCon* =  6;	(** connecting failed *)
+	
+	CR = 0DX;  LF = 0AX;
 
 TYPE
 	Connection* = POINTER TO ConnectionDesc;	(** handle for TCP connections *)
@@ -66,8 +68,8 @@ VAR
 
 (** Convert a dotted IP address string (e.g. "1.2.3.4") to an IPAdr value. *)
 
-PROCEDURE ToHost* (num: ARRAY OF CHAR; VAR adr: IPAdr; VAR done: BOOLEAN);
-
+PROCEDURE ToHost* (IN num: ARRAY OF CHAR; VAR adr: IPAdr; VAR done: BOOLEAN);
+// TODO
 END ToHost;
 
 (** Convert an IPAdr value to a dotted IP address string *)
@@ -79,7 +81,7 @@ END ToNum;
 (** Procedure delivers the ip-number of a named host. If a symbolic name is given, it will be resolved by use of domain name
 	servers. *)
 
-PROCEDURE GetIP* (name: ARRAY OF CHAR; VAR IP: IPAdr);
+PROCEDURE GetIP* (IN name: ARRAY OF CHAR; VAR IP: IPAdr);
 
 END GetIP;
 
@@ -144,7 +146,8 @@ END Available;
 (** Blocking read a single byte. *)
 
 PROCEDURE Read* (C: Connection; VAR ch: CHAR);
-BEGIN C.Receive(C, ch, 0, 1, C.res)
+VAR tmp: ARRAY 1 OF BYTE;
+BEGIN C.Receive(C, tmp, 0, 1, C.res); ch := CHR(tmp[0])
 END Read;
 
 (** Blocking read len bytes of data (beginning at pos in buf) to buf. *)
@@ -156,25 +159,43 @@ END ReadBytes;
 (** Blocking read two bytes in network byte ordering. *)
 
 PROCEDURE ReadInt* (C: Connection; VAR x: INTEGER);
-BEGIN C.Receive(C, x, 0, 2, C.res); NetBase.NetToHost(x)
+VAR tmp: ARRAY 2 OF BYTE;
+BEGIN C.Receive(C, tmp, 0, 2, C.res); NUMBER(x,tmp); NetBase.NetToHost(x)
 END ReadInt;
 
 (** Blocking read four bytes in network byte ordering. *)
 
 PROCEDURE ReadLInt* (C: Connection; VAR x: LONGINT);
-BEGIN C.Receive(C, x, 0, 4, C.res); NetBase.NetLToHost(x);
+VAR tmp: ARRAY 4 OF BYTE;
+BEGIN C.Receive(C, tmp, 0, 4, C.res); NetBase.NetLToHost(tmp); NUMBER(x,tmp)
 END ReadLInt;
 
 (** Blocking read a string terminated by ( [CR]LF | 0X ). *)
 
 PROCEDURE ReadString* (C: Connection; VAR s: ARRAY OF CHAR);
-
+VAR
+	ch0: CHAR; ch: ARRAY 1 OF BYTE;
+	i: INTEGER;
+BEGIN i := -1; ch[0] := 0H;
+	REPEAT INC(i);
+		ch0 := CHR(ch[0]); C.Receive(C, ch, 0, 1, C.res); s[i] := CHR(ch[0]);
+	UNTIL (C.res = error) OR (ch[0] = 0H) OR (ch[0] = ORD(LF));
+	IF (ch[0] = ORD(LF)) & (ch0 = CR) THEN
+		s[i - 1] := 0X ELSE s[i] := 0X
+	END
 END ReadString;
+
+PROCEDURE ReadFixString* (C: Connection; len: LONGINT; VAR buf: ARRAY OF CHAR);
+VAR tmp: ARRAY 1 OF BYTE; i: LONGINT;
+BEGIN 
+  i := 0;
+  WHILE i < len DO C.Receive(C, tmp, 0, 1, C.res); buf[i] := CHR(tmp[0]); INC(i) END
+END ReadFixString;
 
 (** Blocking write a single byte to C. *)
 
 PROCEDURE Write* (C: Connection; ch: CHAR);
-
+// TODO
 END Write;
 
 (** Blocking write len bytes of data (beginning at pos in buf) to C. *)
@@ -197,9 +218,13 @@ END WriteLInt;
 
 (** Blocking write a string without "0X" and terminated by "CRLF" to C. *)
 
-PROCEDURE WriteString* (C: Connection; s: ARRAY OF CHAR);
+PROCEDURE WriteString* (C: Connection; IN s: ARRAY OF CHAR);
 
 END WriteString;
+
+PROCEDURE WriteFixString* (C: Connection; len: LONGINT; IN buf: ARRAY OF CHAR);
+
+END WriteFixString;
 
 (** Procedure delivers the ip-number and port number of a connection's remote partner. *)
 
@@ -250,42 +275,46 @@ END AvailableDG;
 (** Write 2 bytes in network byte ordering to buf[pos]. *)
 
 PROCEDURE PutInt* (VAR buf: ARRAY OF BYTE; pos: INTEGER; x: INTEGER);
-BEGIN NetBase.HostToNet(x);
-	//SYSTEM.PUT(SYSTEM.ADR(buf[pos]), x)
+VAR tmp: ARRAY 2 OF BYTE;
+BEGIN NetBase.HostToNet(x); BYTES(tmp,x);
+  buf[pos] := tmp[0]; buf[pos+1] := tmp[1];
 END PutInt;
 
 (** Write 4 bytes in network byte ordering to buf[pos]. *)
 
 PROCEDURE PutLInt* (VAR buf: ARRAY OF BYTE; pos: INTEGER; x: LONGINT);
-BEGIN NetBase.HostLToNet(x);
-	//SYSTEM.PUT(SYSTEM.ADR(buf[pos]), x)
+VAR tmp: ARRAY 4 OF BYTE; i: SHORTINT;
+BEGIN BYTES(tmp,x); NetBase.HostLToNet(tmp); 
+  FOR i:= 0 TO 3 DO buf[pos+i] := tmp[i] END
 END PutLInt;
 
 (** Read 2 bytes in network byte ordering from buf[pos]. *)
 
 PROCEDURE GetInt* (VAR buf: ARRAY OF BYTE; pos: INTEGER; VAR x: INTEGER);
-BEGIN // SYSTEM.GET(SYSTEM.ADR(buf[pos]), x);
+VAR tmp: ARRAY 2 OF BYTE;
+BEGIN tmp[0] := buf[pos]; tmp[1] := buf[pos+1]; NUMBER(x,tmp);
 	NetBase.NetToHost(x)
 END GetInt;
 
 (** Read 4 bytes in network byte ordering from buf[pos]. *)
 
 PROCEDURE GetLInt* (VAR buf: ARRAY OF BYTE; pos: INTEGER; VAR x: LONGINT);
-BEGIN // SYSTEM.GET(SYSTEM.ADR(buf[pos]), x);
-	NetBase.NetLToHost(x)
+VAR tmp: ARRAY 4 OF BYTE;
+BEGIN tmp[0] := buf[pos]; tmp[1] := buf[pos+1]; tmp[2] := buf[pos+2]; tmp[3] := buf[pos+3];
+	NetBase.NetLToHost(tmp); NUMBER(x,tmp);
 END GetLInt;
 
 (** Retrieve the password for user using service on host.  Parameters service, host and user must be specified. 
 Parameter user is in/out.  If empty, it returns the first (user,password) pair found, otherwise it returns the
 specified user's password. *)
 
-PROCEDURE GetPassword*(service, host: ARRAY OF CHAR;  VAR user, password: ARRAY OF CHAR);
+PROCEDURE GetPassword*(IN service, host: ARRAY OF CHAR;  VAR user, password: ARRAY OF CHAR);
 
 END GetPassword;
 
 (** Remove password for user using service on host. *)
 
-PROCEDURE DelPassword*(service, user, host: ARRAY OF CHAR);
+PROCEDURE DelPassword*(IN service, user, host: ARRAY OF CHAR);
 
 END DelPassword;
 

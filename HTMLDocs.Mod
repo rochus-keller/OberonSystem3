@@ -421,7 +421,7 @@ MODULE HTMLDocs;	(** portable *) (* ejz, Greek & Math support by afi *)
 		END
 	END CloseList;
 
-	PROCEDURE FindFormObj*(form: Form; name: ARRAY OF CHAR): Objects.Object;
+	PROCEDURE FindFormObj*(form: Form; IN name: ARRAY OF CHAR): Objects.Object;
 		VAR
 			ol: HTTPDocs0.ObjList;
 			oname: ARRAY 64 OF CHAR;
@@ -448,7 +448,7 @@ MODULE HTMLDocs;	(** portable *) (* ejz, Greek & Math support by afi *)
 		obj.handle(obj, A)
 	END RememberValue;
 
-	PROCEDURE AddFormObj*(P: Page; form: Form; obj: Objects.Object; name: ARRAY OF CHAR; storeVal, write: BOOLEAN);
+	PROCEDURE AddFormObj*(P: Page; form: Form; obj: Objects.Object; IN name: ARRAY OF CHAR; storeVal, write: BOOLEAN);
 		VAR ol, op: HTTPDocs0.ObjList;
 	BEGIN
 		NEW(ol); ol.obj := obj; ol.next := NIL;
@@ -472,14 +472,14 @@ MODULE HTMLDocs;	(** portable *) (* ejz, Greek & Math support by afi *)
 		END
 	END AddFormObj;
 
-	PROCEDURE *FindA(name: ARRAY OF CHAR);
+	PROCEDURE *FindA(IN name: ARRAY OF CHAR);
 	BEGIN
 		IF name = searchAttr THEN
 			found := TRUE
 		END
 	END FindA;
 
-	PROCEDURE HasA(obj: Objects.Object; name : ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE HasA(obj: Objects.Object; IN name : ARRAY OF CHAR): BOOLEAN;
 		VAR A: Objects.AttrMsg;
 	BEGIN
 		found := FALSE;  searchAttr := name;
@@ -786,7 +786,7 @@ to.elems := from.elems
 			Texts.WriteInt(Wr, i, 0);
 			Texts.Write(Wr, "&")
 		END IntAttr;
-		PROCEDURE StrAttr(s: ARRAY OF CHAR);
+		PROCEDURE StrAttr(IN s: ARRAY OF CHAR);
 			VAR i: INTEGER;
 		BEGIN
 			Texts.WriteString(Wr, name);
@@ -1093,7 +1093,7 @@ to.elems := from.elems
 		END
 	END Read;
 
-	PROCEDURE ChangeFontFamily(f: Fonts.Font; newfamily: ARRAY OF CHAR): Fonts.Font;
+	PROCEDURE ChangeFontFamily(f: Fonts.Font; IN newfamily: ARRAY OF CHAR): Fonts.Font;
 		VAR
 			family: ARRAY 64 OF CHAR;
 			str: ARRAY 4 OF CHAR;
@@ -1548,7 +1548,7 @@ END
 		END
 	END GetAttrs;
 
-	PROCEDURE FindAttr*(attrs: TagAttr; name: ARRAY OF CHAR): TagAttr;
+	PROCEDURE FindAttr*(attrs: TagAttr; IN name: ARRAY OF CHAR): TagAttr;
 		VAR attr: TagAttr;
 	BEGIN
 		attr := attrs;
@@ -3135,7 +3135,7 @@ ELSIF ~on THEN
 	END ParseNext;
 
 (* Query a string setting in the NetSystem section in Registry. *)
-	PROCEDURE QueryString(key: ARRAY OF CHAR; VAR s: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE QueryString(IN key: ARRAY OF CHAR; VAR s: ARRAY OF CHAR): BOOLEAN;
 	VAR lKey: ARRAY 32 OF CHAR;  S: Texts.Scanner;
 	BEGIN
 		lKey := "NetSystem."; Strings.Append(lKey, key);
@@ -3148,7 +3148,7 @@ ELSIF ~on THEN
 		RETURN s # ""
 	END QueryString;
 
-	PROCEDURE QueryBool(key: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE QueryBool(IN key: ARRAY OF CHAR): BOOLEAN;
 		VAR
 			str: ARRAY 16 OF CHAR;
 			b: BOOLEAN;

@@ -493,7 +493,7 @@ HALT(99)
 			iCon: Icon;
 			C: Objects.CopyMsg;
 			locked: BOOLEAN;
-		PROCEDURE ImgIcon(keyAttr: ARRAY OF CHAR; key: LONGINT);
+		PROCEDURE ImgIcon(IN keyAttr: ARRAY OF CHAR; key: LONGINT);
 		BEGIN
 			doc := NIL;
 			obj := Gadgets.FindPublicObj("Icons.Picture");
@@ -699,7 +699,7 @@ Pictures.ReplPattern(C.obj(Pictures.Picture), Display.FG, obj.pat, x+obj.x, dsr+
 		HTMLDocs.newTag := e
 	END NewIMG;
 
-	PROCEDURE FindMap(name: ARRAY OF CHAR): Map;
+	PROCEDURE FindMap(IN name: ARRAY OF CHAR): Map;
 		VAR map: Map;
 	BEGIN
 		map := maps;

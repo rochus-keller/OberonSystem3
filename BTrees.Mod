@@ -81,7 +81,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 		StrPageDesc = RECORD (PageDesc)
 			e: ARRAY 2*StrPageN OF StrEntry
 		END;
-		EnumStrProc* = PROCEDURE (key: ARRAY OF CHAR; org: LONGINT; VAR cont: BOOLEAN); (** enumerator for string keys *)
+		EnumStrProc* = PROCEDURE (IN key: ARRAY OF CHAR; org: LONGINT; VAR cont: BOOLEAN); (** enumerator for string keys *)
 
 	VAR
 		MINStrKey*, MAXStrKey*: ARRAY StrKeySize OF CHAR; (** first and last string key *)
@@ -98,7 +98,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 		ELSE
 			pos := Files.Length(T.F); Files.Set(R, T.F, pos);
 			WHILE size > 0 DO
-				Files.Write(R, 0X); DEC(size)
+				Files.WriteChar(R, 0X); DEC(size)
 			END
 		END;
 		RETURN pos
@@ -611,7 +611,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 		Files.WriteBool(R, p.discard);
 		Files.WriteLInt(R, p.p0);
 		FOR i := 0 TO p.m-1 DO
-			Files.WriteBytes(R, p.e[i].key, StrKeySize);
+			Files.WriteFixString(R, p.e[i].key, StrKeySize);
 			Files.WriteLInt(R, p.e[i].org);
 			Files.WriteLInt(R, p.e[i].p)
 		END;
@@ -668,7 +668,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 			Files.ReadBool(R, p.discard); ASSERT(~p.discard);
 			Files.ReadLInt(R, p.p0);
 			FOR i := 0 TO p.m-1 DO
-				Files.ReadBytes(R, p.e[i].key, StrKeySize);
+				Files.ReadFixString(R, p.e[i].key, StrKeySize);
 				Files.ReadLInt(R, p.e[i].org);
 				Files.ReadLInt(R, p.e[i].p)
 			END;
@@ -687,7 +687,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 	END ReadStrPage;
 
 (** Search for key in T. If the key could be found res = Done else res = NotFound. *)
-	PROCEDURE SearchStr*(T: Tree; key: ARRAY OF CHAR; VAR org: LONGINT; VAR res: INTEGER);
+	PROCEDURE SearchStr*(T: Tree; IN key: ARRAY OF CHAR; VAR org: LONGINT; VAR res: INTEGER);
 		VAR
 			i, L, R: LONGINT;
 			a: StrPage;
@@ -798,7 +798,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 	END insertStr;
 
 (** Insert a new key into T. If a new key was inserted, res = Done else res = EntryChanged. *)
-	PROCEDURE InsertStr*(T: Tree; key: ARRAY OF CHAR; org: LONGINT; VAR res: INTEGER);
+	PROCEDURE InsertStr*(T: Tree; IN key: ARRAY OF CHAR; org: LONGINT; VAR res: INTEGER);
 		VAR
 			u: StrEntry;
 			r, q: StrPage;
@@ -940,7 +940,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 	END deleteStr;
 
 (** Delete key from T. If key was deleted res = Done else res = NotFound. *)
-	PROCEDURE DeleteStr*(T: Tree; key: ARRAY OF CHAR; VAR res: INTEGER);
+	PROCEDURE DeleteStr*(T: Tree; IN key: ARRAY OF CHAR; VAR res: INTEGER);
 		VAR
 			p: Page;
 			r, r0: StrPage;
@@ -971,7 +971,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 		END
 	END DeleteStr;
 
-	PROCEDURE enumerateStr(T: Tree; p: StrPage; VAR min, max: ARRAY OF CHAR; enum: EnumStrProc; VAR cont: BOOLEAN);
+	PROCEDURE enumerateStr(T: Tree; p: StrPage; IN min, max: ARRAY OF CHAR; enum: EnumStrProc; VAR cont: BOOLEAN);
 		VAR
 			key, lkey: ARRAY StrKeySize OF CHAR;
 			q: StrPage;
@@ -1004,7 +1004,7 @@ MODULE BTrees;	(** portable *) (* ejz,   *)
 	END enumerateStr;
 
 (** Enumerate all keys in T witch range from min upto max (key >= min) & (key <= max). *)
-	PROCEDURE EnumStr*(T: Tree; min, max: ARRAY OF CHAR; enum: EnumStrProc);
+	PROCEDURE EnumStr*(T: Tree; IN min, max: ARRAY OF CHAR; enum: EnumStrProc);
 		VAR
 			r: StrPage;
 			cont: BOOLEAN;

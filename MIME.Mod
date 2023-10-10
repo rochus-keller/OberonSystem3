@@ -148,7 +148,7 @@ IF ~anyField THEN
 END
 	END ReadHeader;
 
-	PROCEDURE FindFieldPos*(h: Header; field: ARRAY OF CHAR; VAR pos: LONGINT);
+	PROCEDURE FindFieldPos*(h: Header; IN field: ARRAY OF CHAR; VAR pos: LONGINT);
 		VAR len, i: LONGINT;
 	BEGIN
 		len := LEN(h.fields^);
@@ -178,7 +178,7 @@ END
 		pos := -1
 	END FindFieldPos;
 
-	PROCEDURE FindField*(h: Header; field: ARRAY OF CHAR): LONGINT;
+	PROCEDURE FindField*(h: Header; IN field: ARRAY OF CHAR): LONGINT;
 		VAR pos: LONGINT;
 	BEGIN
 		pos := 0; FindFieldPos(h, field, pos);
@@ -266,7 +266,7 @@ END
 		DecodeValue(val)
 	END ExtractValue;
 
-	PROCEDURE FindParam*(h: Header; pos: LONGINT; param: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+	PROCEDURE FindParam*(h: Header; pos: LONGINT; IN param: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
 		VAR len, i, vlen: LONGINT;
 	BEGIN
 		 val := "";
@@ -381,7 +381,7 @@ END
 		RETURN 0
 	END StrToMonth;
 
-	PROCEDURE GMTTime(h, m, s: LONGINT; zone: ARRAY OF CHAR; VAR time, date: LONGINT): BOOLEAN;
+	PROCEDURE GMTTime(h, m, s: LONGINT; IN zone: ARRAY OF CHAR; VAR time, date: LONGINT): BOOLEAN;
 		VAR dH, dM, i: LONGINT;
 	BEGIN
 		IF (zone[0] = "+") OR (zone[0] = "-") THEN
@@ -511,7 +511,7 @@ END
 		GetClock(time, date)
 	END ExtractGMTDate;
 
-	PROCEDURE *EnumMIME(key, value: ARRAY OF CHAR);
+	PROCEDURE *EnumMIME(IN key, value: ARRAY OF CHAR);
 		VAR
 			contType: ContentType;
 			i, j: LONGINT;
@@ -550,7 +550,7 @@ END
 	END EnumMIME;
 
 (** Find a content-type description. *) 
-	PROCEDURE GetContentType*(fullTyp: ARRAY OF CHAR): ContentType;
+	PROCEDURE GetContentType*(IN fullTyp: ARRAY OF CHAR): ContentType;
 		VAR
 			contType: ContentType;
 			typ: ARRAY 32 OF CHAR;
@@ -661,7 +661,7 @@ END
 			IF rlen > maxLen THEN
 				rlen := maxLen
 			END;
-			in.ReadBytes(in, buffer, rlen); DEC(maxLen, rlen);
+			Streams.ReadFixString(in, buffer, rlen); DEC(maxLen, rlen);
 			i := 0;
 			WHILE i < rlen DO
 				IF buffer[i] = Strings.CR THEN
@@ -719,7 +719,7 @@ END
 		END
 	END ReadText;
 
-	PROCEDURE SearchBoundary(F: Files.File; VAR boundary: ARRAY OF CHAR; VAR pos: LONGINT): BOOLEAN;
+	PROCEDURE SearchBoundary(F: Files.File; IN boundary: ARRAY OF CHAR; VAR pos: LONGINT): BOOLEAN;
 		CONST
 			MaxPatLen = 128;
 		VAR
@@ -748,19 +748,19 @@ END
 		sPatLen := Strings.Length(sPat);
 		CalcDispVec(); prev := 0X;
 		IF sPatLen > 0 THEN
-			Files.Set(R, F, pos); prev := ch; Files.Read(R, ch);
+			Files.Set(R, F, pos); prev := ch; Files.ReadChar(R, ch);
 			INC(pos); l := Files.Length(F); i := 0;
 			WHILE (i # sPatLen) & (pos <= l) DO
 				IF (i = 0) & (prev >= " ") THEN
-					prev := ch; Files.Read(R, ch); INC(pos)
+					prev := ch; Files.ReadChar(R, ch); INC(pos)
 				ELSE
 					IF ch = sPat[i] THEN
 						INC(i);
 						IF i < sPatLen THEN
-							prev := ch; Files.Read(R, ch); INC(pos)
+							prev := ch; Files.ReadChar(R, ch); INC(pos)
 						END
 					ELSIF i = 0 THEN
-						prev := ch; Files.Read(R, ch); INC(pos)
+						prev := ch; Files.ReadChar(R, ch); INC(pos)
 					ELSE
 						i := i - sDv[i]
 					END
@@ -792,7 +792,7 @@ END
 		cont.len := MAX(LONGINT)
 	END TextEncoding;
 
-	PROCEDURE HorzRule(VAR W: Texts.Writer; name: ARRAY OF CHAR);
+	PROCEDURE HorzRule(VAR W: Texts.Writer; IN name: ARRAY OF CHAR);
 		VAR f: BasicFigures.Figure;
 	BEGIN
 		NEW(f); BasicFigures.InitRect3D(f, Display.Width, 2);
@@ -812,9 +812,9 @@ END
 			ch: CHAR;
 	BEGIN
 		Files.Set(R, F, beg);
-		Files.Read(R, ch); INC(beg);
+		Files.ReadChar(R, ch); INC(beg);
 		WHILE (ch <= " ") & (beg <= end) DO
-			Files.Read(R, ch); INC(beg)
+			Files.ReadChar(R, ch); INC(beg)
 		END;
 		IF ch = "-" THEN
 			RETURN
@@ -952,7 +952,7 @@ END
 			IF rlen > maxLen THEN
 				rlen := maxLen
 			END;
-			in.ReadBytes(in, buffer, rlen); DEC(maxLen, rlen);
+			Streams.ReadFixString(in, buffer, rlen); DEC(maxLen, rlen);
 			IF mail THEN
 				i := 0;
 				WHILE (i < rlen) & (state # 2) DO
@@ -972,7 +972,7 @@ END
 					maxLen := 0
 				END
 			END;
-			Files.WriteBytes(R, buffer, rlen);
+			Files.WriteFixString(R, buffer, rlen);
 			len := in.Available(in)
 		END;
 		FindParam(h, cont.pos, "boundary", buffer);
@@ -1004,12 +1004,12 @@ END
 		WHILE ~R.eot & (beg <= end) DO
 			IF R.lib IS Fonts.Font THEN
 				IF ch = Strings.CR THEN
-					out.WriteBytes(out, buffer, i);
-					out.WriteBytes(out, Strings.CRLF, 2);
+					Streams.WriteFixString(out, buffer, i);
+					Streams.WriteFixString(out, Strings.CRLF, 2);
 					offs := 0; i := 0
 				ELSIF mail & (ch = ".") & (offs = 0) THEN
 					IF i > (MaxLine-3) THEN
-						out.WriteBytes(out, buffer, i); i := 0
+						Streams.WriteFixString(out, buffer, i); i := 0
 					END;
 					buffer[i] := ch; buffer[i+1] := ch; INC(offs, 2); INC(i, 2)
 				ELSIF ch # Strings.LF THEN
@@ -1019,7 +1019,7 @@ END
 							buffer[i] := ch
 						ELSE
 							IF i > (MaxLine-3) THEN
-								out.WriteBytes(out, buffer, i); i := 0
+								Streams.WriteFixString(out, buffer, i); i := 0
 							END;
 							buffer[i] := "=";
 							buffer[i+1] := HexDigit((ORD(ch) DIV 16) MOD 16);
@@ -1037,32 +1037,32 @@ END
 						END;
 						IF j > 0 THEN
 							INC(j);
-							out.WriteBytes(out, buffer, j);
-							out.WriteBytes(out, Strings.CRLF, 2);
+							Streams.WriteFixString(out, buffer, j);
+							Streams.WriteFixString(out, Strings.CRLF, 2);
 							IF j < i THEN
 								offs := i-j;
 								FOR i := j TO offs DO
-									out.WriteBytes(out, buffer[i], 1)
+									Streams.WriteFixString(out, buffer, 1) 
 								END
 							ELSE
 								offs := 0
 							END
 						ELSE
-							out.WriteBytes(out, buffer, i);
-							out.WriteBytes(out, Strings.CRLF, 2); offs := 0
+							Streams.WriteFixString(out, buffer, i);
+							Streams.WriteFixString(out, Strings.CRLF, 2); offs := 0
 						END;
 						i := 0
 					ELSIF i >= MaxLine THEN
-						out.WriteBytes(out, buffer, i); i := 0
+						Streams.WriteFixString(out, buffer, i); i := 0
 					END;
 					INC(offs)
 				END
 			END;
 			Texts.Read(R, ch); INC(beg)
 		END;
-		out.WriteBytes(out, buffer, i);
+		Streams.WriteFixString(out, buffer, i);
 		IF crlf THEN
-			out.WriteBytes(out, Strings.CRLF, 2)
+			Streams.WriteFixString(out, Strings.CRLF, 2)
 		END
 	END WriteText;
 

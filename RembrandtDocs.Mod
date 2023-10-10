@@ -208,7 +208,7 @@ BEGIN
 END Open;
 
 (** Öffnet ein neues RembrandtDocument mit Picture P und Name name *)
-PROCEDURE OpenPict*(P: Pictures.Picture; name: ARRAY OF CHAR);
+PROCEDURE OpenPict*(P: Pictures.Picture; IN name: ARRAY OF CHAR);
 VAR doc: Documents.Document;
 BEGIN
 	NEW(doc); doc.Load:= Load; doc.Store:= Store; doc.handle:= Handler;

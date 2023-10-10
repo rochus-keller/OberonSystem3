@@ -14,7 +14,7 @@ or content of the system and (b) requested to provide all conversions
 of the source code to another platform with the name OBERON. *)
 
 MODULE TextStreams;	(** portable *)
-	IMPORT SYSTEM, Streams, Strings, Reals, Texts;
+	IMPORT Streams, Strings, Reals, Texts;
 
 	TYPE
 		ReaderStream = POINTER TO ReaderStreamDesc;
@@ -32,7 +32,7 @@ MODULE TextStreams;	(** portable *)
 
 	PROCEDURE Read*(S: Streams.Stream; VAR ch: CHAR);
 	BEGIN
-		S.ReadBytes(S, ch, 1);
+		Streams.Read(S, ch);
 		IF S.mode = Streams.iso8859 THEN
 			ch := Strings.ISOToOberon[ORD(ch)]
 		END
@@ -47,7 +47,7 @@ MODULE TextStreams;	(** portable *)
 		i := -1; ch := 0X;
 		IF S.mode = Streams.iso8859 THEN
 			REPEAT
-				INC(i); ch0 := ch; S.ReadBytes(S, ch, 1); s[i] := Strings.ISOToOberon[ORD(ch)]
+				INC(i); ch0 := ch; Streams.Read(S, ch); s[i] := Strings.ISOToOberon[ORD(ch)]
 			UNTIL (ch = 0X) OR (ch = Strings.LF);
 			IF ch0 = Strings.CR THEN
 				s[i-1] := 0X
@@ -56,7 +56,7 @@ MODULE TextStreams;	(** portable *)
 			END
 		ELSE
 			REPEAT
-				INC(i); S.ReadBytes(S, ch, 1); s[i] := ch
+				INC(i); Streams.Write(S, ch); s[i] := ch
 			UNTIL (ch = 0X) OR (ch = Strings.CR);
 			s[i] := 0X
 		END
@@ -68,10 +68,10 @@ MODULE TextStreams;	(** portable *)
 			IF ch # Strings.CR THEN
 				Streams.Write(S, Strings.OberonToISO[ORD(ch)])
 			ELSE
-				S.WriteBytes(S, Strings.CRLF, 2)
+				Streams.WriteFixString(S, Strings.CRLF, 2)
 			END
 		ELSE
-			S.WriteBytes(S, ch, 1)
+			Streams.Write(S, ch)
 		END
 	END Write;
 
@@ -80,7 +80,7 @@ MODULE TextStreams;	(** portable *)
 	PROCEDURE WriteDate*(S: Streams.Stream; t, d: LONGINT);
 		PROCEDURE WritePair(ch: CHAR; x: LONGINT);
 		BEGIN
-			S.WriteBytes(S, ch, 1); Streams.Write(S, CHR(x DIV 10 + 30H)); Streams.Write(S, CHR(x MOD 10 + 30H))
+			Streams.Write(S, ch); Streams.Write(S, CHR(x DIV 10 + 30H)); Streams.Write(S, CHR(x MOD 10 + 30H))
 		END WritePair;
 	BEGIN
 		WritePair(" ", d MOD 32); WritePair(".", d DIV 32 MOD 16); WritePair(".", d DIV 512 MOD 128);
@@ -98,11 +98,11 @@ MODULE TextStreams;	(** portable *)
 			x := x DIV 10H; INC(i)
 		UNTIL i = 8;
 		REPEAT
-			DEC(i); S.WriteBytes(S, a[i], 1)
+			DEC(i); Streams.Write(S, a[i])
 		UNTIL i = 0
 	END WriteHex;
 
-	PROCEDURE WriteString*(S: Streams.Stream; s: ARRAY OF CHAR);
+	PROCEDURE WriteString*(S: Streams.Stream; IN s: ARRAY OF CHAR);
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;
@@ -112,7 +112,7 @@ MODULE TextStreams;	(** portable *)
 			END
 		ELSE
 			WHILE s[i] # 0X DO
-				S.WriteBytes(S, s[i], 1); INC(i)
+				Streams.Write(S, s[i]); INC(i)
 			END
 		END
 	END WriteString;
@@ -140,14 +140,14 @@ MODULE TextStreams;	(** portable *)
 		END;
 		IF x < 0 THEN Streams.Write(S, "-") END;
 		REPEAT
-			DEC(i); S.WriteBytes(S, a[i], 1)
+			DEC(i); Streams.Write(S, a[i])
 		UNTIL i = 0
 	END WriteInt;
 
 	PROCEDURE WriteLn*(S: Streams.Stream);
 	BEGIN
 		IF S.mode = Streams.iso8859 THEN
-			S.WriteBytes(S, Strings.CRLF, 2)
+			Streams.WriteFixString(S, Strings.CRLF, 2)
 		ELSE
 			Streams.Write(S, Strings.CR)
 		END
@@ -185,9 +185,9 @@ MODULE TextStreams;	(** portable *)
 			i := 15;
 			WHILE i > 7 DO d[i] := CHR(l MOD 10 + ORD("0")); l := l DIV 10; DEC(i) END;
 			WHILE i >= 0 DO d[i] := CHR(h MOD 10 + ORD("0")); h := h DIV 10; DEC(i) END;
-			S.WriteBytes(S, d[0], 1); Streams.Write(S, ".");
+			Streams.Write(S, d[0]); Streams.Write(S, ".");
 			i := 1;
-			WHILE i <= n DO S.WriteBytes(S, d[i], 1); INC(i) END;
+			WHILE i <= n DO Streams.Write(S, d[i]); INC(i) END;
 			IF e < 0 THEN WriteString(S, "D-"); e := - e ELSE WriteString(S, "D+") END;
 			Streams.Write(S, CHR(e DIV 100 + ORD("0"))); e := e MOD 100;
 			Streams.Write(S, CHR(e DIV 10 + ORD("0"))); Streams.Write(S, CHR(e MOD 10 + ORD("0")))
@@ -233,20 +233,20 @@ MODULE TextStreams;	(** portable *)
 			IF n <= e THEN n := e + 1 END;
 			IF e > 0 THEN
 				WHILE n > e DO Streams.Write(S, " "); DEC(n) END;
-				S.WriteBytes(S, s, 1); e:= 0;
+				Streams.Write(S, s); e:= 0;
 				WHILE n > 0 DO
 					DEC(n);
-					IF e < 16 THEN S.WriteBytes(S, d[e], 1); INC(e) ELSE Streams.Write(S, "0") END
+					IF e < 16 THEN Streams.Write(S, d[e]); INC(e) ELSE Streams.Write(S, "0") END
 				END;
 				Streams.Write(S, ".")
 			ELSE
 				WHILE n > 1 DO Streams.Write(S, " "); DEC(n) END;
-				S.WriteBytes(S, s, 1); Streams.Write(S, "0"); Streams.Write(S, ".");
+				Streams.Write(S, s); Streams.Write(S, "0"); Streams.Write(S, ".");
 				WHILE (0 < f) & (e < 0) DO Streams.Write(S, "0"); DEC(f); INC(e) END
 			END;
 			WHILE f > 0 DO
 				DEC(f);
-				IF e < 16 THEN S.WriteBytes(S, d[e], 1); INC(e) ELSE Streams.Write(S, "0") END
+				IF e < 16 THEN Streams.Write(S, d[e]); INC(e) ELSE Streams.Write(S, "0") END
 			END;
 			IF D # 0 THEN
 				IF D < 0 THEN WriteString(S, "D-"); D := - D ELSE WriteString(S, "D+") END;
@@ -298,9 +298,9 @@ MODULE TextStreams;	(** portable *)
 			END;
 			i := 7;
 			WHILE i >= 0 DO d[i] := CHR(h MOD 10 + ORD("0")); h := h DIV 10; DEC(i) END;
-			S.WriteBytes(S, d[0], 1); Streams.Write(S, ".");
+			Streams.Write(S, d[0]); Streams.Write(S, ".");
 			i := 1;
-			WHILE i <= n DO S.WriteBytes(S, d[i], 1); INC(i) END;
+			WHILE i <= n DO Streams.Write(S, d[i]); INC(i) END;
 			IF e < 0 THEN WriteString(S, "E-"); e := - e ELSE WriteString(S, "E+") END;
 			Streams.Write(S, CHR(e DIV 10 + ORD("0")));
 			Streams.Write(S, CHR(e MOD 10 + ORD("0")))
@@ -345,18 +345,18 @@ MODULE TextStreams;	(** portable *)
 			IF n <= e THEN n := e + 1 END;
 			IF e > 0 THEN
 				WHILE n > e DO Streams.Write(S, " "); DEC(n) END;
-				S.WriteBytes(S, s, 1); e := 0;
+				Streams.Write(S, s); e := 0;
 				WHILE n > 0 DO DEC(n);
-					IF e < 8 THEN S.WriteBytes(S, d[e], 1); INC(e) ELSE Streams.Write(S, "0") END
+					IF e < 8 THEN Streams.Write(S, d[e]); INC(e) ELSE Streams.Write(S, "0") END
 				END;
 				Streams.Write(S, ".")
 			ELSE
 				WHILE n > 1 DO Streams.Write(S, " "); DEC(n) END;
-				S.WriteBytes(S, s, 1); Streams.Write(S, "0"); Streams.Write(S, ".");
+				Streams.Write(S, s); Streams.Write(S, "0"); Streams.Write(S, ".");
 				WHILE (0 < f) & (e < 0) DO Streams.Write(S, "0"); DEC(f); INC(e) END
 			END;
 			WHILE f > 0 DO DEC(f);
-				IF e < 8 THEN S.WriteBytes(S, d[e], 1); INC(e) ELSE Streams.Write(S, "0") END
+				IF e < 8 THEN Streams.Write(S, d[e]); INC(e) ELSE Streams.Write(S, "0") END
 			END;
 			IF E # 0 THEN
 				IF E < 0 THEN
@@ -380,7 +380,7 @@ MODULE TextStreams;	(** portable *)
 		WITH S: ReaderStream DO
 			i := 0;
 			WHILE (i < n) & ~S.R.eot DO
-				x[i] := S.ch; INC(S.pos); INC(i); Texts.Read(S.R, S.ch)
+				x[i] := ORD(S.ch); INC(S.pos); INC(i); Texts.Read(S.R, S.ch)
 			END;
 			S.eos := S.R.eot; S.res := n-i
 		END
@@ -431,7 +431,7 @@ MODULE TextStreams;	(** portable *)
 	BEGIN
 		WITH S: WriterStream DO
 			FOR i := 0 TO n-1 DO
-				Texts.Write(S.W, ( x[i]))
+				Texts.Write(S.W, CHR(x[i]))
 			END;
 			S.res := 0
 		END

@@ -10,6 +10,6 @@ The migrated system is based on the PC Native Oberon System 3 Release 2.3.6 (Sta
 
 See [Changes.txt](./Changes.txt) for additional information about the applied migration steps. Also note that there is a Git commit history documenting all modifications starting from the original code.
 
-To run the system, [these Oberon system and documentation files](http://rochus-keller.ch/OberonSystem3_R2.2_System_and_Docu_Files.tar.gz) can be used. Copy the *Files* directory to the same directory where the compiled binaries are; note that in the same directory there must also be a copy of the PAL shared library (libPal.so on Linux, libPal.dylib on Mac and Pal.dll on Windows, compiled for the same processor architecture as the Oberon System binaries); also note that you have to use the Oberon IDE compiler version 0.9.94 or later (the pre-compiled versions might not be the most recent one).
+To run the system, [these Oberon system and documentation files](http://software.rochus-keller.ch/OberonSystem3_R2.2_System_and_Docu_Files.tar.gz) can be used. Copy the *Files* directory to the same directory where the compiled binaries are; note that in the same directory there must also be a copy of the PAL shared library (libPal.so on Linux, libPal.dylib on Mac and Pal.dll on Windows, compiled for the same processor architecture as the Oberon System binaries); also note that you have to use the Oberon IDE compiler version 0.9.94 or later (the pre-compiled versions might not be the most recent ones).
 
 If you need support please post an issue on Github or send me an email.

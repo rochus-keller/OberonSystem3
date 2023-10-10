@@ -14,7 +14,7 @@ or content of the system and (b) requested to provide all conversions
 of the source code to another platform with the name OBERON. *)
 
 MODULE Streams;	(** portable *)
-	IMPORT SYSTEM, Files;
+	IMPORT Files;
 
 	CONST
 		closed* = 0; error* = 1; in* = 2; out* = 3; inout* = 4;
@@ -45,36 +45,48 @@ MODULE Streams;	(** portable *)
 (** on any streams *)
 
 	PROCEDURE Read*(S: Stream; VAR x: CHAR);
+	VAR tmp: ARRAY 1 OF BYTE;
 	BEGIN
-		S.ReadBytes(S, x, 1)
+		S.ReadBytes(S, tmp, 1);
+		x := CHR(tmp[0])
 	END Read;
 
 	PROCEDURE Write*(S: Stream; x: CHAR);
+	VAR tmp: ARRAY 1 OF BYTE;
 	BEGIN
-		S.WriteBytes(S, x, 1)
+  	tmp[0] := ORD(x);
+		S.WriteBytes(S, tmp, 1)
 	END Write;
 
 (** on binary streams *)
 (** Portable routines to write and read the standard Oberon types. Each procedure is provided in a read and write pair. *)
 
 	PROCEDURE ReadBool*(S: Stream; VAR x: BOOLEAN);
+	VAR tmp: ARRAY 1 OF BYTE;
 	BEGIN
-		S.ReadBytes(S, x, 1)
+		S.ReadBytes(S, tmp, 1);
+		x := tmp[0] # 0
 	END ReadBool;
 
 	PROCEDURE ReadInt*(S: Stream; VAR x: INTEGER);
+	VAR tmp: ARRAY 2 OF BYTE;
 	BEGIN
-		S.ReadBytes(S, x, 2)
+		S.ReadBytes(S, tmp, 2);
+		NUMBER(x,tmp)
 	END ReadInt;
 
 	PROCEDURE ReadLInt*(S: Stream; VAR x: LONGINT);
+	VAR tmp: ARRAY 4 OF BYTE;
 	BEGIN
-		S.ReadBytes(S, x, 4)
+		S.ReadBytes(S, tmp, 4);
+		NUMBER(x,tmp)
 	END ReadLInt;
 
 	PROCEDURE ReadLReal*(S: Stream; VAR x: LONGREAL);
+	VAR tmp: ARRAY 8 OF BYTE;
 	BEGIN
-		S.ReadBytes(S, x, 8)
+		S.ReadBytes(S, tmp, 8);
+		NUMBER(x,tmp)
 	END ReadLReal;
 
 	PROCEDURE ReadNum*(S: Stream; VAR x: LONGINT);
@@ -83,21 +95,25 @@ MODULE Streams;	(** portable *)
 			ch: CHAR;
 	BEGIN
 		s := 0; n := 0;
-		S.ReadBytes(S, ch, 1);
+		Read(S, ch);
 		WHILE ORD(ch) >= 128 DO
-			INC(n, ASH(ORD(ch) - 128, s)); INC(s, 7); S.ReadBytes(S, ch, 1)
+			INC(n, ASH(ORD(ch) - 128, s)); INC(s, 7); Read(S, ch)
 		END;
 		x := n + ASH(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64, s)
 	END ReadNum;
 
 	PROCEDURE ReadReal*(S: Stream; VAR x: REAL);
+	VAR tmp: ARRAY 4 OF BYTE;
 	BEGIN
-		S.ReadBytes(S, x, 4)
+		S.ReadBytes(S, tmp, 4);
+		NUMBER(x,tmp)
 	END ReadReal;
 
 	PROCEDURE ReadSet*(S: Stream; VAR x: SET);
+	VAR tmp: ARRAY 4 OF BYTE;
 	BEGIN
-		S.ReadBytes(S, x, 4)
+		S.ReadBytes(S, tmp, 4);
+		NUMBER(x,tmp)
 	END ReadSet;
 
 	PROCEDURE ReadString*(S: Stream; VAR x: ARRAY OF CHAR);
@@ -107,28 +123,44 @@ MODULE Streams;	(** portable *)
 	BEGIN
 		i := 0;
 		REPEAT
-			S.ReadBytes(S, ch, 1); x[i] := ch; INC(i)
+			Read(S, ch); x[i] := ch; INC(i)
 		UNTIL ch = 0X
 	END ReadString;
 
-	PROCEDURE WriteBool*(S: Stream; x: BOOLEAN);
+	PROCEDURE ReadFixString*(S: Stream; VAR x: ARRAY OF CHAR; len: LONGINT);
+		VAR i: LONGINT;
 	BEGIN
-		S.WriteBytes(S, x, 1)
+		i := 0;
+		WHILE i < len DO Read(S,x[i]); INC(i) END;
+	END ReadFixString;
+
+	PROCEDURE WriteBool*(S: Stream; x: BOOLEAN);
+	VAR ch: CHAR;
+	BEGIN
+  	ch := 0X;
+  	IF x THEN ch := 1X END;
+		Write(S, ch)
 	END WriteBool;
 
 	PROCEDURE WriteInt*(S: Stream; x: INTEGER);
+	VAR tmp: ARRAY 2 OF BYTE;
 	BEGIN
-		S.WriteBytes(S, x, 2)
+  	BYTES(tmp,x);
+		S.WriteBytes(S, tmp, 2)
 	END WriteInt;
 
 	PROCEDURE WriteLInt*(S: Stream; x: LONGINT);
+	VAR tmp: ARRAY 4 OF BYTE;
 	BEGIN
-		S.WriteBytes(S, x, 4)
+  	BYTES(tmp,x);
+		S.WriteBytes(S, tmp, 4)
 	END WriteLInt;
 
 	PROCEDURE WriteLReal*(S: Stream; x: LONGREAL);
+	VAR tmp: ARRAY 8 OF BYTE;
 	BEGIN
-		S.WriteBytes(S, x, 8)
+  	BYTES(tmp,x);
+		S.WriteBytes(S, tmp, 8)
 	END WriteLReal;
 
 	PROCEDURE WriteNum*(S: Stream; x: LONGINT);
@@ -140,22 +172,33 @@ MODULE Streams;	(** portable *)
 	END WriteNum;
 
 	PROCEDURE WriteReal*(S: Stream; x: REAL);
+	VAR tmp: ARRAY 4 OF BYTE;
 	BEGIN
-		S.WriteBytes(S, x, 4)
+  	BYTES(tmp,x);
+		S.WriteBytes(S, tmp, 4)
 	END WriteReal;
 
 	PROCEDURE WriteSet*(S: Stream; x: SET);
+	VAR tmp: ARRAY 4 OF BYTE;
 	BEGIN
-		S.WriteBytes(S, x, 4)
+  	BYTES(tmp,x);
+		S.WriteBytes(S, tmp, 4)
 	END WriteSet;
 
-	PROCEDURE WriteString*(S: Stream; x: ARRAY OF CHAR);
+	PROCEDURE WriteString*(S: Stream; IN x: ARRAY OF CHAR);
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;
-		WHILE x[i] # 0X DO INC(i) END;
-		S.WriteBytes(S, x, i+1)
+		WHILE x[i] # 0X DO Write(S,x[i]); INC(i) END;
+		Write(S, 0X)
 	END WriteString;
+
+	PROCEDURE WriteFixString*(S: Stream; IN x: ARRAY OF CHAR; len: LONGINT);
+		VAR i: LONGINT;
+	BEGIN
+		i := 0;
+		WHILE i < len DO Write(S,x[i]); INC(i) END;
+	END WriteFixString;
 
 	PROCEDURE *NULLReadBytes(S: Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
 	BEGIN
@@ -189,8 +232,8 @@ MODULE Streams;	(** portable *)
 		WITH S: FileStream DO
 			pos := 0;
 			WHILE ~S.eos & (n > 0) DO
-				x[pos] := S.ch; INC(pos); DEC(n);
-				Files.Read(S.R, S.ch); S.eos := S.R.eof
+				x[pos] := ORD(S.ch); INC(pos); DEC(n);
+				Files.ReadChar(S.R, S.ch); S.eos := S.R.eof
 			END;
 			S.res := n
 		END
@@ -241,7 +284,7 @@ MODULE Streams;	(** portable *)
 		NEW(S); S.mode := binary; S.state := out;
 		S.res := 0; Files.Set(S.R, F, pos); S.buffer := FALSE;
 		S.ReadBytes := ReadFileBytes; S.eos := Files.Length(F) <= 0;
-		Files.Read(S.R, S.ch);
+		Files.ReadChar(S.R, S.ch);
 		S.WriteBytes := NULL.WriteBytes;
 		S.Available := FileAvailable;
 		S.State := FileState;
@@ -278,8 +321,8 @@ MODULE Streams;	(** portable *)
 		WHILE ~src.eos DO
 			len := src.Available(src);
 			IF len > 128 THEN len := 128 END;
-			src.ReadBytes(src, buf, len);
-			dest.WriteBytes(dest, buf, len-src.res)
+			ReadFixString(src, buf, len);
+			WriteFixString(dest, buf, len-src.res)
 		END;
 		dest.Flush(dest)
 	END Copy;

@@ -265,7 +265,7 @@ END ListCookies;
 		RETURN len
 	END NetLen;
 
-	PROCEDURE Request*(C: NetSystem.Connection; method: ARRAY OF CHAR; VAR key: LONGINT; proxy: BOOLEAN; VAR query: Texts.Text; log: BOOLEAN);
+	PROCEDURE Request*(C: NetSystem.Connection; IN method: ARRAY OF CHAR; VAR key: LONGINT; proxy: BOOLEAN; VAR query: Texts.Text; log: BOOLEAN);
 		VAR
 			str: ARRAY 12 OF CHAR;
 			R: Texts.Reader;
@@ -504,7 +504,7 @@ END ListCookies;
 	END Response;
 
 	PROCEDURE Connect(VAR C: NetSystem.Connection; proxy: HTTPDocs0.Proxy; main, waitR, reloc, block: BOOLEAN; 
-	method: ARRAY OF CHAR; VAR key: LONGINT; VAR cont: MIME.Content; query: Texts.Text; log: BOOLEAN; VAR useProxy: BOOLEAN): LONGINT;
+  	method: ARRAY OF CHAR; VAR key: LONGINT; VAR cont: MIME.Content; query: Texts.Text; log: BOOLEAN; VAR useProxy: BOOLEAN): LONGINT;
 		VAR
 			status, key2: LONGINT;
 			location: ARRAY NetTools.MaxLine OF CHAR;
@@ -753,8 +753,8 @@ END ListCookies;
 						IF len > NetTools.BufLen THEN
 							len := NetTools.BufLen
 						END;
-						NetSystem.ReadBytes(me.C, 0, len, buf);
-						Files.WriteBytes(me.R, buf, len)
+						NetSystem.ReadFixString(me.C, len, buf);
+						Files.WriteFixString(me.R, buf, len)
 					ELSIF ~NetTools.Connected(me.C, NetSystem.in) THEN
 						me.state := 4
 					ELSE
@@ -854,7 +854,7 @@ END ListCookies;
 	END Install;
 
 (* Requests the document ientified by key. *)
-	PROCEDURE *requestDoc(D: Documents.Document; proxy: HTTPDocs0.Proxy; VAR key: LONGINT; method: ARRAY OF CHAR; 
+	PROCEDURE *requestDoc(D: Documents.Document; proxy: HTTPDocs0.Proxy; VAR key: LONGINT; IN method: ARRAY OF CHAR; 
 	main: BOOLEAN; E: HTTPDocs0.Entry; query: Texts.Text);
 		VAR
 			C: NetSystem.Connection;

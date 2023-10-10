@@ -28,7 +28,7 @@ Module Input is responsible for event timing, mouse and keyboard input.
 IMPORT P := ObxPal;
 
 CONST
-	TimeUnit* = 1000;	(** portable, but VAR on other ports *)	(** timer ticks per second (platform dependent). *)
+	TimeUnit* = 1000I;	(** portable, but VAR on other ports *)	(** timer ticks per second (platform dependent). *)
 
 	SHIFT* = 0;  CTRL* = 1;  ALT* = 2;	(** for KeyState *)
 	

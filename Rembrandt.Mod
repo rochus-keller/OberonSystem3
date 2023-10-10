@@ -402,7 +402,7 @@ BEGIN
 END Select;
 
 (** Gibt einen String in den angegebenen Bereich aus *)
-PROCEDURE DisplayText*(sx, sy, sw, sh: INTEGER; text: ARRAY OF CHAR);
+PROCEDURE DisplayText*(sx, sy, sw, sh: INTEGER; IN text: ARRAY OF CHAR);
 CONST bg= 3;
 VAR i, x: INTEGER; f: Fonts.Font; dx, fx, fy, fw, fh: INTEGER; pat: Display.Pattern;
 BEGIN

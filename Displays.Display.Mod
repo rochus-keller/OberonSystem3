@@ -576,6 +576,7 @@ BEGIN
 END SetMode;
 
 (** Display a picture.  Used internally by Pictures module only. *)
+// TODO: To Review, in concert with Bitmaps
 PROCEDURE DisplayBlock*(data: POINTER TO ARRAY OF CHAR; depth: INTEGER; wth, 
                         dx, dy, w, h, sx, sy, mode: LONGINT);
 VAR pw, pd, src, dst, rdx, tdy, col: LONGINT; ch, prev, prevmap: CHAR; tmp: ARRAY 4 OF CHAR;

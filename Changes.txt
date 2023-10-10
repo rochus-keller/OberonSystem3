@@ -62,5 +62,8 @@ Modification steps:
 - Remplemented module Math based on ObxPal
 - Finished minimal system 4 which demonstrates a representative subset of all Gadgets and nicely displays documentation files with 
   embedded Gadgets; successfully tested on the Mono CLR and with a native C based cross-platform build using ObxIDE 0.9.94.
+- Added Rembrandt editor and Sisiphus embedded in built-in documentation; bitmaps on Rembradt tool buttons don't show yet; minimal system 5
+- Modules reviewed and fixed: Pictures and Objects; need to also review Bitmaps and Display.DisplayBlock
+- Added more modules to also show HTML documentation and embedded gadgets; minimal system 6 commit
 
 

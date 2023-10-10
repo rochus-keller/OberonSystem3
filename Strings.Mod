@@ -136,7 +136,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END UpperCh;
 
 (** Convert str to all lower-case letters. *)
-	PROCEDURE Lower*(VAR str(** in *), lstr(** out *): ARRAY OF CHAR);
+	PROCEDURE Lower*(IN str(** in *): ARRAY OF CHAR; VAR lstr(** out *): ARRAY OF CHAR);
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;
@@ -147,7 +147,7 @@ MODULE Strings;	(** portable *) (* ejz,   *)
 	END Lower;
 
 (** Convert str to all upper-case letters. *)
-	PROCEDURE Upper*(VAR str(** in *), ustr(** out *): ARRAY OF CHAR);
+	PROCEDURE Upper*(IN str(** in *): ARRAY OF CHAR; ustr(** out *): ARRAY OF CHAR);
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;

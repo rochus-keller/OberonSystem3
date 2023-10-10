@@ -415,7 +415,7 @@ Most entities in Oberon are derived from this base type.
 		IF ref >= ind.size THEN
 			size := (ref DIV StepSize + 1) * StepSize;
 			NEW(index, size);
-			IF ind.index # NIL THEN FOR i := 0 TO ind.size DO index[i] := ind.index[i] END END;
+			IF ind.index # NIL THEN FOR i := 0 TO ind.size-1 DO index[i] := ind.index[i] END END;
 			FOR i := ind.size TO size-1 DO index[i] := NoObj END;
 			ind.size := size; ind.index := index
 		END;

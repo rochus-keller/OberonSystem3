@@ -226,10 +226,10 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 			Files.ReadLInt(R, i); (* cache *)
 			Files.ReadLInt(R, i); (* next *)
 			i := 0;
-			Files.Read(R, ch); (* link *)
+			Files.ReadChar(R, ch); (* link *)
 			WHILE (ch # 0X) & (ch # ":") & (i < (PrefixStrLen-1)) DO
 				prefix[i] := ch; INC(i);
-				Files.Read(R, ch)
+				Files.ReadChar(R, ch)
 			END;
 			prefix[i] := 0X;
 			RETURN LinkSchemeByPrefix(prefix)
@@ -247,7 +247,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 			same: BOOLEAN;
 		PROCEDURE SameLink(): BOOLEAN;
 		BEGIN
-			Files.ReadBytes(R, cmpBuf, l);
+			Files.ReadFixString(R, cmpBuf, l);
 			cmpBuf[l] := 0X;
 			RETURN cmpBuf = link
 		END SameLink;
@@ -299,7 +299,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 
 (** Try to normalize link and add it to the database returning a unique key. If base # NIL, link is a relative link to that
 		base. *)
-	PROCEDURE BuildKey*(base: DefURL; link: ARRAY OF CHAR): LONGINT;
+	PROCEDURE BuildKey*(base: DefURL; IN link: ARRAY OF CHAR): LONGINT;
 		VAR
 			R: RegisterLinkMsg;
 			prefix: ARRAY PrefixStrLen OF CHAR;
@@ -330,7 +330,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 	END BuildKey;
 
 (** Create a temporary file name for D which is prefixed by prefix. key identifies the new name. *)
-	PROCEDURE TempDocName*(prefix: ARRAY OF CHAR; VAR name: ARRAY OF CHAR; VAR key: LONGINT);
+	PROCEDURE TempDocName*(IN prefix: ARRAY OF CHAR; VAR name: ARRAY OF CHAR; VAR key: LONGINT);
 		VAR noStr: ARRAY 8 OF CHAR;
 	BEGIN
 		 name := prefix; Strings.IntToStr(curKey+1, noStr); Strings.Append(name, noStr);
@@ -352,10 +352,10 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 			Files.ReadLInt(R, org); (* cache *)
 			Files.ReadLInt(R, org); (* next *)
 			l := LEN(link)-1; i := 0;
-			Files.Read(R, ch); (* link *)
+			Files.ReadChar(R, ch); (* link *)
 			WHILE (ch # 0X) & (i < l) DO
 				link[i] := ch; INC(i);
-				Files.Read(R, ch)
+				Files.ReadChar(R, ch)
 			END;
 			link[i] := 0X
 		ELSE
@@ -377,12 +377,12 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 			Files.ReadLInt(Rl, org); (* key *)
 			Files.ReadLInt(Rl, org); (* cache *)
 			Files.ReadLInt(Rl, org); (* next *)
-			Files.Read(Rl, ch);
+			Files.ReadChar(Rl, ch);
 			WHILE ch # 0X DO
-				Files.Write(R, ch); Files.Read(Rl, ch)
+				Files.WriteChar(R, ch); Files.ReadChar(Rl, ch)
 			END
 		END;
-		Files.Write(R, 0X)
+		Files.WriteChar(R, 0X)
 	END StoreLink;
 
 (** Reload a link previously stored with StoreLink.*)
@@ -1220,10 +1220,10 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 						F := Files.Old(path);
 						IF F # NIL THEN
 							Files.Set(R, F, 0);
-							Files.Read(R, ch);
+							Files.ReadChar(R, ch);
 							WHILE ~R.eof DO
-								Files.Write(M.R, ch);
-								Files.Read(R, ch)
+								Files.WriteChar(M.R, ch);
+								Files.ReadChar(R, ch)
 							END;
 							M.res := 0
 						END
@@ -1393,7 +1393,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 				Files.Set(R, diskCache, org);
 				Files.ReadInt(R, refd); Files.ReadInt(R, reff);
 				NEW(lib); Objects.OpenLibrary(lib);
-				Files.Read(R, tag);
+				Files.ReadChar(R, tag);
 				IF tag # Objects.LibBlockId THEN
 					RETURN NIL
 				END;
@@ -1431,7 +1431,7 @@ MODULE HyperDocs;	(** portable *) (* ejz,   *)
 			Files.ReadLInt(R, org); (* cache *)
 			IF org >= 0 THEN
 				Files.Set(R, diskCache, org);
-				Files.Read(R, tag);
+				Files.ReadChar(R, tag);
 				IF tag # Texts.TextBlockId THEN
 					RETURN NIL
 				END;

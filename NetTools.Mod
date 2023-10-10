@@ -14,8 +14,7 @@ or content of the system and (b) requested to provide all conversions
 of the source code to another platform with the name OBERON. *)
 
 MODULE NetTools;	(** portable *) (* ejz,   *)
-	IMPORT Input, Files, Objects, Strings, Texts, Oberon, NetSystem, Gadgets, Documents, HyperDocs, Attributes, Streams,
-		(*Threads,*) SYSTEM;
+	IMPORT Input, Files, Objects, Strings, Texts, Oberon, NetSystem, Gadgets, Documents, HyperDocs, Attributes, Streams;
 
 (** NetTools is a utility module that contains procedures commonly used with TCP services. *)
 
@@ -96,7 +95,7 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 
 (** Open a new connection C to host on port. Switch logging of error-messages with log on or off.
 		If the connection could be established TRUE is returned. *) 
-	PROCEDURE Connect*(VAR C: NetSystem.Connection; port: INTEGER; host: ARRAY OF CHAR; log: BOOLEAN): BOOLEAN;
+	PROCEDURE Connect*(VAR C: NetSystem.Connection; port: INTEGER; IN host: ARRAY OF CHAR; log: BOOLEAN): BOOLEAN;
 		VAR
 			adr: NetSystem.IPAdr;
 			res: INTEGER;
@@ -132,7 +131,7 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 
 (** Start opening a new connection C to host on port. Switch logging of error-messages with log on or off.
 		If the connection could be established TRUE is returned. *)
-	PROCEDURE AsyncConnect*(VAR C: NetSystem.Connection; port: INTEGER; host: ARRAY OF CHAR; log: BOOLEAN): BOOLEAN;
+	PROCEDURE AsyncConnect*(VAR C: NetSystem.Connection; port: INTEGER; IN host: ARRAY OF CHAR; log: BOOLEAN): BOOLEAN;
 	BEGIN
 		RETURN Connect(C, -port, host, log)
 	END AsyncConnect;
@@ -156,14 +155,14 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 	END Disconnect;
 
 (** Send the string str on connection C without any termination characters. *)
-	PROCEDURE SendString*(C: NetSystem.Connection; str: ARRAY OF CHAR);
+	PROCEDURE SendString*(C: NetSystem.Connection; IN str: ARRAY OF CHAR);
 		VAR i: LONGINT;
 	BEGIN
 		i := 0;
 		WHILE str[i] # 0X DO
 			INC(i)
 		END;
-		NetSystem.WriteBytes(C, 0, i, str)
+		NetSystem.WriteFixString(C, i, str)
 	END SendString;
 
 	PROCEDURE *ReadTCPBytes(S: Streams.Stream; VAR x: ARRAY OF BYTE; n: LONGINT);
@@ -285,8 +284,8 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 			ELSE
 				rlen := len
 			END;
-			NetSystem.ReadBytes(C, 0, rlen, buffer);
-			Files.WriteBytes(R, buffer, rlen);
+			NetSystem.ReadFixString(C, rlen, buffer);
+			Files.WriteFixString(R, buffer, rlen);
 			INC(curPos, rlen);
 			ProgMNotify();
 			DEC(len, rlen);
@@ -305,20 +304,20 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 	PROCEDURE WriteData*(C: NetSystem.Connection; VAR R: Files.Rider);
 	BEGIN
 		curPos := 0; ProgMNotify();
-		Files.ReadBytes(R, buffer, BufLen);
+		Files.ReadFixString(R, buffer, BufLen);
 		WHILE ~R.eof DO
-			NetSystem.WriteBytes(C, 0, BufLen, buffer);
+			NetSystem.WriteFixString(C, BufLen, buffer);
 			INC(curPos, BufLen); ProgMNotify();
-			Files.ReadBytes(R, buffer, BufLen)
+			Files.ReadFixString(R, buffer, BufLen)
 		END;
 		IF R.res > 0 THEN
-			NetSystem.WriteBytes(C, 0, BufLen-R.res, buffer)
+			NetSystem.WriteFixString(C, BufLen-R.res, buffer)
 		END;
 		curPos := 0; ProgMNotify()
 	END WriteData;
 
 (** Query a string setting in the NetSystem section in Registry. *)
-	PROCEDURE QueryString*(key: ARRAY OF CHAR; VAR s: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE QueryString*(IN key: ARRAY OF CHAR; VAR s: ARRAY OF CHAR): BOOLEAN;
 		VAR S: Texts.Scanner; lKey: ARRAY 32 OF CHAR;
 	BEGIN
 		lKey := "NetSystem."; Strings.Append(lKey, key);
@@ -332,7 +331,7 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 	END QueryString;
 
 (** Get host and port of the Registry entry key in section NetSystem. *)
-	PROCEDURE GetHostPort*(key: ARRAY OF CHAR; VAR host: ARRAY OF CHAR; VAR port: INTEGER; defPort: INTEGER);
+	PROCEDURE GetHostPort*(IN key: ARRAY OF CHAR; VAR host: ARRAY OF CHAR; VAR port: INTEGER; defPort: INTEGER);
 		VAR
 			val: LONGINT;
 			i: INTEGER;
@@ -358,7 +357,7 @@ MODULE NetTools;	(** portable *) (* ejz,   *)
 	END GetHostPort;
 
 (** Query a boolean setting in the NetSystem section in Registry. *)
-	PROCEDURE QueryBool*(key: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE QueryBool*(IN key: ARRAY OF CHAR): BOOLEAN;
 		VAR
 			str: ARRAY 16 OF CHAR;
 			b: BOOLEAN;
