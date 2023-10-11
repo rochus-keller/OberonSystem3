@@ -17,7 +17,7 @@ MODULE GfxMaps;	(** eos   **)
 	
 	IMPORT
 		SYSTEM, Files, Display, Objects, Texts, Oberon, GfxMatrix;
-		
+		// TODO: get rid of SYSTEM!
 	
 	(* Ports to big-endian architectures: search for ">>byte order!" *)
 	
@@ -2660,7 +2660,7 @@ MODULE GfxMaps;	(** eos   **)
 	(**--- Map Objects ---**)
 	
 	PROCEDURE Write* (VAR r: Files.Rider; map: Map);
-		VAR m: Map; h, adr, w, a, len: LONGINT; buf: ARRAY 256 OF CHAR;
+		VAR m: Map; h, adr, w, a, len: LONGINT; buf: ARRAY 256 OF BYTE;
 	BEGIN
 		IF ~(map.fmt.code IN {a1..bgra32}) THEN
 			NEW(m);
@@ -2689,9 +2689,9 @@ MODULE GfxMaps;	(** eos   **)
 			DEC(h); INC(adr, map.bpr)
 		END;
 		IF map.fmt.code IN {a1, a8} THEN
-			Files.Write(r, CHR(map.fmt.col.r));
-			Files.Write(r, CHR(map.fmt.col.g));
-			Files.Write(r, CHR(map.fmt.col.b))
+			Files.Write(r, (map.fmt.col.r));
+			Files.Write(r, (map.fmt.col.g));
+			Files.Write(r, (map.fmt.col.b))
 		ELSIF map.fmt.code = i8 THEN
 			IF map.fmt.pal = DisplayPal THEN
 				Files.WriteInt(r, -1)
@@ -2699,9 +2699,9 @@ MODULE GfxMaps;	(** eos   **)
 				Files.WriteInt(r, map.fmt.pal.used);
 				a := 0;
 				WHILE a < map.fmt.pal.used DO
-					Files.Write(r, CHR(map.fmt.pal.col[a].r));
-					Files.Write(r, CHR(map.fmt.pal.col[a].g));
-					Files.Write(r, CHR(map.fmt.pal.col[a].b));
+					Files.Write(r, (map.fmt.pal.col[a].r));
+					Files.Write(r, (map.fmt.pal.col[a].g));
+					Files.Write(r, (map.fmt.pal.col[a].b));
 					INC(a)
 				END
 			END
@@ -2709,7 +2709,7 @@ MODULE GfxMaps;	(** eos   **)
 	END Write;
 	
 	PROCEDURE Read* (VAR r: Files.Rider; map: Map);
-		VAR ver, code, w, h, bpr, adr, a, len: LONGINT; fmt: Format; buf: ARRAY 256 OF CHAR; ch: CHAR; used: INTEGER;
+		VAR ver, code, w, h, bpr, adr, a, len: LONGINT; fmt: Format; buf: ARRAY 256 OF BYTE; ch: CHAR; used: INTEGER;
 	BEGIN
 		Files.ReadNum(r, ver);	(* only know version 1, skip check *)
 		Files.ReadNum(r, code);
@@ -2739,9 +2739,9 @@ MODULE GfxMaps;	(** eos   **)
 			DEC(h); INC(adr, map.bpr)
 		END;
 		IF code IN {a1, a8} THEN
-			Files.Read(r, ch); map.fmt.col.r := ORD(ch);
-			Files.Read(r, ch); map.fmt.col.g := ORD(ch);
-			Files.Read(r, ch); map.fmt.col.b := ORD(ch)
+			Files.ReadChar(r, ch); map.fmt.col.r := ORD(ch);
+			Files.ReadChar(r, ch); map.fmt.col.g := ORD(ch);
+			Files.ReadChar(r, ch); map.fmt.col.b := ORD(ch)
 		ELSIF code = i8 THEN
 			Files.ReadInt(r, used);
 			IF used < 0 THEN
@@ -2749,9 +2749,9 @@ MODULE GfxMaps;	(** eos   **)
 			ELSE
 				a := 0;
 				WHILE a < used DO
-					Files.Read(r, ch); map.fmt.pal.col[a].r := ORD(ch);
-					Files.Read(r, ch); map.fmt.pal.col[a].g := ORD(ch);
-					Files.Read(r, ch); map.fmt.pal.col[a].b := ORD(ch);
+					Files.ReadChar(r, ch); map.fmt.pal.col[a].r := ORD(ch);
+					Files.ReadChar(r, ch); map.fmt.pal.col[a].g := ORD(ch);
+					Files.ReadChar(r, ch); map.fmt.pal.col[a].b := ORD(ch);
 					INC(a)
 				END;
 				InitPalette(map.fmt.pal, used)

@@ -22,7 +22,7 @@ MODULE GfxFonts0;	(** eos   **)
 		
 	
 
-	PROCEDURE EnumFile (name: ARRAY OF CHAR; time, date, size: LONGINT; VAR continue: BOOLEAN);
+	PROCEDURE EnumFile (IN name: ARRAY OF CHAR; time, date, size: LONGINT; VAR continue: BOOLEAN);
 		CONST isdir = FALSE;
 		VAR i, ppm: INTEGER; s: ARRAY 4 OF CHAR;
 

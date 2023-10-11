@@ -18,7 +18,7 @@ MODULE GfxFonts;	(** eos   **)
 	*)
 	
 	IMPORT
-		SYSTEM, Files, Math, Display, Fonts, Texts, Oberon, Strings, GfxMatrix, GfxMaps, GfxPictures, GfxPaths,
+		Files, Math, Display, Fonts, Texts, Oberon, Strings, GfxMatrix, GfxMaps, GfxPictures, GfxPaths,
 		GfxRegions, GfxFonts0;
 		
 	
@@ -54,7 +54,7 @@ MODULE GfxFonts;	(** eos   **)
 		RasterChar = POINTER TO RasterCharDesc;
 		RasterCharDesc = RECORD
 			dx, x, y, w, h: INTEGER;
-			adr: LONGINT;
+			adr: LONGINT; // index into rfile.mem
 		END;
 		RasterFile = POINTER TO RasterFileDesc;
 		RasterFileDesc = RECORD
@@ -228,7 +228,7 @@ MODULE GfxFonts;	(** eos   **)
 		Files.ReadNum(r, nchars);
 		WHILE nchars > 0 DO
 			DEC(nchars);
-			Files.Read(r, ch); Files.ReadNum(r, x); left := x;
+			Files.ReadChar(r, ch); Files.ReadNum(r, x); left := x;
 			Files.ReadNum(r, x);
 			IF x >= left THEN
 				outline.width[ORD(ch)] := scale * SHORT(x - left)
@@ -480,10 +480,10 @@ MODULE GfxFonts;	(** eos   **)
 		rfile := NIL;
 		file := Files.Old(name);	(* guaranteed to exist *)
 		Files.Set(r, file, 0);
-		Files.Read(r, id); Files.Read(r, type);
+		Files.ReadChar(r, id); Files.ReadSInt(r, type);
 		IF (id = Fonts.FontId) & (type = Fonts.font) THEN
 			NEW(rfile);
-			Files.Read(r, ch); Files.Read(r, ch); Files.ReadInt(r, height);
+			Files.ReadChar(r, ch); Files.ReadChar(r, ch); Files.ReadInt(r, height);
 			Files.ReadInt(r, rfile.xmin); Files.ReadInt(r, rfile.xmax);
 			Files.ReadInt(r, rfile.ymin); Files.ReadInt(r, rfile.ymax);
 			Files.ReadInt(r, runs);
@@ -505,15 +505,15 @@ MODULE GfxFonts;	(** eos   **)
 				INC(i)
 			END;
 			NEW(rfile.mem, size);
-			i := 0; adr := SYSTEM.ADR(rfile.mem[0]);
+			i := 0; adr := 0; // index into rfile.mem
 			WHILE i < runs DO
 				j := beg[i];
 				WHILE j < end[i] DO
 					rfile.char[j].adr := adr;
 					size := (rfile.char[j].w + 7) DIV 8 * rfile.char[j].h;
 					WHILE size > 0 DO
-						Files.Read(r, ch);
-						SYSTEM.PUT(adr, Inv[ORD(ch)]);	(* GfxMaps.A1 expects leftmost pixel in most significant bit! *)
+						Files.ReadChar(r, ch);
+						rfile.mem[adr] := Inv[ORD(ch)];	(* GfxMaps.A1 expects leftmost pixel in most significant bit! *)
 						INC(adr); DEC(size)
 					END;
 					INC(j)

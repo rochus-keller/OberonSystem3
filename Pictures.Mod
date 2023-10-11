@@ -332,9 +332,47 @@ END Store;
 
 PROCEDURE LoadRLE(P: Picture; VAR R: Files.Rider; rv: BOOLEAN);
 	(* load run length encoded picture *)
+	VAR ch: BYTE; k,h: INTEGER; a, index, endOfLine: LONGINT; 
+BEGIN
+	endOfLine := P.wth * P.height; // endOfLine is called 'ce' in the original
+	index := endOfLine - P.wth; // index is called 'b' in the original
+	h := P.height; 
+	// the run goes from top left (h=height) to bottom right (h=1)
+	WHILE h > 0 DO
+		Files.Read(R, ch); k := ch;
+		IF k < 128 THEN 
+			REPEAT 
+				Files.Read(R, ch); 
+				Bitmaps.PutPix(P.address, index, endOfLine, ch, P.depth); // k+1 times
+				IF index >= endOfLine THEN 
+  				endOfLine := endOfLine - P.wth; 
+  				index := endOfLine - P.wth; 
+  				h := h-1 
+  			END;
+				k := k -1;
+			UNTIL k < 0
+		ELSE // k >= 128
+			k := 257 - k; 
+			Files.Read(R, ch); 
+			REPEAT 
+				Bitmaps.PutPix(P.address, index, endOfLine, ch, P.depth); // k times
+				IF index >= endOfLine THEN 
+  				endOfLine := endOfLine - P.wth; 
+  				index := endOfLine - P.wth; 
+  				h := h-1 
+  			END;
+				k := k -1 
+			UNTIL k < 1 
+		END
+	END
+END LoadRLE;
+
+(* This is the original version; good luck finding out what the code does ;-)
+PROCEDURE LoadRLE(P: Picture; VAR R: Files.Rider; rv: BOOLEAN);
+	(* load run length encoded picture *)
 	VAR ch: CHAR; k,d,h: INTEGER; a, b,c,ce: LONGINT; cL,cH: CHAR;
 BEGIN
-	a := 0; // relative to P.address;
+	a := P.address;
 	c := P.wth;
 	b := P.height;
 	c := c*(b-1);
@@ -344,28 +382,29 @@ BEGIN
 	c := P.height; 
 	d := P.depth;
 	WHILE c > 0 DO
-		Files.ReadChar(R, ch); k := ORD(ch);
-		IF R.res # 0 THEN RETURN END;
+		Files.Read(R, ch); k := ORD(ch);
 		IF k < 128 THEN 
 			REPEAT 
-				Files.ReadChar(R, ch); 
-				Bitmaps.PutPix(P.address,b,ce,ORD(ch),d);
+				Files.Read(R, ch); 
+				Bitmaps.PutPix(b,ce,ch,d);
 				IF b>=ce THEN ce := ce-P.wth; b := a-P.wth; a := b; c := c-1 END;
 				k := k -1;
 			UNTIL k < 0
 		ELSIF k >= 128 THEN
 			k := 257 - k; 
-			Files.ReadChar(R, ch); 
+			Files.Read(R, ch); 
 			REPEAT 
-				Bitmaps.PutPix(P.address, b,ce,ORD(ch),d);
+				Bitmaps.PutPix(b,ce,ch,d);
 				IF b>=ce THEN ce := ce-P.wth; b := a-P.wth; a := b; c := c-1 END;
 				k := k -1 
 			UNTIL k < 1 
 		END
 	END
 END LoadRLE;
+*)
 
-(** Load a run length encoded picture from position pos from file F. Pos should be AFTER the two byte picture identification of a picture file. *)
+(** Load a run length encoded picture from position pos from file F. Pos should be AFTER the two 
+    byte picture identification of a picture file. *)
 PROCEDURE Load*(P: Picture; F : Files.File; pos: LONGINT; VAR len: LONGINT);	
 	VAR R: Files.Rider; h, i, orient,id,d: INTEGER; 
 			(* buf: ARRAY MaxWth OF CHAR; *) err: ARRAY 32 OF CHAR;
@@ -455,7 +494,8 @@ BEGIN
 	END
 END ConverterOpen;
 
-(** Open the picture file with name from disk. Any graphic file format listed in the PictureConverters section of Oberon.Text can be loaded (e.g. GIF, JPEG, XBM, BMP). *)
+(** Open the picture file with name from disk. Any graphic file format listed in the PictureConverters 
+    section of Oberon.Text can be loaded (e.g. GIF, JPEG, XBM, BMP). *)
 PROCEDURE Open*(P: Picture; IN name: ARRAY OF CHAR; color: BOOLEAN);
 	VAR F :Files.File; R: Files.Rider; len: LONGINT; x,depth: INTEGER; P2: Picture;
 	dname: ARRAY 64 OF CHAR; d: INTEGER; (* << jm *)
@@ -539,6 +579,7 @@ VAR i: INTEGER; s: ARRAY 8 OF SET;
 BEGIN	
 	handler := Handle;  colorD := 8;  first := TRUE;
 
+  // TODO this stuff isn't used anywhere !
 	s[0] := {}; 
 	s[1] := {1..7,9..15,17..23,25..31}; 
 	s[2] := s[1]; 

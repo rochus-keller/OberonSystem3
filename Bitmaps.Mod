@@ -23,8 +23,9 @@ o ASSERT bounds everywhere
 *)
 
 // TODO: the original version of this and some other modules are representative examples how
-// in Oberon despite static typing people do low-level byte fiddling and pointer arithmetics
+// in Oberon despite of static typing people do low-level byte fiddling and pointer arithmetics
 // (even assuming 32 bit width) evading the type checker without necessity; worth an article.
+// TODO: this is certainly still full of issues; e.g. zoom in ("+") just shows a white page
 
 IMPORT Display, Displays;
 
@@ -336,7 +337,7 @@ BEGIN
 	Display.DisplayBlock(B.data, B.depth, B.wth, SX, SY, W, H, DX, DY, mode);
 END DisplayBlock;
 
-PROCEDURE GetPix*(addr: Data; i: LONGINT; VAR buf: BYTE; depth: INTEGER);
+PROCEDURE GetPix*(addr: Data; VAR i: LONGINT; VAR buf: BYTE; depth: INTEGER);
 VAR s1, s2, s3: SHORTINT; 
 BEGIN 
 	IF depth = 8 THEN buf := ORD(addr[i]); INC(i)
@@ -348,10 +349,11 @@ BEGIN
 	END;
 END GetPix;
 
-PROCEDURE PutPix*(addr: Data; i: LONGINT; border: LONGINT; buf: BYTE; depth: INTEGER);
+PROCEDURE PutPix*(addr: Data; VAR i: LONGINT; border: LONGINT; buf: BYTE; depth: INTEGER);
 VAR s1: SHORTINT; 
 BEGIN 
-	IF (depth = 8) & (i < border) THEN addr[i] := CHR(buf); INC(i)
+	IF (depth = 8) & (i < border) THEN 
+  	addr[i] := CHR(buf); INC(i)
 	ELSIF depth = 4 THEN 
 		IF i < border THEN addr[i] := CHR(buf MOD 16); INC(i) END; 
 		IF i < border THEN addr[i] := CHR(buf DIV 16 MOD 16); INC(i) END; 

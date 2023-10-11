@@ -573,7 +573,7 @@ MODULE GfxPens;	(** eos   **)
 			WITH msg: Objects.FileMsg DO
 				IF msg.id = Objects.store THEN
 					Files.WriteNum(msg.R, 2);
-					Files.Write(msg.R, CHR(pen.col.r)); Files.Write(msg.R, CHR(pen.col.g)); Files.Write(msg.R, CHR(pen.col.b));
+					Files.Write(msg.R, pen.col.r); Files.Write(msg.R, pen.col.g); Files.Write(msg.R, pen.col.b);
 					WriteWidePen(pen, msg.R);
 					IF pen.map = NIL THEN
 						Gadgets.WriteRef(msg.R, pen.lib, NIL)
@@ -584,16 +584,16 @@ MODULE GfxPens;	(** eos   **)
 				ELSIF msg.id = Objects.load THEN
 					Files.ReadNum(msg.R, ver);
 					IF ver = 1 THEN
-						Files.Read(msg.R, ch); pen.col.b := ORD(ch);
-						Files.Read(msg.R, ch); pen.col.g := ORD(ch);
-						Files.Read(msg.R, ch); pen.col.r := ORD(ch);
-						Files.Read(msg.R, ch);
+						Files.ReadChar(msg.R, ch); pen.col.b := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.g := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.r := ORD(ch);
+						Files.ReadChar(msg.R, ch);
 						Files.ReadReal(msg.R, pen.width); pen.width := ABS(pen.width);
 						pen.map := NIL
 					ELSE
-						Files.Read(msg.R, ch); pen.col.r := ORD(ch);
-						Files.Read(msg.R, ch); pen.col.g := ORD(ch);
-						Files.Read(msg.R, ch); pen.col.b := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.r := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.g := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.b := ORD(ch);
 						ReadWidePen(pen, msg.R);
 						Gadgets.ReadRef(msg.R, pen.lib, obj);
 						IF (obj # NIL) & (obj IS GfxMaps.Map) THEN
@@ -734,7 +734,7 @@ MODULE GfxPens;	(** eos   **)
 			WITH msg: Objects.FileMsg DO
 				IF msg.id = Objects.store THEN
 					Files.WriteNum(msg.R, 2);
-					Files.Write(msg.R, CHR(pen.col.r)); Files.Write(msg.R, CHR(pen.col.g)); Files.Write(msg.R, CHR(pen.col.b));
+					Files.Write(msg.R, pen.col.r); Files.Write(msg.R, pen.col.g); Files.Write(msg.R, pen.col.b);
 					IF pen.map = NIL THEN
 						Gadgets.WriteRef(msg.R, pen.lib, NIL)
 					ELSE
@@ -744,14 +744,14 @@ MODULE GfxPens;	(** eos   **)
 				ELSIF msg.id = Objects.load THEN
 					Files.ReadNum(msg.R, ver);
 					IF ver = 1 THEN
-						Files.Read(msg.R, ch); pen.col.b := ORD(ch);
-						Files.Read(msg.R, ch); pen.col.g := ORD(ch);
-						Files.Read(msg.R, ch); pen.col.r := ORD(ch);
-						Files.Read(msg.R, ch)
+						Files.ReadChar(msg.R, ch); pen.col.b := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.g := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.r := ORD(ch);
+						Files.ReadChar(msg.R, ch)
 					ELSE
-						Files.Read(msg.R, ch); pen.col.r := ORD(ch);
-						Files.Read(msg.R, ch); pen.col.g := ORD(ch);
-						Files.Read(msg.R, ch); pen.col.b := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.r := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.g := ORD(ch);
+						Files.ReadChar(msg.R, ch); pen.col.b := ORD(ch);
 						Gadgets.ReadRef(msg.R, pen.lib, obj);
 						IF (obj # NIL) & (obj IS GfxMaps.Map) THEN
 							pen.map := obj(GfxMaps.Map);
@@ -2000,14 +2000,14 @@ MODULE GfxPens;	(** eos   **)
 				ELSIF msg.id = Objects.load THEN
 					Files.ReadNum(msg.R, ver);
 					IF ver = 1 THEN
-						Files.Read(msg.R, ch); col.b := ORD(ch);
-						Files.Read(msg.R, ch); col.g := ORD(ch);
-						Files.Read(msg.R, ch); col.r := ORD(ch);
-						Files.Read(msg.R, ch)
+						Files.ReadChar(msg.R, ch); col.b := ORD(ch);
+						Files.ReadChar(msg.R, ch); col.g := ORD(ch);
+						Files.ReadChar(msg.R, ch); col.r := ORD(ch);
+						Files.ReadChar(msg.R, ch)
 					ELSE
-						Files.Read(msg.R, ch); col.r := ORD(ch);
-						Files.Read(msg.R, ch); col.g := ORD(ch);
-						Files.Read(msg.R, ch); col.b := ORD(ch)
+						Files.ReadChar(msg.R, ch); col.r := ORD(ch);
+						Files.ReadChar(msg.R, ch); col.g := ORD(ch);
+						Files.ReadChar(msg.R, ch); col.b := ORD(ch)
 					END;
 					Files.ReadReal(msg.R, w);
 					Files.ReadBool(msg.R, dashed); Files.ReadNum(msg.R, dlen); dlen := dlen DIV 2;
@@ -2019,14 +2019,14 @@ MODULE GfxPens;	(** eos   **)
 					Files.ReadReal(msg.R, alen); Files.ReadReal(msg.R, aw);
 					Files.ReadBool(msg.R, framed);
 					IF ver = 1 THEN
-						Files.Read(msg.R, ch); fcol.b := ORD(ch);
-						Files.Read(msg.R, ch); fcol.g := ORD(ch);
-						Files.Read(msg.R, ch); fcol.r := ORD(ch);
-						Files.Read(msg.R, ch)
+						Files.ReadChar(msg.R, ch); fcol.b := ORD(ch);
+						Files.ReadChar(msg.R, ch); fcol.g := ORD(ch);
+						Files.ReadChar(msg.R, ch); fcol.r := ORD(ch);
+						Files.ReadChar(msg.R, ch)
 					ELSE
-						Files.Read(msg.R, ch); col.r := ORD(ch);
-						Files.Read(msg.R, ch); col.g := ORD(ch);
-						Files.Read(msg.R, ch); col.b := ORD(ch)
+						Files.ReadChar(msg.R, ch); col.r := ORD(ch);
+						Files.ReadChar(msg.R, ch); col.g := ORD(ch);
+						Files.ReadChar(msg.R, ch); col.b := ORD(ch)
 					END;
 					Files.ReadReal(msg.R, fw);
 					IF framed THEN

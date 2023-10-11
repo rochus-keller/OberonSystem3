@@ -10,7 +10,7 @@ MODULE GfxPictures;	(** eos   **)
 	
 	IMPORT
 		SYSTEM, Files, Display, Pictures, GfxMaps;
-	
+  	// TODO: get rid of SYSTEM!
 	
 	CONST
 		R = GfxMaps.R; G = GfxMaps.G; B = GfxMaps.B; A = GfxMaps.A;
@@ -156,7 +156,7 @@ MODULE GfxPictures;	(** eos   **)
 				(* load picture palette *)
 				i := 0; n := ASH(1, depth); default := TRUE; pal := GfxMaps.DisplayPal;
 				WHILE i < n DO
-					Files.Read(r, red[i]); Files.Read(r, green[i]); Files.Read(r, blue[i]);
+					Files.ReadChar(r, red[i]); Files.ReadChar(r, green[i]); Files.ReadChar(r, blue[i]);
 					IF (ORD(red[i]) # pal.col[i].r) OR (ORD(green[i]) # pal.col[i].g) OR (ORD(blue[i]) # pal.col[i].b) THEN
 						default := FALSE
 					END;
@@ -186,16 +186,16 @@ MODULE GfxPictures;	(** eos   **)
 				WHILE h > 0 DO
 					a := adr - map.bpr;
 					WHILE a < adr DO
-						Files.Read(r, byte); n := ORD(byte);
+						Files.ReadChar(r, byte); n := ORD(byte);
 						IF n < 128 THEN
 							REPEAT
-								Files.Read(r, byte);
+								Files.ReadChar(r, byte);
 								SYSTEM.PUT(a, byte); INC(a);
 								DEC(n)
 							UNTIL n < 0
 						ELSE
 							n := 100H - n;
-							Files.Read(r, byte);
+							Files.ReadChar(r, byte);
 							REPEAT
 								SYSTEM.PUT(a, byte); INC(a);
 								DEC(n)
@@ -246,7 +246,8 @@ MODULE GfxPictures;	(** eos   **)
 			Files.WriteInt(r, depth);
 			i := 0;
 			WHILE i < ASH(1, depth) DO
-				Files.Write(r, CHR(fmt.pal.col[i].r)); Files.Write(r, CHR(fmt.pal.col[i].g)); Files.Write(r, CHR(fmt.pal.col[i].b));
+				Files.Write(r, fmt.pal.col[i].r); Files.Write(r, fmt.pal.col[i].g); 
+				Files.Write(r, fmt.pal.col[i].b);
 				INC(i)
 			END;
 			
@@ -261,17 +262,17 @@ MODULE GfxPictures;	(** eos   **)
 						IF (buf[0] > -128) & (pix[x] = CHR(buf[1])) THEN
 							DEC(buf[0])
 						ELSE
-							Files.WriteBytes(r, buf, 2);
+							Files.WriteShortInts(r, buf, 2);
 							buf[0] := 0; buf[1] := CAST(SHORTINT,ORD(pix[x]))
 						END
 					ELSIF buf[1] > 0 THEN	(* accumulating different bytes *)
 						IF buf[0] = 127 THEN	(* buffer full *)
-							Files.WriteBytes(r, buf, buf[0]+2);
+							Files.WriteShortInts(r, buf, buf[0]+2);
 							buf[0] := 0; buf[1] := CAST(SHORTINT,ORD(pix[x]))
 						ELSIF pix[x] # CHR(buf[buf[0]+1]) THEN
 							INC(buf[0]); buf[buf[0]+1] := CAST(SHORTINT,ORD(pix[x]))
 						ELSE
-							Files.WriteBytes(r, buf, buf[0]+1);
+							Files.WriteShortInts(r, buf, buf[0]+1);
 							buf[0] := -1; buf[1] := CAST(SHORTINT,ORD(pix[x]))
 						END
 					ELSIF pix[x] = CHR(buf[1]) THEN	(* starting to accumulate equal bytes *)
@@ -281,8 +282,8 @@ MODULE GfxPictures;	(** eos   **)
 					END;
 					INC(x)
 				END;
-				IF buf[0] >= 0 THEN Files.WriteBytes(r, buf, buf[0]+2)
-				ELSE Files.WriteBytes(r, buf, 2)
+				IF buf[0] >= 0 THEN Files.WriteShortInts(r, buf, buf[0]+2)
+				ELSE Files.WriteShortInts(r, buf, 2)
 				END;
 				INC(y)
 			END;

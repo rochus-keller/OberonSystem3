@@ -282,6 +282,12 @@ Portable routines to read the standard Oberon types.
     WHILE i < n DO Write(r, ORD(x[i])); INC(i) END
 	END WriteFixString;
 
+	PROCEDURE WriteShortInts*(VAR r: Rider; VAR x: ARRAY OF SHORTINT; n: LONGINT);
+  VAR i: LONGINT;
+  BEGIN i := 0; 
+    WHILE i < n DO Write(r, CAST(BYTE,x[i])); INC(i) END
+	END WriteShortInts;
+
 
 (**
 Portable routines to write the standard Oberon types.
