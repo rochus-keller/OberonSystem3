@@ -243,7 +243,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 
 	(* ---------------------- Storing ----------------------- *)
 
-	PROCEDURE WMsg(s0, s1: ARRAY OF CHAR);
+	PROCEDURE WMsg(IN s0, s1: ARRAY OF CHAR);
 	BEGIN Texts.WriteString(W, s0); Texts.WriteString(W, s1);
 		Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
 	END WMsg;
@@ -290,9 +290,9 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 		Files.WriteInt(W, obj.w); Files.WriteInt(W, obj.h); Files.WriteInt(W, obj.col)
 	END WriteObj;
 
-	PROCEDURE WriteFile*(G: Graph; name: ARRAY OF CHAR);
+	PROCEDURE WriteFile*(G: Graph; IN name: ARRAY OF CHAR);
 		VAR F: Files.File; W: Files.Rider; C: Context;
-	BEGIN F := Files.New(name); Files.Set(W, F, 0); Files.Write(W, GraphFileId);
+	BEGIN F := Files.New(name); Files.Set(W, F, 0); Files.WriteChar(W, GraphFileId);
 		InitContext(C); StoreElems(W, C, G.first); Files.Register(F)
 	END WriteFile;
 
@@ -317,7 +317,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 
 	PROCEDURE Font*(VAR R: Files.Rider; VAR C: Context): Fonts.Font;
 		VAR fno: SHORTINT;
-	BEGIN Files.Read(R, fno); RETURN C.font[fno]
+	BEGIN Files.ReadSInt(R, fno); RETURN C.font[fno]
 	END Font;
 
 	PROCEDURE ReadObj(VAR R: Files.Rider; obj: Object);
@@ -331,10 +331,10 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 		VAR cno, k: SHORTINT; len: INTEGER;
 			name, name1: ARRAY 32 OF CHAR;
 			last: Object;
-	BEGIN obj := NIL; last := NIL; Files.Read(R, cno);
+	BEGIN obj := NIL; last := NIL; Files.ReadSInt(R, cno);
 		WHILE ~R.eof & (cno >= 0) DO
 			IF cno = 0 THEN
-				Files.Read(R, cno); Files.Read(R, k); Files.ReadString(R, name);
+				Files.ReadSInt(R, cno); Files.ReadSInt(R, k); Files.ReadString(R, name);
 				IF cno = 0 THEN C.font[k] := Fonts.This(name)
 				ELSIF cno = 1 THEN C.lib[k] := ThisLib(name, FALSE)
 				ELSE Files.ReadString(R, name1); C.class[k] := ThisClass(name, name1)
@@ -348,7 +348,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 			ELSE Files.Set(R, Files.Base(R), Files.Pos(R) + 10);
 				Files.ReadInt(R, len); Files.Set(R, Files.Base(R), Files.Pos(R) + len)
 			END ;
-			Files.Read(R, cno)
+			Files.ReadSInt(R, cno)
 		END ;
 		new := NIL;
 		IF last # NIL THEN last.next := NIL END
@@ -359,12 +359,12 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 	BEGIN G.sel := NIL; InitContext(C); LoadElems(R, C, G.first)
 	END Load;
 
-	PROCEDURE Open*(G: Graph; name: ARRAY OF CHAR);
+	PROCEDURE Open*(G: Graph; IN name: ARRAY OF CHAR);
 		VAR tag: CHAR;
 			F: Files.File; R: Files.Rider; C: Context;
 	BEGIN G.first := NIL; G.sel := NIL; G.time := 0; F := Files.Old(name);
 		IF F # NIL THEN
-			Files.Set(R, F, 0); Files.Read(R, tag);
+			Files.Set(R, F, 0); Files.ReadChar(R, tag);
 			IF tag = GraphFileId THEN InitContext(C); LoadElems(R, C, G.first); res := 0 ELSE res := 1 END
 		ELSE res := 2
 		END
@@ -389,7 +389,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 			END ;
 			Fname[j] := 0X; F := Files.Old(Fname);
 			IF F # NIL THEN
-				WMsg("loading ", name); Files.Set(R, F, 0); Files.Read(R, ch);
+				WMsg("loading ", name); Files.Set(R, F, 0); Files.ReadChar(R, ch);
 				IF ch = LibFileId THEN
 					IF L = NIL THEN
 						NEW(L);  L.name := Lname; L.next := FirstLib; FirstLib := L
@@ -418,7 +418,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 		VAR mh: MacHead;
 			F: Files.File; W: Files.Rider;
 			C: Context;
-	BEGIN F := Files.New(Fname); Files.Set(W, F, 0); Files.Write(W, LibFileId);
+	BEGIN F := Files.New(Fname); Files.Set(W, F, 0); Files.WriteChar(W, LibFileId);
 		InitContext(C); mh := L.first;
 		WHILE mh # NIL DO
 			StoreElems(W, C, mh.first); Files.WriteInt(W, mh.w); Files.WriteInt(W, mh.h);
@@ -570,8 +570,8 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 	PROCEDURE ReadCaption(obj: Object; VAR R: Files.Rider; VAR C: Context);
 		VAR ch: CHAR; fno: SHORTINT; len: INTEGER;
 	BEGIN obj(Caption).pos := SHORT(T.len + 1); Texts.Write(TW, 0DX);
-		Files.Read(R, fno); TW.lib := C.font[fno]; len := 0; Files.Read(R, ch);
-		WHILE ch > 0DX DO Texts.Write(TW, ch); INC(len); Files.Read(R, ch) END ;
+		Files.ReadSInt(R, fno); TW.lib := C.font[fno]; len := 0; Files.ReadChar(R, ch);
+		WHILE ch > 0DX DO Texts.Write(TW, ch); INC(len); Files.ReadChar(R, ch) END ;
 		obj(Caption).len := len; Texts.Append(T, TW.buf)
 	END ReadCaption;
 
@@ -583,8 +583,8 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 			Texts.OpenReader(TR, T, obj(Caption).pos); Texts.Read(TR, ch);
 			fno := FontNo(W, C, TR.lib(Fonts.Font));
 			WriteObj(W, cno, obj); Files.Write(W, fno);
-			WHILE ch > 0DX DO  Files.Write(W, ch); Texts.Read(TR, ch) END ;
-			Files.Write(W, 0X)
+			WHILE ch > 0DX DO  Files.WriteChar(W, ch); Texts.Read(TR, ch) END ;
+			Files.Write(W, 0H)
 		END
 	END WriteCaption;
 
@@ -627,7 +627,7 @@ MODULE Graphics;	(** portable *)   (*NW 21.12.89 / 3.2.92 / JG 14.6.94 ported to
 
 	PROCEDURE ReadMacro(obj: Object; VAR R: Files.Rider; VAR C: Context);
 		VAR lno: SHORTINT; name: ARRAY 32 OF CHAR;
-	BEGIN Files.Read(R, lno);
+	BEGIN Files.ReadSInt(R, lno);
 		Files.ReadString(R, name); obj(Macro).mac := ThisMac(C.lib[lno], name)
 	END ReadMacro;
 

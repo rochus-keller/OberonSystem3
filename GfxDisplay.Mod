@@ -11,7 +11,7 @@ MODULE GfxDisplay;	(** eos   **)
 	*)
 	
 	IMPORT
-		SYSTEM, Display, Fonts, GfxMatrix, GfxMaps, GfxRegions, GfxFonts, Gfx, GfxRaster;
+		Display, Fonts, GfxMatrix, GfxMaps, GfxRegions, GfxFonts, Gfx, GfxRaster;
 		
 	
 	CONST

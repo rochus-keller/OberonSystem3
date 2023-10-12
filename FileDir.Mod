@@ -41,15 +41,28 @@ be set to FALSE to stop the Enumerate operation mid-way. *)
 	(*Exported procedures: Search, Insert, Delete, Enumerate, Init*)
 
 	PROCEDURE Enumerate*(IN mask: ARRAY OF CHAR; detail: BOOLEAN; proc: EntryHandler);
-  VAR n,i: LONGINT;
-	    b: BOOLEAN;
+  VAR n,i,time,date: LONGINT;
+	    continue: BOOLEAN;
 	    str: ARRAY 64 OF CHAR;
+	    data: ARRAY 7 OF LONGINT;
   BEGIN
-		n := P.file_list();
+    continue := TRUE;
+    IF mask # "" THEN
+      n := P.file_list_masked(mask);
+    ELSE
+  		n := P.file_list();
+  	END;
 		FOR i := 0 TO n-1 DO
-		  str := P.file_list_item(i);
-		  proc(str,0,0,0,b); // TODO: detail flag not considered yet
-		  // TODO: mask not considered yet
+  		IF detail THEN
+  		  str := P.file_list_detail(i,data);
+        time := data[4] * 4096 + data[5] * 64 + data[6];
+        date := (data[1]-1900) * 512 + data[2] * 32 + data[3];
+  		  proc(str,time,date,data[0],continue); 
+  		ELSE
+  		  str := P.file_list_item(i);
+  		  proc(str,0,0,0,continue); 
+		  END;
+		  IF ~continue THEN RETURN END;
 		END
 	END Enumerate;
 

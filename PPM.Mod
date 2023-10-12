@@ -58,7 +58,7 @@ VAR
 
 PROCEDURE ReadFile(VAR R: Rider; VAR c: CHAR);
 BEGIN
-	Files.Read(R.rider,c); R.eof:= R.rider.eof;
+	Files.ReadChar(R.rider,c); R.eof:= R.rider.eof;
 END ReadFile;
 
 PROCEDURE PosFile(VAR R: Rider): LONGINT;
@@ -97,12 +97,12 @@ VAR
 	val: INTEGER;
 	line: Objects.Name;
 BEGIN
-	Files.Read(FR,c);
+	Files.ReadChar(FR,c);
 	IF (c = CHR(Documents.Id)) THEN	(* skip document header *)
-		Files.Read(FR,c); Files.ReadString(FR,line);
+		Files.ReadChar(FR,c); Files.ReadString(FR,line);
 		Files.ReadInt(FR,val); Files.ReadInt(FR,val);
 		Files.ReadInt(FR,val); Files.ReadInt(FR,val);
-		Files.Read(FR,c);
+		Files.ReadChar(FR,c);
 	END;	
 	IF (c = Texts.TextBlockId) THEN
 		NEW(R.text); Texts.Load(R.text,Files.Base(FR),pos+1,len);

@@ -52,16 +52,16 @@ MODULE XBM;	(** portable *)
 		BEGIN
 			num := 0;
 			IF ch = "0" THEN
-				Files.Read(R, ch)
+				Files.ReadChar(R, ch)
 			END;
 			IF CAP(ch) = "X" THEN
-				Files.Read(R, ch);
+				Files.ReadChar(R, ch);
 				WHILE ((ch >= "0") & (ch <= "9")) OR ((ch >= "a") & (ch <= "f")) OR ((ch >= "A") & (ch <= "F")) DO
-					num := 16*num+HexOrd(ch); Files.Read(R, ch)
+					num := 16*num+HexOrd(ch); Files.ReadChar(R, ch)
 				END
 			ELSE
 				WHILE ((ch >= "0") & (ch <= "9")) DO
-					num := 10*num+HexOrd(ch); Files.Read(R, ch)
+					num := 10*num+HexOrd(ch); Files.ReadChar(R, ch)
 				END
 			END
 		END GetNumber;
@@ -71,42 +71,42 @@ MODULE XBM;	(** portable *)
 			i := 0;
 			WHILE ((ch >= "A") & (ch <= "Z")) OR ((ch >= "a") & (ch <= "z")) OR ((ch >= "0") & (ch <= "9")) OR (ch = "-") OR (ch = "_") OR (ch = ".") DO
 				ident[i] := ch; INC(i);
-				Files.Read(R, ch)
+				Files.ReadChar(R, ch)
 			END;
 			ident[i] := 0X
 		END GetIdent;
 		PROCEDURE SkipComment();
 		BEGIN
-			Files.Read(R, ch);
+			Files.ReadChar(R, ch);
 			LOOP
 				IF ch = 0X THEN
 					error := FALSE;
 					EXIT
 				ELSIF ch = "*" THEN
-					Files.Read(R, ch);
+					Files.ReadChar(R, ch);
 					IF ch = "/" THEN
-						Files.Read(R, ch);
+						Files.ReadChar(R, ch);
 						EXIT
 					END
 				ELSE
-					Files.Read(R, ch)
+					Files.ReadChar(R, ch)
 				END
 			END
 		END SkipComment;
 		PROCEDURE Next();
 		BEGIN
 			WHILE ~R.eof & (ch <= " ") DO
-				Files.Read(R, ch)
+				Files.ReadChar(R, ch)
 			END;
 			CASE ch OF
-				|"=": sym := equal; Files.Read(R, ch)
+				|"=": sym := equal; Files.ReadChar(R, ch)
 				|"0" .. "9": sym := number; GetNumber()
-				|"[": sym := lbrak; Files.Read(R, ch)
-				|"]": sym := rbrak; Files.Read(R, ch)
-				|",": sym := comma; Files.Read(R, ch)
-				|"{": sym := lbrac; Files.Read(R, ch)
-				|"}": sym := rbrac; Files.Read(R, ch)
-				|"#": sym := define; Files.Read(R, ch);
+				|"[": sym := lbrak; Files.ReadChar(R, ch)
+				|"]": sym := rbrak; Files.ReadChar(R, ch)
+				|",": sym := comma; Files.ReadChar(R, ch)
+				|"{": sym := lbrac; Files.ReadChar(R, ch)
+				|"}": sym := rbrac; Files.ReadChar(R, ch)
+				|"#": sym := define; Files.ReadChar(R, ch);
 						GetIdent();
 						IF ident # "define" THEN
 							error := TRUE
@@ -140,7 +140,7 @@ MODULE XBM;	(** portable *)
 			i := SHORT(num); Check(number)
 		END IntDef;
 	BEGIN
-		error := FALSE; Files.Read(R, ch); Next();
+		error := FALSE; Files.ReadChar(R, ch); Next();
 		IntDef(x); IntDef(y);
 		IF sym = static THEN
 			Next()
@@ -175,7 +175,7 @@ MODULE XBM;	(** portable *)
 			Check(rbrac)
 		END;
 		IF error THEN
-			pict.width := 0; pict.height := 0; pict.depth := 0; pict.address := 0
+			pict.width := 0; pict.height := 0; pict.depth := 0; pict.address := NIL
 		END
 	END Load;
 

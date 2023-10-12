@@ -350,7 +350,7 @@ TYPE
 	
 	CConvertPtr = POINTER TO CConvertDesc;
 	CConvertDesc = RECORD
-			colorConvert: PROCEDURE(cInfo:CInfoPtr; inputBuf:ARRAY OF JSampArray;
+			colorConvert: PROCEDURE(cInfo:CInfoPtr; IN inputBuf:ARRAY OF JSampArray;
 												inputRow: LONGINT; outputBuf:JSampArray;
 												outRowCtr: LONGINT; numRows:INTEGER);
 	END;
@@ -466,7 +466,7 @@ VAR
 	
 (* *****     Start Marker Prozeduren     ***** *)
 
-	PROCEDURE ErrMsg(msg: ARRAY OF CHAR; num: INTEGER);
+	PROCEDURE ErrMsg(IN msg: ARRAY OF CHAR; num: INTEGER);
 	BEGIN
 		IF err = 0 THEN	(* first error *)
 			T.WriteString(W, "JPEG: ");  T.WriteString(W, msg);  T.WriteString(W, " (");  
@@ -485,15 +485,15 @@ VAR
 			ErrMsg("no image data found", 1)
 		END;
 		pos := F.Pos(cInfo.src.rider);
-		F.Write(cInfo.src.rider,JPEGFF);
-		F.Write(cInfo.src.rider,JPEGEOI);
+		F.WriteChar(cInfo.src.rider,JPEGFF);
+		F.WriteChar(cInfo.src.rider,JPEGEOI);
 		F.Set(cInfo.src.rider,cInfo.src.file,pos);
 	END fileEnd;
 	
 	(* Lesen eines CHAR vom InputFile, 1 Byte *)
 	PROCEDURE ReadChar(cInfo: CInfoPtr; VAR char:CHAR):BOOLEAN;
 	BEGIN
-		F.Read(cInfo.src.rider,char);
+		F.ReadChar(cInfo.src.rider,char);
 		IF ~cInfo.src.rider.eof THEN
 			cInfo.src.startOfFile:=FALSE;
 			RETURN TRUE;
@@ -506,7 +506,7 @@ VAR
 	(* Lesen eines SHORTINT vom InputFile, 1 Byte *)
 	PROCEDURE ReadShort(cInfo: CInfoPtr; VAR short:SHORTINT):BOOLEAN;
 	BEGIN
-		F.Read(cInfo.src.rider,short);
+		F.ReadSInt(cInfo.src.rider,short);
 		IF ~cInfo.src.rider.eof THEN
 			cInfo.src.startOfFile:=FALSE;
 			RETURN TRUE;
@@ -535,7 +535,7 @@ VAR
 	VAR
 		char:CHAR;
 	BEGIN
-		F.Read(cInfo.src.rider,char);
+		F.ReadChar(cInfo.src.rider,char);
 		IF ~cInfo.src.rider.eof THEN
 			int:=ORD(char);
 			cInfo.src.startOfFile:=FALSE;
@@ -552,9 +552,9 @@ VAR
 		int1,int0: INTEGER;
 		ch: CHAR;
 	BEGIN
-		F.Read(cInfo.src.rider,ch);
+		F.ReadChar(cInfo.src.rider,ch);
 		int1 := ORD(ch);
-		F.Read(cInfo.src.rider,ch);
+		F.ReadChar(cInfo.src.rider,ch);
 		int0 := ORD(ch);
 		long := 256 * LONG(int1) + int0;
 		
@@ -2280,7 +2280,7 @@ VAR
 		R := Y + 1.40200 * Cr;	G:= Y - 0.344414 * Cb - 0.71414 * Cr;	B:=Y + 1.77200 * Cb
 		Dabei sind Cb und Cr die gelesenen Werte minus CENTERJSAMPLE.
 		Speziell: Hier wird Floating-Point Arithmetik vermieden und mit Tabellen gearbeitet *)
-	PROCEDURE yccRGBConvert(cInfo: CInfoPtr; inputBuf:ARRAY OF JSampArray;
+	PROCEDURE yccRGBConvert(cInfo: CInfoPtr; IN inputBuf:ARRAY OF JSampArray;
 												inputRow: LONGINT; outputBuf: JSampArray;
 												outRowCtr: LONGINT; numRows:INTEGER);
 	VAR
@@ -2320,7 +2320,7 @@ VAR
 	(* Keine Umwandlung der Farbdarstellung notwenig, nur Kopieren der Werte
 		Die Darstellung der Farbkomponenten wechselt von separaten Zeilen pro Farbkomponent
 		zur gemischten Darstellung *)
-	PROCEDURE nullConvert(cInfo: CInfoPtr; inputBuf:ARRAY OF JSampArray;
+	PROCEDURE nullConvert(cInfo: CInfoPtr; IN inputBuf:ARRAY OF JSampArray;
 												inputRow: LONGINT; outputBuf: JSampArray;
 												outRowCtr: LONGINT; numRows:INTEGER);
 	VAR
@@ -2346,7 +2346,7 @@ VAR
 	END nullConvert;
 
 	(* Konvertierung fuer Graustufen Darstellung: reines Kopieren der Daten *)
-	PROCEDURE grayscaleConvert(cInfo: CInfoPtr; inputBuf:ARRAY OF JSampArray;
+	PROCEDURE grayscaleConvert(cInfo: CInfoPtr; IN inputBuf:ARRAY OF JSampArray;
 												inputRow: LONGINT; outputBuf: JSampArray;
 												outRowCtr: LONGINT; numRows:INTEGER);
 	BEGIN

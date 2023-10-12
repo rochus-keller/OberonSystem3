@@ -47,7 +47,7 @@ Modification steps:
 - Redesigned modules to no longer depend on SYSTEM: Objects, Fonts, System
 - Finished minimal system 1 which just paints the screen background and the mouse cursor; git commit
 - Replaced original compiler specific code in System module by dummies, WIP
-- FileDir minimal implementation on ObxPal, WIP
+- FileDir implementation on ObxPal
 - Replaced all ARRAY OF CHAR value by IN parameters where possible (this also applies to the following steps)
 - Downloaded the Oberon system files (fonts, System.Tool, etc.) required to run the system from this URL:
   https://github.com/OberonSystem3/TheOberonCompanionCD/blob/main/Linux/LinuxOberonSystem3.tgz (no Oberon.Text included)
@@ -66,6 +66,13 @@ Modification steps:
 - The Oberon picture format works after fixes in Pictures and Bitmaps; also the Oberon desktop seems to work.
 - Modules reviewed and fixed: Pictures and Objects; need to also review Bitmaps and Display.DisplayBlock
 - Added more modules to also show HTML documentation and embedded gadgets; minimal system 6 commit
-- Started migratino of the Gfx* modules
+- Started migratino of the Gfx* modules; too much work for now, suspending.
+- Redesigned to no longer use SYSTEM: BIT 
+- Downloaded application support files referenced by several apps from this URL:
+  https://github.com/OberonSystem3/TheOberonCompanionCD/blob/main/Linux/LinuxOberonApps.tgz
+- Added more modules: Draw, Rectangles, Splines, Circles, Tetris, In, RandomNumbers, JPEG, BIT, GIF, XBM, BMP, PCX, ICO, TGA, IFF, PPM, XPM, PSD
+  required to run Draw and Tetris apps; minimal system 7 commit
+  
+
 
 

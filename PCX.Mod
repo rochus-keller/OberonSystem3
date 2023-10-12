@@ -44,13 +44,13 @@ PROCEDURE ReadPCXHeader(VAR R: Files.Rider; VAR pcxh: PCXHeader): BOOLEAN;
 VAR
 	filler: ARRAY 58 OF CHAR;
 BEGIN
-	Files.Read(R,pcxh.creator);
+	Files.ReadChar(R,pcxh.creator);
 	IF (pcxh.creator # 0AX) THEN
 		Files.Set(R,Files.Base(R),Files.Pos(R)-SIZE(CHAR));
 		RETURN(FALSE);
 	ELSE
-		Files.Read(R,pcxh.version); Files.Read(R,pcxh.encoding);
-		Files.Read(R,pcxh.bits);
+		Files.ReadChar(R,pcxh.version); Files.ReadChar(R,pcxh.encoding);
+		Files.ReadChar(R,pcxh.bits);
 		Files.ReadInt(R,pcxh.xMin); Files.ReadInt(R,pcxh.yMin);
 		Files.ReadInt(R,pcxh.xMax); Files.ReadInt(R,pcxh.yMax);
 		Files.ReadInt(R,pcxh.hRes); Files.ReadInt(R,pcxh.vRes);
@@ -59,10 +59,10 @@ BEGIN
 		ELSE
 			pcxh.palPos:= Files.Length(Files.Base(R)) - (256 * 3);
 		END;
-		Files.ReadBytes(R,filler,48);
-		Files.Read(R,pcxh.vMode); Files.Read(R,pcxh.planes);
+		Files.ReadFixString(R,filler,48);
+		Files.ReadChar(R,pcxh.vMode); Files.ReadChar(R,pcxh.planes);
 		Files.ReadInt(R,pcxh.bytesPerLine); Files.ReadInt(R,pcxh.paletteInfo);
-		Files.ReadBytes(R,filler,58); pcxh.picPos:= Files.Pos(R);
+		Files.ReadFixString(R,filler,58); pcxh.picPos:= Files.Pos(R);
 		RETURN(TRUE);
 	END;
 END ReadPCXHeader;
@@ -76,7 +76,7 @@ BEGIN
 	IF conversion THEN
 		FOR i := 0 TO SHORT(C) DO Display.GetColor(i, r[i], g[i], b[i]) END;
 		FOR i := 0 TO SHORT(nrColor) DO
-			Files.Read(R, Red); Files.Read(R, Green); Files.Read(R, Blue);
+			Files.ReadChar(R, Red); Files.ReadChar(R, Green); Files.ReadChar(R, Blue);
 			min := MAX(LONGINT);
 			FOR j := 0 TO SHORT(C) DO
 				x := ABS(ORD(Red) - r[j]); y := ABS(ORD(Green) - g[j]); z := ABS(ORD(Blue) - b[j]);
@@ -91,7 +91,7 @@ BEGIN
 		END
 	ELSE
 		FOR i := 0 TO SHORT(nrColor) DO
-			Files.Read(R, Red); Files.Read(R, Green); Files.Read(R, Blue);
+			Files.ReadChar(R, Red); Files.ReadChar(R, Green); Files.ReadChar(R, Blue);
 			Pictures.SetColor(pict, i, ORD(Red), ORD(Green), ORD(Blue));
 			colorMap[i] := i
 		END
@@ -129,10 +129,10 @@ BEGIN
 			FOR rep:= 0 TO pcxh.xMax-1 DO line[rep]:= 0X; END;
 			WHILE (y >= 0) DO	(* picture scan lines *)
 				WHILE (p < z) DO	(* color planes *)
-					Files.Read(R,c);
+					Files.ReadChar(R,c);
 					(* if bit 7 and 8 are both 1, runlength encoding is activated *)
 					IF (pcxh.encoding = 1X) & (BIT.CAND(c,0C0X) = 0C0X) THEN
-						rep:= ORD(BIT.CAND(c,3FX)); Files.Read(R,c);
+						rep:= ORD(BIT.CAND(c,3FX)); Files.ReadChar(R,c);
 					ELSE
 						rep:= 1;
 					END;

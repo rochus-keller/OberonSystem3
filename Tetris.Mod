@@ -307,7 +307,7 @@ BEGIN
 	END;
 END DrawBlock;
 
-PROCEDURE DrawLine(R: Frame; line: ARRAY OF CHAR; dX,dY,l: INTEGER);
+PROCEDURE DrawLine(R: Frame; IN line: ARRAY OF CHAR; dX,dY,l: INTEGER);
 (* Draw line l of the pot *)
 VAR
 	c,j: INTEGER;
@@ -692,10 +692,10 @@ BEGIN
 			Files.ReadInt(M.R,F.score[i].rows);
 			INC(i);
 		END;
-		Files.Read(M.R,F.curr); Files.Read(M.R,F.next);
-		Files.Read(M.R,F.angle); Files.Read(M.R,F.line);
-		Files.Read(M.R,F.row); Files.Read(M.R,F.rank);
-		Files.Read(M.R,F.mult); Files.ReadInt(M.R,F.delay);
+		Files.ReadSInt(M.R,F.curr); Files.ReadSInt(M.R,F.next);
+		Files.ReadSInt(M.R,F.angle); Files.ReadSInt(M.R,F.line);
+		Files.ReadSInt(M.R,F.row); Files.ReadSInt(M.R,F.rank);
+		Files.ReadSInt(M.R,F.mult); Files.ReadInt(M.R,F.delay);
 		Files.ReadInt(M.R,F.figures); Files.ReadBool(M.R,F.match);
 		Files.ReadBool(M.R,F.preview); Files.ReadBool(M.R,F.paused);
 		Files.ReadLInt(M.R,F.lap1); Files.ReadLInt(M.R,F.lap2);
@@ -1244,7 +1244,7 @@ END DocHandler;
 
 (*** Document Creation ***)
 
-PROCEDURE NewTop(txt: ARRAY OF CHAR; len,ofs: INTEGER): Object;
+PROCEDURE NewTop(IN txt: ARRAY OF CHAR; len,ofs: INTEGER): Object;
 (* Creates a topline for the score array - should be editable *)
 VAR
 	obj: Object;
@@ -1309,7 +1309,7 @@ BEGIN
 	RETURN(first);
 END ScoreArray;
 
-PROCEDURE NewButton(gen,capt: ARRAY OF CHAR; model: Object): Object;
+PROCEDURE NewButton(IN gen,capt: ARRAY OF CHAR; model: Object): Object;
 VAR
 	obj: Objects.Object;
 BEGIN
@@ -1339,7 +1339,7 @@ BEGIN
 		Files.ReadString(R,str);								(* Document Version *)
 		Files.ReadInt(R,D.X); Files.ReadInt(R,D.Y);
 		Files.ReadInt(R,D.W); Files.ReadInt(R,D.H);
-		Files.Read(R,id);
+		Files.ReadChar(R,id);
 		IF (str # Version) & (str # CompVers) THEN   (* Check Program Version *)
 			Out.String("Unmatching "); Out.String(str); Out.Ln();
 		ELSIF (id = Objects.LibBlockId) THEN		  (* Check for correct id *)

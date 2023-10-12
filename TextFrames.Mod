@@ -18,6 +18,9 @@ MODULE TextFrames;	(** portable *) (* JG / pjm *)
   IMPORT Input, Modules, Objects, Display, Viewers, Fonts, Texts, Oberon, MenuViewers;
 
   CONST CR = 0DX;
+        BS = 8X; // was 7FX=DEL key
+        RIGHT = 0C3X;
+        LEFT = 0C4X;
     replace = Display.replace; paint = Display.paint; invert = Display.invert;
     extend = Display.extend; reduce = Display.reduce;
 
@@ -553,10 +556,18 @@ MODULE TextFrames;	(** portable *) (* JG / pjm *)
 
   PROCEDURE Write* (F: Frame; ch: CHAR; lib: Objects.Library; col, voff: SHORTINT);
   BEGIN (*F.car # 0*)
-    IF ch = 7FX THEN
+    IF ch = BS THEN
       IF F.carloc.pos > F.org THEN
         Texts.Delete(F.text, F.carloc.pos - 1, F.carloc.pos);
         SetCaret(F, F.carloc.pos - 1)
+      END
+    ELSIF ch = RIGHT THEN 
+      IF F.carloc.pos < F.text.len THEN
+        RemoveCaret(F); SetCaret(F, F.carloc.pos + 1)
+      END
+    ELSIF ch = LEFT THEN 
+      IF F.carloc.pos > 0 THEN
+        RemoveCaret(F); SetCaret(F, F.carloc.pos - 1)
       END
     ELSIF (ch >= 0C1X) & (ch <= 0C4X) THEN
     ELSIF (ch >= 0A0X) & (ch <= 0A9X) THEN

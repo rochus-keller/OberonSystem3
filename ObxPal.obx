@@ -7,11 +7,15 @@ definition ObxPal [extern 'C', dll 'Pal', prefix 'PAL_']
     PixelFormat = ( Mono, RGB )
     
   proc time(): int32 // milliseconds since start
+  proc date(year: *[]int16; month: *[]byte; day: *[]byte);
+  proc clock(hour, minute, second: *[]byte);
   proc dispose()
   proc printChar(ch: char)
   
   proc file_list(): int32 
+  proc file_list_masked(mask: *[]char): int32
   proc file_list_item(i: int32): *[]char
+  proc file_list_detail(i: int32; data: *[]int32): *[]char
   proc file_open(filename: *[]char): int32
   proc file_key(filename: *[]char): int32
   proc file_name(buffer: int32): *[]char

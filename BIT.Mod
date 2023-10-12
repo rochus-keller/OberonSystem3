@@ -15,8 +15,6 @@ of the source code to another platform with the name OBERON. *)
 
 MODULE BIT;	(** portable *)	(* tk 12.2.96 *)
 
-	IMPORT S := SYSTEM;
-
 	TYPE
 		SHORTCARD* = SHORTINT;
 		CARDINAL* = INTEGER;
@@ -83,24 +81,24 @@ MODULE BIT;	(** portable *)	(* tk 12.2.96 *)
 	(** bitwise logical left-shift: x shifted n *)
 	PROCEDURE CLSH*(x: CHAR; n: SHORTINT): CHAR;
 	BEGIN 
-		IF risc THEN RETURN CHR(S.LSH(ORD( BITS( ORD(x)) * BITS( 0FFH)), n))
-		ELSE RETURN S.LSH(x, n) END
+		IF risc THEN RETURN CHR(LSL(ORD( BITS( ORD(x)) * BITS( 0FFH)), n))
+		ELSE RETURN CHR(LSL(ORD(x), n)) END
 	END CLSH;
 	
 	PROCEDURE SLSH*(x: SHORTINT; n: SHORTINT): SHORTINT;
 	BEGIN 
-		IF risc THEN RETURN SHORT(SHORT(S.LSH(ORD( BITS( LONG(LONG(x))) * BITS( 0FFH)), n)))
-		ELSE RETURN S.LSH(x, n) END
+		IF risc THEN RETURN SHORT(SHORT(LSL(ORD( BITS( LONG(LONG(x))) * BITS( 0FFH)), n)))
+		ELSE RETURN LSL(x, n) END
 	END SLSH;
 	
 	PROCEDURE ILSH*(x: INTEGER; n: SHORTINT): INTEGER;
 	BEGIN 
-		IF risc THEN RETURN SHORT(S.LSH(ORD( BITS( LONG(x)) * BITS( 0FFFFH)), n))
-		ELSE RETURN S.LSH(x, n) END
+		IF risc THEN RETURN SHORT(LSL(ORD( BITS( LONG(x)) * BITS( 0FFFFH)), n))
+		ELSE RETURN LSL(x, n) END
 	END ILSH;
 	
 	PROCEDURE LLSH*(x: LONGINT; n: SHORTINT): LONGINT;
-	BEGIN RETURN S.LSH(x, n)
+	BEGIN RETURN LSL(x, n)
 	END LLSH;
 	
 	
@@ -122,7 +120,7 @@ MODULE BIT;	(** portable *)	(* tk 12.2.96 *)
 				END;
 			END;
 			RETURN CHR(ORD( s1))
-		ELSE RETURN S.ROT(x, n) END;
+		ELSE RETURN CHR(ROR(ORD(x), -n)) END;
 	END CROT;
 	
 	PROCEDURE SROT*(x: SHORTINT; n: SHORTINT): SHORTINT;
@@ -142,7 +140,7 @@ MODULE BIT;	(** portable *)	(* tk 12.2.96 *)
 				END;
 			END;
 			RETURN SHORT(SHORT(ORD( s1)))
-		ELSE RETURN S.ROT(x, n) END;
+		ELSE RETURN ROR(x, -n) END;
 	END SROT;
 	
 	PROCEDURE IROT*(x: INTEGER; n: SHORTINT): INTEGER;
@@ -162,18 +160,18 @@ MODULE BIT;	(** portable *)	(* tk 12.2.96 *)
 				END;
 			END;
 			RETURN SHORT(ORD( s1))
-		ELSE RETURN S.ROT(x, n) END;
+		ELSE RETURN ROR(x, -n) END;
 	END IROT;
 	
 	PROCEDURE LROT*(x: LONGINT; n: SHORTINT): LONGINT;
-	BEGIN RETURN S.ROT(x, n)
+	BEGIN RETURN ROR(x, -n)
 	END LROT;
 	
 	
 	(** swap bytes to change byteordering *)
 	PROCEDURE ISWAP*(x: INTEGER): INTEGER;
 		TYPE integer = ARRAY 2 OF CHAR; VAR a, b: integer; 
-	BEGIN a := S.VAL(integer, x); b[0] := a[1]; b[1] := a[0]; RETURN S.VAL(INTEGER, b)
+	BEGIN BYTES(a,x); b[0] := a[1]; b[1] := a[0]; NUMBER(x,b); RETURN x
 	END ISWAP;
 	
 	PROCEDURE LSWAP*(x: LONGINT): LONGINT;
@@ -281,7 +279,7 @@ MODULE BIT;	(** portable *)	(* tk 12.2.96 *)
 	
 	PROCEDURE LLESS*(x, y: LONGCARD): BOOLEAN;
 		VAR x0, y0: LONGINT;
-	BEGIN x0 := S.LSH(x, -1); y0 := S.LSH(y, -1);
+	BEGIN x0 := LSL(x, -1); y0 := LSL(y, -1);
 		IF x0 - y0 = 0 THEN RETURN x0 MOD 2 < y0 MOD 2 ELSE RETURN x0 < y0 END
 	END LLESS;
 
@@ -305,7 +303,7 @@ MODULE BIT;	(** portable *)	(* tk 12.2.96 *)
 	
 	PROCEDURE LLESSEQ*(x, y: LONGCARD): BOOLEAN;
 		VAR x0, y0: LONGINT;
-	BEGIN x0 := S.LSH(x, -1); y0 := S.LSH(y, -1);
+	BEGIN x0 := LSL(x, -1); y0 := LSL(y, -1);
 		IF x0 - y0 = 0 THEN RETURN x0 MOD 2 <= y0 MOD 2 ELSE RETURN x0 <= y0 END
 	END LLESSEQ;
 	

@@ -1284,7 +1284,7 @@ PROCEDURE ReplPict*(M: Mask; P: Pictures.Picture; px, py, X, Y, W, H, mode: INTE
 VAR x, y, w, h, pw, ph, w0, x0: INTEGER;
 BEGIN
 	pw := P.width; ph := P.height; w0 := W; x0 := X;
-	
+	IF (ph = 0) OR (pw = 0) THEN RETURN END;
 	WHILE H > 0 DO
 		y := (Y - py) MOD ph; h := Min(H, ph - y);
 		W := w0; X := x0;

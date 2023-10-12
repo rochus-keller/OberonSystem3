@@ -54,13 +54,13 @@ MODULE BMP;	(** portable *)
 	original code from M. Dätwyler
 *)
 
-PROCEDURE WriteError (str: ARRAY OF CHAR);
+PROCEDURE WriteError (IN str: ARRAY OF CHAR);
 BEGIN Texts.WriteString(W, str); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf); error := TRUE
 END WriteError;
 
 PROCEDURE ScanFileHeader (VAR R: Files.Rider; VAR header: FileHeader);
 BEGIN
-	Files.ReadBytes(R, header.type, 2); header.type[2] := 0X;
+	Files.ReadFixString(R, header.type, 2); header.type[2] := 0X;
 	Files.ReadLInt(R, header.size);
 	Files.ReadInt(R, header.res1); Files.ReadInt(R, header.res2);
 	Files.ReadLInt(R, header.offBits);
@@ -85,7 +85,7 @@ BEGIN
 	IF conversion THEN
 		FOR i := 0 TO SHORT(C) DO Display.GetColor(i, r[i], g[i], b[i]) END;
 		FOR i := 0 TO SHORT(nrColor) DO
-			Files.Read(R, Blue); Files.Read(R, Green); Files.Read(R, Red); Files.Read(R, c);
+			Files.ReadChar(R, Blue); Files.ReadChar(R, Green); Files.ReadChar(R, Red); Files.ReadChar(R, c);
 			min := MAX(LONGINT);
 			FOR j := 0 TO SHORT(C) DO
 				x := ABS(ORD(Red) - r[j]); y := ABS(ORD(Green) - g[j]); z := ABS(ORD(Blue) - b[j]);
@@ -100,7 +100,7 @@ BEGIN
 		END
 	ELSE
 		FOR i := 0 TO SHORT(nrColor) DO
-			Files.Read(R, Blue); Files.Read(R, Green); Files.Read(R, Red); Files.Read(R, c);
+			Files.ReadChar(R, Blue); Files.ReadChar(R, Green); Files.ReadChar(R, Red); Files.ReadChar(R, c);
 			Pictures.SetColor(pict, i, ORD(Red), ORD(Green), ORD(Blue));
 			ColorMap[i] := i
 		END
@@ -112,26 +112,26 @@ VAR count, x, y, i: INTEGER; b: CHAR;
 BEGIN
 	x:= 0; y:= 0;
 	WHILE ~R.eof DO
-		Files.Read(R, b);
+		Files.ReadChar(R, b);
 		IF b # 0X THEN
-			count:= ORD(b); Files.Read(R, b);
+			count:= ORD(b); Files.ReadChar(R, b);
 			FOR i := 1 TO count DO
 				Pictures.Dot(pict, ColorMap[ORD(b)], x, y, Display.replace); INC(x)
 			END
 		ELSE
-			Files.Read(R, b);
+			Files.ReadChar(R, b);
 			IF b > 2X THEN
 				count:= ORD(b);
 				FOR i := 1 TO count DO
-					Files.Read(R, b);
+					Files.ReadChar(R, b);
 					Pictures.Dot(pict, ColorMap[ORD(b)], x, y, Display.replace); INC(x)
 				END;
-				IF ODD(count) THEN Files.Read(R, b) END
+				IF ODD(count) THEN Files.ReadChar(R, b) END
 			ELSIF b = 0X THEN x := 0; INC(y) (* end of line *)
 			ELSIF b = 1X THEN RETURN (* end of data *)
 			ELSIF b = 2X THEN (* Delta-Record *)
-				Files.Read(R, b); INC(x, ORD(b));
-				Files.Read(R, b); INC(y, ORD(b))
+				Files.ReadChar(R, b); INC(x, ORD(b));
+				Files.ReadChar(R, b); INC(y, ORD(b))
 			END
 		END
 	END
@@ -142,9 +142,9 @@ VAR count, x, y, i, clr1, clr2: INTEGER; b: CHAR;
 BEGIN
 	x:= 0; y:= 0;
 	WHILE ~R.eof DO
-		Files.Read(R, b);
+		Files.ReadChar(R, b);
 		IF b # 0X THEN (* encoded *)
-			count:= ORD(b); Files.Read(R, b);
+			count:= ORD(b); Files.ReadChar(R, b);
 			clr1 := ORD(b) DIV 16; clr2 := ORD(b) MOD 16;
 			i := 1;
 			FOR i := 1 TO count DO
@@ -154,24 +154,24 @@ BEGIN
 				INC(x)
 			END
 		ELSE
-			Files.Read(R, b);
+			Files.ReadChar(R, b);
 			IF b > 2X THEN (* absolute *)
 				count:= ORD(b);
 				FOR i := 1 TO count DO
 					IF ODD(i) THEN
-						Files.Read(R, b);
+						Files.ReadChar(R, b);
 						Pictures.Dot(pict, ColorMap[ORD(b) DIV 16], x, y, Display.replace)
 					ELSE
 						Pictures.Dot(pict, ColorMap[ORD(b) MOD 16], x, y, Display.replace)
 					END;
 					INC(x)
 				END;
-				IF (count-1) MOD 4 < 2 THEN Files.Read(R, b) END
+				IF (count-1) MOD 4 < 2 THEN Files.ReadChar(R, b) END
 			ELSIF b = 0X THEN x := 0; INC(y) (* end of line *)
 			ELSIF b = 1X THEN RETURN (* end of data *)
 			ELSIF b = 2X THEN (* Delta-Record *)
-				Files.Read(R, b); INC(x, ORD(b));
-				Files.Read(R, b); INC(y, ORD(b))
+				Files.ReadChar(R, b); INC(x, ORD(b));
+				Files.ReadChar(R, b); INC(y, ORD(b))
 			END
 		END
 	END
@@ -182,7 +182,7 @@ VAR x, y: INTEGER; b: CHAR;
 BEGIN
 	x:= 0; y:= 0;
 	WHILE ~R.eof DO
-		Files.Read(R, b);
+		Files.ReadChar(R, b);
 		Pictures.Dot(pict, ColorMap[ORD(b)], x, y, Display.replace); INC(x);
 		IF (x >= pict.width) & (x MOD 4 = 0) THEN x:= 0; INC(y) END
 	END
@@ -193,7 +193,7 @@ VAR x, y: INTEGER; b: CHAR;
 BEGIN
 	x:= 0; y:= 0;
 	WHILE ~R.eof DO
-		Files.Read(R, b);
+		Files.ReadChar(R, b);
 		Pictures.Dot(pict, ColorMap[ORD(b) DIV 16], x, y, Display.replace); INC(x);
 		Pictures.Dot(pict, ColorMap[ORD(b) MOD 16], x, y, Display.replace); INC(x);
 		IF (x >= pict.width) & (x MOD 8 = 0) THEN x:= 0; INC(y) END
@@ -205,7 +205,7 @@ VAR p: LONGINT; i, x, y: INTEGER; b: CHAR;
 BEGIN
 	x := 0; y := 0;
 	WHILE ~R.eof DO
-		Files.Read(R, b); p := ORD(b); INC(x, 8);
+		Files.ReadChar(R, b); p := ORD(b); INC(x, 8);
 		FOR i := 0 TO 7 DO
 			IF ODD(p) THEN Pictures.Dot(pict, 0, x - i, y, Display.replace)
 			ELSE Pictures.Dot(pict, 15, x - i, y, Display.replace)

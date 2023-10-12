@@ -47,7 +47,7 @@ VAR
 
 PROCEDURE ReadChunkId(VAR R: Files.Rider; VAR id: ChunkId);
 BEGIN
-	Files.ReadBytes(R,id,4); id[4]:= 0X;
+	Files.ReadFixString(R,id,4); id[4]:= 0X;
 END ReadChunkId;
 
 PROCEDURE ReadChunkHeader(VAR R: Files.Rider; VAR hd: ChunkHeader);
@@ -63,10 +63,10 @@ VAR
 BEGIN
 	Files.ReadInt(R,ilbmhd.w); Files.ReadInt(R,ilbmhd.h);
 	Files.ReadInt(R,ilbmhd.x); Files.ReadInt(R,ilbmhd.y);
-	Files.Read(R,ilbmhd.planes); Files.Read(R,ilbmhd.masking);
-	Files.Read(R,ilbmhd.compression); Files.Read(R,filler);
+	Files.ReadChar(R,ilbmhd.planes); Files.ReadChar(R,ilbmhd.masking);
+	Files.ReadChar(R,ilbmhd.compression); Files.ReadChar(R,filler);
 	Files.ReadInt(R,ilbmhd.transparentCol);
-	Files.Read(R,ilbmhd.xAspect); Files.Read(R,ilbmhd.yAspect);
+	Files.ReadChar(R,ilbmhd.xAspect); Files.ReadChar(R,ilbmhd.yAspect);
 	Files.ReadInt(R,ilbmhd.pageWidth); Files.ReadInt(R,ilbmhd.pageHeight);
 END ReadILBMHD;
 
@@ -79,7 +79,7 @@ BEGIN
 	IF conversion THEN
 		FOR i := 0 TO SHORT(C) DO Display.GetColor(i, r[i], g[i], b[i]) END;
 		FOR i := 0 TO SHORT(nrColor) DO
-			Files.Read(R, Red); Files.Read(R, Green); Files.Read(R, Blue);
+			Files.ReadChar(R, Red); Files.ReadChar(R, Green); Files.ReadChar(R, Blue);
 			min := MAX(LONGINT);
 			FOR j := 0 TO SHORT(C) DO
 				x := ABS(ORD(Red) - r[j]); y := ABS(ORD(Green) - g[j]); z := ABS(ORD(Blue) - b[j]);
@@ -94,7 +94,7 @@ BEGIN
 		END
 	ELSE
 		FOR i := 0 TO SHORT(nrColor) DO
-			Files.Read(R, Red); Files.Read(R, Green); Files.Read(R, Blue);
+			Files.ReadChar(R, Red); Files.ReadChar(R, Green); Files.ReadChar(R, Blue);
 			Pictures.SetColor(pict, i, ORD(Red), ORD(Green), ORD(Blue));
 			ColorMap[i] := i
 		END
@@ -158,18 +158,18 @@ BEGIN
 						rep:= 0; cnt:= 0; z:= 0;
 						WHILE (z < p) DO	(* color planes *)
 							IF (ilbmhd.compression = 0X) THEN
-								Files.Read(R,c);
+								Files.ReadSInt(R,c);
 							ELSIF (ilbmhd.compression = 1X) THEN
 								IF (rep > 0) THEN
 									DEC(rep);
 								ELSE
-									Files.Read(R,c);
+									Files.ReadSInt(R,c);
 									IF (cnt > 0) THEN
 										DEC(cnt);
 									ELSIF (c <= 0) THEN
-										rep:= ABS(c); Files.Read(R,c);
+										rep:= ABS(c); Files.ReadSInt(R,c);
 									ELSE
-										cnt:= c; Files.Read(R,c);
+										cnt:= c; Files.ReadSInt(R,c);
 									END;
 								END;
 							END;

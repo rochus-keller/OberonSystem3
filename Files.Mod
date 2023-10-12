@@ -30,6 +30,7 @@ TYPE
     File* = POINTER TO RECORD
             name: ARRAY 32 OF CHAR;
             id, t, d: LONGINT;
+            onDisk, modified: BOOLEAN;
             next: File;
            END;
 		Rider* = RECORD 	(** Riders are the access mechanisms for files. *)
@@ -67,6 +68,7 @@ VAR
     IF id < 0 THEN RETURN NIL END;
     NEW(f);
     f.name := name;
+    f.onDisk := TRUE;
     f.id := id;
     IF root = NIL THEN root := f ELSE f.next := root; root := f END;
     RETURN f
@@ -79,12 +81,14 @@ directory with the same name. The file is automatically closed. *)
   BEGIN
 	  P.file_save(f.name, f.id);
 	  Close(f)
+	  f.onDisk := TRUE;
 	END Register;
 
 (** Flushes the changes made to a file to disk. Register will automatically Close a file. *) 
 	PROCEDURE Close*(f: File);
 	VAR ff: File;
   BEGIN
+    IF f.onDisk & f.modified & (f.name # "") THEN P.file_save(f.name, f.id) END;
     P.file_free(f.id);
     f.id := -1;
     ff := root
@@ -260,6 +264,7 @@ Portable routines to read the standard Oberon types.
       IF P.file_seek(r.file.id, r.pos) # 0 THEN 
 	      r.res := 0; r.eof := FALSE;
 	      IF P.file_write_byte(r.file.id,x) # 0 THEN
+	        r.file.modified := TRUE;
 	        pos := P.file_pos(r.file.id);
 	        IF pos = r.pos THEN r.res := r.res + 1 ELSE r.pos := pos END
 	      ELSE r.res := r.res + 1

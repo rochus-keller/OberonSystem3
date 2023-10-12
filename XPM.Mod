@@ -62,7 +62,7 @@ VAR
 
 PROCEDURE ReadFile(VAR R: Rider; VAR c: CHAR);
 BEGIN
-	Files.Read(R.rider,c); R.eof:= R.rider.eof;
+	Files.ReadChar(R.rider,c); R.eof:= R.rider.eof;
 END ReadFile;
 
 PROCEDURE PosFile(VAR R: Rider): LONGINT;
@@ -93,7 +93,7 @@ END SetText;
 
 (* End of Rider Methods *)
 
-PROCEDURE FindUserColor(s: ARRAY OF CHAR): ColorEntry;
+PROCEDURE FindUserColor(IN s: ARRAY OF CHAR): ColorEntry;
 	(* search for an entry named s in the list of user-defined colors *)
 VAR
 	entry: ColorEntry;
@@ -103,7 +103,7 @@ BEGIN
 	RETURN(entry);
 END FindUserColor;
 
-PROCEDURE GetColorEntry(s: ARRAY OF CHAR; VAR r,g,b: REAL; VAR ok: BOOLEAN);
+PROCEDURE GetColorEntry(IN s: ARRAY OF CHAR; VAR r,g,b: REAL; VAR ok: BOOLEAN);
 	(* find a color specification in the list of user-defined colors/ColorModels list *)
 VAR
 	entry: ColorEntry;
@@ -122,7 +122,7 @@ VAR
 	c: CHAR;
 	len: LONGINT;
 BEGIN
-	Files.Read(FR,c);
+	Files.ReadChar(FR,c);
 	IF (c = Texts.TextBlockId) THEN
 		NEW(R.text); Texts.Load(R.text,Files.Base(FR),pos+1,len);
 		Texts.OpenReader(R.reader,R.text,0);
@@ -229,7 +229,7 @@ VAR
 	ch,key,spec: CHAR;
 	cval: ARRAY 60 OF CHAR;
 
-	PROCEDURE Value(col: ARRAY OF CHAR; pos,len: INTEGER): REAL;
+	PROCEDURE Value(IN col: ARRAY OF CHAR; pos,len: INTEGER): REAL;
 	VAR
 		i: INTEGER;
 		v,w: LONGINT;

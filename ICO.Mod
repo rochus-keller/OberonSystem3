@@ -68,9 +68,9 @@ PROCEDURE ReadDirEntry(VAR R: Files.Rider; VAR entry: IconDirEntry);
 VAR
 	c: CHAR;
 BEGIN
-	Files.Read(R,entry.width); Files.Read(R,entry.height);
-	Files.Read(R,entry.colorCount);
-	Files.Read(R,c);	(* Reserved *)
+	Files.ReadChar(R,entry.width); Files.ReadChar(R,entry.height);
+	Files.ReadChar(R,entry.colorCount);
+	Files.ReadChar(R,c);	(* Reserved *)
 	Files.ReadInt(R,entry.planes); Files.ReadInt(R,entry.bitCount);
 	Files.ReadLInt(R,entry.bytesInRes);
 	Files.ReadLInt(R,entry.imageOffset);
@@ -103,7 +103,7 @@ BEGIN
 	IF conversion THEN
 		FOR i := 0 TO SHORT(C) DO Display.GetColor(i, r[i], g[i], b[i]) END;
 		FOR i := 0 TO SHORT(nrColor) DO
-			Files.Read(R, Blue); Files.Read(R, Green); Files.Read(R, Red); Files.Read(R, c);
+			Files.ReadChar(R, Blue); Files.ReadChar(R, Green); Files.ReadChar(R, Red); Files.ReadChar(R, c);
 			min := MAX(LONGINT);
 			FOR j := 0 TO SHORT(C) DO
 				x := ABS(ORD(Red) - r[j]); y := ABS(ORD(Green) - g[j]); z := ABS(ORD(Blue) - b[j]);
@@ -118,7 +118,7 @@ BEGIN
 		END
 	ELSE
 		FOR i := 0 TO SHORT(nrColor) DO
-			Files.Read(R, Blue); Files.Read(R, Green); Files.Read(R, Red); Files.Read(R, c);
+			Files.ReadChar(R, Blue); Files.ReadChar(R, Green); Files.ReadChar(R, Red); Files.ReadChar(R, c);
 			Pictures.SetColor(pict, i, ORD(Red), ORD(Green), ORD(Blue));
 			colorMap[i] := i
 		END
@@ -160,7 +160,7 @@ BEGIN
 		ScanCol(R,pict,ORD(dir.colorCount),colorConversion);
 		i:= 0;
 		WHILE (i < length) DO
-			Files.Read(R,c);
+			Files.ReadChar(R,c);
 			IF (bmih.bitCount = 8) THEN
 				Pictures.Dot(pict,colorMap[ORD(c)],PosX(i),PosY(i),Display.replace); INC(i);
 			ELSIF (bmih.bitCount = 4) THEN
@@ -181,7 +181,7 @@ BEGIN
 		END;
 		i:= 0;
 		WHILE (i < length) DO
-			Files.Read(R,c);
+			Files.ReadChar(R,c);
 			FOR k:= 7 TO 0 BY -1 DO
 				IF BIT.BIT(ORD(c),k) THEN
 					Pictures.Dot(pict,transparentCol,PosX(i),PosY(i),Display.replace);

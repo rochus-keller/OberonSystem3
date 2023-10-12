@@ -292,12 +292,12 @@ BEGIN
 		Texts.WriteString(W, M.name);  Texts.Write(W, 9X);
 		dsize := 0;	(* data size *)
 		(*Texts.WriteInt(W, dsize, 1);  Texts.Write(W, 9X);*)
-		INC(var, dsize);  csize := LEN(M.data)-dsize;
+		INC(var, dsize);  csize := 0; // LEN(M.data)-dsize;
 		(*Texts.WriteInt(W, csize, 1);  Texts.Write(W, 9X);*)	(* const size *)
 		INC(const, csize);
 		(*Texts.WriteInt(W, LEN(M.code), 1);  Texts.Write(W, 9X);*)	(* code size *)
-		INC(code, LEN(M.code));
-		Texts.WriteInt(W, dsize + csize + LEN(M.code), 1);  Texts.Write(W, 9X);
+		// INC(code, LEN(M.code));
+		Texts.WriteInt(W, dsize + csize (*+ LEN(M.code)*), 1);  Texts.Write(W, 9X);
 		Texts.WriteInt(W, M.refcnt, 1);  Texts.WriteLn(W);
 		M := M.next; INC(n)
 	END;
@@ -633,7 +633,12 @@ BEGIN
 	REPEAT
 		ofs := 0; // TODO ORD( n.handle);  
 		m := Kernel.GetMod(ofs);
-		Texts.WriteString(W, m.name);  Texts.WriteString(W, "  PC = ");  
+		IF m # NIL THEN
+  		Texts.WriteString(W, m.name);  
+  	ELSE
+  		Texts.WriteString(W, "<unnamed task>");  
+  	END;
+		Texts.WriteString(W, "  PC = ");  
 		Texts.WriteInt(W, 0, 1);
 		IF n.safe THEN Texts.WriteString(W, "  safe  ")
 		ELSE Texts.WriteString(W, "  unsafe  ")

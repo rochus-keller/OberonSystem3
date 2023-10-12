@@ -96,9 +96,9 @@ MODULE GIF;	(** portable *) (* rm 1.9.1996, ejz 8.11.96 *)
 			ch: CHAR;
 	BEGIN	
 		Files.ReadInt(R, LSD.width); Files.ReadInt(R, LSD.height);
-		Files.Read(R, ch); i := ORD(ch);
-		Files.Read(R, ch); (* Background Color Index into Global Color Table*)
-		Files.Read(R, ch);
+		Files.ReadChar(R, ch); i := ORD(ch);
+		Files.ReadChar(R, ch); (* Background Color Index into Global Color Table*)
+		Files.ReadChar(R, ch);
 		LSD.GCTSize := SHORT(ASH(1, (i MOD 8)+1)); i := i DIV 8;
 		i := i DIV 2;
 		i := i DIV 8;
@@ -106,10 +106,11 @@ MODULE GIF;	(** portable *) (* rm 1.9.1996, ejz 8.11.96 *)
 	END GetLogicalScrDesc;
 
 	PROCEDURE GetCMap(VAR R: Files.Rider; VAR map: ColorTable; size: LONGINT);
-		VAR i: LONGINT;
+		VAR i: LONGINT; tmp: ARRAY 3 OF CHAR;
 	BEGIN
 		FOR i := 0 TO size-1 DO
-			Files.ReadBytes(R, map.rgb[i], 3)
+			Files.ReadFixString(R, tmp, 3);
+			map.rgb[i].r := tmp[0]; map.rgb[i].g := tmp[1]; map.rgb[i].b := tmp[2]
 		END
 	END GetCMap;
 
@@ -119,20 +120,20 @@ MODULE GIF;	(** portable *) (* rm 1.9.1996, ejz 8.11.96 *)
 			time: INTEGER;
 			ch: CHAR;
 	BEGIN
-		Files.Read(R, ch);
+		Files.ReadChar(R, ch);
 		IF ch = 0FEX THEN (* Comment Extension: read only first block *)
-			Files.Read(R, ch);
-			Files.ReadBytes(R, buffer, ORD(ch)); buffer[ORD(ch)] := 0X
+			Files.ReadChar(R, ch);
+			Files.ReadFixString(R, buffer, ORD(ch)); buffer[ORD(ch)] := 0X
 		ELSIF ch = 0F9X THEN (* Graphic Control Extension *)
-			Files.Read(R, ch); Files.Read(R, ch);
+			Files.ReadChar(R, ch); Files.ReadChar(R, ch);
 			Ext.transparency := ODD(ORD(ch));
-			Files.ReadInt(R, time); Files.Read(R, ch);
+			Files.ReadInt(R, time); Files.ReadChar(R, ch);
 			Ext.transparencyIndex := ORD(ch)
 		ELSE
 		END;
-		Files.Read(R, ch);
+		Files.ReadChar(R, ch);
 		WHILE ch # 0X DO
-			Files.Set(R, Files.Base(R), Files.Pos(R)+ORD(ch)); Files.Read(R, ch)
+			Files.Set(R, Files.Base(R), Files.Pos(R)+ORD(ch)); Files.ReadChar(R, ch)
 		END
 	END GetExtBlock;
 
@@ -143,7 +144,7 @@ MODULE GIF;	(** portable *) (* rm 1.9.1996, ejz 8.11.96 *)
 	BEGIN
 		Files.ReadInt(R, IDesc.left); Files.ReadInt(R, IDesc.top);
 		Files.ReadInt(R, IDesc.width); Files.ReadInt(R, IDesc.height);
-		Files.Read(R, ch); i := ORD(ch);
+		Files.ReadChar(R, ch); i := ORD(ch);
 		IDesc.LCTSize := SHORT(ASH(1, (i MOD 8)+1)); i := i DIV 32;
 		i := i DIV 2;
 		IDesc.sequential := ~ODD(i); i := i DIV 2;
@@ -192,9 +193,9 @@ PROCEDURE GetData(VAR r: Files.Rider; VAR Image: Gif; P: Pictures.Picture);
 			bitsneed:=codeLen-bitsleft; b:=0;
 			WHILE bitsneed>0 DO
 				IF bufpos>=bufferSize THEN bufpos:=0;
-					Files.Read(r, ch);
+					Files.ReadChar(r, ch);
 					bufferSize:=ORD(ch);
-					IF bufferSize=0 THEN code:=endCode; RETURN ELSE Files.ReadBytes(r, buffer, bufferSize) END
+					IF bufferSize=0 THEN code:=endCode; RETURN ELSE Files.ReadFixString(r, buffer, bufferSize) END
 				 END;
 				val:=ORD(buffer[bufpos]); INC(bufpos);
 				IF bitsneed<byteLen THEN
@@ -215,7 +216,7 @@ PROCEDURE GetData(VAR r: Files.Rider; VAR Image: Gif; P: Pictures.Picture);
 	END ReadCode;
 	
 BEGIN
-	Files.Read(r, ch); codeLen:=ORD(ch); bufpos := 0;
+	Files.ReadChar(r, ch); codeLen:=ORD(ch); bufpos := 0;
 	clearCode:=ASH(1, codeLen); endCode:=clearCode+1;	
 	(* Init Codebook *)
 	InitCodeBook(codeLen);
@@ -265,7 +266,7 @@ END GetData;
 PROCEDURE CheckFile*(f: Files.File): BOOLEAN;
 	VAR r: Files.Rider; sig: ARRAY 7 OF CHAR;
 BEGIN
-	Files.Set(r, f, 0); Files.ReadBytes(r, sig, 6); sig[6]:=0X;
+	Files.Set(r, f, 0); Files.ReadFixString(r, sig, 6); sig[6]:=0X;
 	RETURN (sig="GIF87a") OR (sig="GIF89a")
 END CheckFile;
 
@@ -282,7 +283,7 @@ BEGIN
 		GetCMap(R, GifImage.GCT, GifImage.LSD.GCTSize);
 		ComputeColors(GifImage.GCT, colorConversion)
 	END;
-	Files.Read(R, ch);
+	Files.ReadChar(R, ch);
 	WHILE ~R.eof & (ch#3BX) DO
 		IF ch=21X THEN GetExtBlock(R, GifImage.Ext)
 		ELSIF ch=2CX THEN
@@ -312,10 +313,10 @@ BEGIN
 					INC(i)
 				END
 			END;
-			GetData(R, GifImage, pict); Files.Read(R, ch); INC(idx); GifImage.Ext.transparency:=FALSE
+			GetData(R, GifImage, pict); Files.ReadChar(R, ch); INC(idx); GifImage.Ext.transparency:=FALSE
 		ELSE RETURN
 		END;
-		Files.Read(R, ch)
+		Files.ReadChar(R, ch)
 	END;
 	IF idx>1 THEN (* there are more pictures *) END
 END Load;

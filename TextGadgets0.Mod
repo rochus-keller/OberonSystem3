@@ -1383,7 +1383,7 @@ BEGIN
 			pos := F.carpos.org + F.carpos.line.len - 1;
 			carX := MAX(INTEGER) DIV 2; setCarX := TRUE
 		ELSIF ~(locked IN F.state0) THEN
-			IF ch = 7FX THEN (* Delete *)
+			IF (ch = 8X) OR (ch = 7FX) THEN (* Delete *) // RK: original was only 7FX = DEL key; 8X is backspace
 				Flush;
 				IF pos > 0 THEN
 					RemoveCaret(F); RemoveSelection(F);

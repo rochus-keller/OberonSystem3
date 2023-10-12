@@ -238,7 +238,7 @@ END RegisterObject;
 (** GetTimer - Return "ticks" since initialisation (Kernel.TimeUnit ticks per second) *)
 PROCEDURE GetTimer*(): LONGINT;
 BEGIN
-	RETURN 0 // TODO
+	RETURN ObxPal.time()
 END GetTimer;
 
 (** InstallLoop - Install procedure to which control is transferred after a trap *)
@@ -266,7 +266,7 @@ END Shutdown;
 
 (** GetMod - Return the loaded module that contains code address pc. *)
 PROCEDURE GetMod*(pc : LONGINT): Module;
-// TODO
+  RETURN modules// TODO
 END GetMod;
 
 (** LargestAvailable - Return the size in bytes of the largest free available memory block. 
@@ -291,8 +291,15 @@ PROCEDURE GC*;
 END GC;
 
 (** GetClock - Return current time and date *)
+(** day = d MOD 32, month = d DIV 32 MOD 16, year = 1900+d DIV 512,
+	  hour = t DIV 4096 MOD 32, minute = t DIV 64 MOD 64, second = t MOD 64 *)
 PROCEDURE GetClock*(VAR time, date: LONGINT);
-// TODO
+VAR hour, minute, second, day, month: CARRAY 1 OF BYTE; year: CARRAY 1 OF INTEGER;
+BEGIN
+  ObxPal.clock(hour,minute,second);
+  ObxPal.date(year,month,day);
+  time := hour[0] * 4096 + minute[0] * 64 + second[0];
+  date := (year[0]-1900) * 512 + month[0] * 32 + day[0];
 END GetClock;
 
 (** SetClock - Set current time and date *)

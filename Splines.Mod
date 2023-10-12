@@ -196,7 +196,7 @@ MODULE Splines;	(** portable *)  (*NW 3.11.90 / 5.7.93 / tk ported to System 3 7
 		VAR i, j, len: INTEGER; s: SHORTINT;
 	BEGIN i := 0; j := 0; Files.ReadInt(R, len);
 		WITH obj: Spline DO
-			obj.n := (len-1) DIV 4; Files.Read(R, s); obj.open := s=1;
+			obj.n := (len-1) DIV 4; Files.ReadSInt(R, s); obj.open := s=1;
 			WHILE i < obj.n DO Files.ReadInt(R, obj.u[i]); INC(i) END;
 			WHILE j < obj.n DO Files.ReadInt(R, obj.v[j]); INC(j) END
 		END

@@ -91,7 +91,7 @@ MODULE GfxMaps;	(** eos   **)
 			width*, height*: INTEGER;	(** map dimensions **)
 			fmt*: Format;	(** pixel format **)
 			bpr*: LONGINT;	(** number of bytes per row (may be negative) **)
-			adr*: LONGINT;	(** address of lower left pixel **)
+			adr*: LONGINT;	(** offset into mem of lower left pixel **)
 			mem*: POINTER TO ARRAY OF CHAR;	(** block where pixels are stored; mem#NIL implies adr=ADR(mem[0]) **)
 		END;
 		
@@ -200,18 +200,20 @@ MODULE GfxMaps;	(** eos   **)
 	END InitFormat;
 	
 	(** initialize custom map **)
-	PROCEDURE Init* (map: Map; width, height: INTEGER; VAR fmt: Format; bpr, adr: LONGINT);
+	PROCEDURE Init* (map: Map; width, height: INTEGER; VAR fmt: Format; 
+    	bpr: LONGINT; adr: LONGINT);
 	BEGIN
 		ASSERT((width > 0) & (height > 0), 100);
-		map.handle := Handle; map.width := width; map.height := height; map.fmt := fmt; map.bpr := bpr; map.adr := adr
+		map.handle := Handle; map.width := width; map.height := height; map.fmt := fmt; 
+		map.bpr := bpr; map.adr := adr
 	END Init;
 	
 	(** initialize custom map on byte buffer **)
 	PROCEDURE InitBuf* (map: Map; width, height: INTEGER; VAR fmt: Format; bpr: LONGINT; VAR buf: ARRAY OF CHAR);
 	BEGIN
 		ASSERT(height * ABS(bpr) <= LEN(buf), 100);
-		IF bpr >= 0 THEN Init(map, width, height, fmt, bpr, SYSTEM.ADR(buf[0]))
-		ELSE Init(map, width, height, fmt, bpr, SYSTEM.ADR(buf[0]) + LEN(buf) - bpr)
+		IF bpr >= 0 THEN Init(map, width, height, fmt, bpr, 0)
+		ELSE Init(map, width, height, fmt, bpr, LEN(buf) - bpr)
 		END
 	END InitBuf;
 	
@@ -231,12 +233,13 @@ MODULE GfxMaps;	(** eos   **)
 		IF (map.mem = NIL) OR (size < LEN(map.mem^) DIV 2) OR (LEN(map.mem^) < size) THEN
 			NEW(map.mem, size)
 		ELSE
-			a0 := SYSTEM.ADR(map.mem[0]); a1 := a0 + size;
+			a0 := 0; // index into map.mem
+			a1 := a0 + size;
 			WHILE a0 # a1 DO
-				SYSTEM.PUT(a0, LONG(LONG(0))); INC(a0, SIZE(LONGINT))
+  			map.mem[a0] := 0X; INC(a0)
 			END
 		END;
-		map.adr := SYSTEM.ADR(map.mem[0])
+		map.adr := 0
 	END Create;
 	
 	PROCEDURE GetExtension (VAR name, ext: ARRAY OF CHAR);
@@ -351,19 +354,19 @@ MODULE GfxMaps;	(** eos   **)
 	
 	(*--- A1 ---*)
 	
-	PROCEDURE PackA1 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
+	PROCEDURE PackA1 (VAR fmt: Format0; VAR adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
 		VAR b: CHAR;
 	BEGIN
-		SYSTEM.GET(adr, b);
-		IF pix[A] >= 80X THEN SYSTEM.PUT(adr, Set[ORD(b), 7-bit])
-		ELSE SYSTEM.PUT(adr, Clear[ORD(b), 7-bit])
+		b := adr[off];
+		IF pix[A] >= 80X THEN adr[off] := Set[ORD(b), 7-bit]
+		ELSE adr[0] := Clear[ORD(b), 7-bit]
 		END
 	END PackA1;
 	
-	PROCEDURE UnpackA1 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
+	PROCEDURE UnpackA1 (VAR fmt: Format0; VAR adr: ARRAY OF CHAR; off , bit: LONGINT; VAR pix: Pixel);
 		VAR b: CHAR;
 	BEGIN
-		SYSTEM.GET(adr, b);
+		b := adr[off];
 		pix[R] := CHR(fmt.col.r); pix[G] := CHR(fmt.col.g); pix[B] := CHR(fmt.col.b);
 		IF Bit[ORD(b), 7-bit] THEN pix[A] := 0FFX
 		ELSE pix[A] := 0X
@@ -373,43 +376,47 @@ MODULE GfxMaps;	(** eos   **)
 	
 	(*--- A8 ---*)
 	
-	PROCEDURE PackA8 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
+	PROCEDURE PackA8 (VAR fmt: Format0; VAR adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
 	BEGIN
-		SYSTEM.PUT(adr, pix[A])
+		adr[off] := pix[A]
 	END PackA8;
 	
-	PROCEDURE UnpackA8 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
+	PROCEDURE UnpackA8 (VAR fmt: Format0; IN adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
 	BEGIN
-		pix[R] := CHR(fmt.col.r); pix[G] := CHR(fmt.col.g); pix[B] := CHR(fmt.col.b); SYSTEM.GET(adr, pix[A])
+		pix[R] := CHR(fmt.col.r); pix[G] := CHR(fmt.col.g); pix[B] := CHR(fmt.col.b); 
+		pix[A] := adr[off]
 	END UnpackA8;
 	
 	
 	(*--- I8 ---*)
 	
-	PROCEDURE PackI8 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
+	PROCEDURE PackI8 (VAR fmt: Format0; VAR adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
 	BEGIN
-		SYSTEM.PUT(adr, CHR(BestIndex(fmt.pal, ORD(pix[R]), ORD(pix[G]), ORD(pix[B]))))
+		adr[off] := CHR(BestIndex(fmt.pal, ORD(pix[R]), ORD(pix[G]), ORD(pix[B])))
 	END PackI8;
 	
-	PROCEDURE UnpackI8 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
+	PROCEDURE UnpackI8 (VAR fmt: Format0; IN adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
 		VAR idx: CHAR;
 	BEGIN
-		SYSTEM.GET(adr, idx);
+		idx := adr[off];
 		ColorToPixel(fmt.pal.col[ORD(idx)], pix)
 	END UnpackI8;
 	
 	
 	(*--- BGR555 ---*)
 	
-	PROCEDURE PackBGR555 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
+	PROCEDURE PackBGR555 (VAR fmt: Format0; VAR adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
+		VAR int: INTEGER; tmp: ARRAY 2 OF CHAR;
 	BEGIN	(* >>byte order! *)
-		SYSTEM.PUT(adr, SHORT(ASH(ORD(pix[B]), -3) + ASH(ASH(ORD(pix[G]), -3), 5) + ASH(ASH(ORD(pix[R]), -3), 10)))
+		int := SHORT(ASH(ORD(pix[B]), -3) + ASH(ASH(ORD(pix[G]), -3), 5) + ASH(ASH(ORD(pix[R]), -3), 10));
+		BYTES(tmp,int); adr[off] := tmp[0]; adr[off+1] := tmp[1]
 	END PackBGR555;
 	
-	PROCEDURE UnpackBGR555 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
-		VAR int: INTEGER;
+	PROCEDURE UnpackBGR555 (VAR fmt: Format0; IN adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
+		VAR int: INTEGER; tmp: ARRAY 2 OF CHAR;
 	BEGIN	(* >>byte order! *)
-		SYSTEM.GET(adr, int);
+	  tmp[0] := adr[off]; tmp[1] := adr[off+1];
+		NUMBER(int,tmp);
 		pix[B] := CHR(ASH(int MOD 20H, 3));
 		pix[G] := CHR(ASH(ASH(int, -5) MOD 20H, 3));
 		pix[R] := CHR(ASH(ASH(int, -10) MOD 20H, 3));
@@ -419,15 +426,18 @@ MODULE GfxMaps;	(** eos   **)
 	
 	(*--- BGR565 ---*)
 	
-	PROCEDURE PackBGR565 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
+	PROCEDURE PackBGR565 (VAR fmt: Format0; VAR adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
+		VAR int: INTEGER; tmp: ARRAY 2 OF CHAR;
 	BEGIN	(* >>byte order! *)
-		SYSTEM.PUT(adr, SHORT(ASH(ORD(pix[B]), -3) + ASH(ASH(ORD(pix[G]), -2), 5) + ASH(ASH(ORD(pix[R]), -3), 11)))
+		int := SHORT(ASH(ORD(pix[B]), -3) + ASH(ASH(ORD(pix[G]), -2), 5) + ASH(ASH(ORD(pix[R]), -3), 11));
+		BYTES(tmp,int); adr[off] := tmp[0]; adr[off+1] := tmp[1]
 	END PackBGR565;
 	
-	PROCEDURE UnpackBGR565 (VAR fmt: Format0; adr, bit: LONGINT; VAR pix: Pixel);
-		VAR int: INTEGER;
+	PROCEDURE UnpackBGR565 (VAR fmt: Format0; IN adr: ARRAY OF CHAR; off, bit: LONGINT; VAR pix: Pixel);
+		VAR int: INTEGER; tmp: ARRAY 2 OF CHAR;
 	BEGIN	(* >>byte order! *)
-		SYSTEM.GET(adr, int);
+	  tmp[0] := adr[off]; tmp[1] := adr[off+1];
+		NUMBER(int,tmp);
 		pix[B] := CHR(ASH(int MOD 20H, 3));
 		pix[G] := CHR(ASH(ASH(int, -5) MOD 40H, 2));
 		pix[R] := CHR(ASH(ASH(int, -11) MOD 20H, 3));
@@ -1228,11 +1238,11 @@ MODULE GfxMaps;	(** eos   **)
 				| i8: bl.pix[0] := CHR(BestIndex(dst.pal, src.col.r, src.col.g, src.col.b)); bl.move := BlendA1Const8
 				| bgr555:
 					ColorToPixel(src.col, pix);
-					PackBGR555(dst, SYSTEM.ADR(bl.pix[0]), 0, pix);
+					PackBGR555(dst, bl.pix, 0, 0, pix);
 					bl.move := BlendA1Const16
 				| bgr565:
 					ColorToPixel(src.col, pix);
-					PackBGR565(dst, SYSTEM.ADR(bl.pix[0]), 0, pix);
+					PackBGR565(dst, bl.pix, 0, 0, pix);
 					bl.move := BlendA1Const16
 				| bgr24: ColorToPixel(src.col, bl.pix); bl.move := BlendA1Const24
 				| bgra32: ColorToPixel(src.col, bl.pix); bl.move := BlendA1Const32
@@ -1318,11 +1328,11 @@ MODULE GfxMaps;	(** eos   **)
 				| i8: bl.pix[0] := CHR(BestIndex(dst.pal, src.col.r, src.col.b, src.col.b)); bl.move := MoveConst8
 				| bgr555:
 					ColorToPixel(src.col, pix);
-					PackBGR555(dst, SYSTEM.ADR(bl.pix[0]), 0, pix);
+					PackBGR555(dst, bl.pix, 0, 0, pix);
 					bl.move := MoveConst16
 				| bgr565:
 					ColorToPixel(src.col, pix);
-					PackBGR565(dst, SYSTEM.ADR(bl.pix[0]), 0, pix);
+					PackBGR565(dst, bl.pix, 0, 0, pix);
 					bl.move := MoveConst16
 				| bgr24: ColorToPixel(src.col, bl.pix); bl.move := MoveConst24
 				| bgra32: ColorToPixel(src.col, bl.pix); bl.move := MoveA1BGRA32
@@ -1336,11 +1346,11 @@ MODULE GfxMaps;	(** eos   **)
 				| i8: bl.pix[0] := CHR(BestIndex(dst.pal, src.col.r, src.col.g, src.col.b)); bl.move := MoveConst8
 				| bgr555: 
 					ColorToPixel(src.col, pix);
-					PackBGR555(dst, SYSTEM.ADR(bl.pix[0]), 0, pix);
+					PackBGR555(dst, bl.pix, 0, 0, pix);
 					bl.move := MoveConst16
 				| bgr565:
 					ColorToPixel(src.col, pix);
-					PackBGR565(dst, SYSTEM.ADR(bl.pix[0]), 0, pix);
+					PackBGR565(dst, bl.pix, 0, 0, pix);
 					bl.move := MoveConst16
 				| bgr24: ColorToPixel(src.col, bl.pix); bl.move := MoveConst24
 				| bgra32: ColorToPixel(src.col, bl.pix); bl.move := MoveA8BGRA32

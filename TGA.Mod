@@ -39,12 +39,12 @@ VAR string: ARRAY 256 OF CHAR;
 BEGIN
 	IF Files.Length(Files.Base(R)) < 18 THEN Out.String("Broken header: file less than 18 bytes long.");
 	ELSE
-		Files.Read(R, H.IDlength); Files.Read(R, H.cmap); Files.Read(R, H.type);
+		Files.ReadChar(R, H.IDlength); Files.ReadSInt(R, H.cmap); Files.ReadSInt(R, H.type);
 		Files.ReadInt(R, H.cmaporigin); Files.ReadInt(R, H.cmaplength);
-		Files.Read(R, H.csize);
+		Files.ReadSInt(R, H.csize);
 		Files.ReadInt(R, H.xorigin); Files.ReadInt(R, H.yorigin);
 		Files.ReadInt(R, H.width); Files.ReadInt(R, H.height);
-		Files.Read(R, H.depth); Files.Read( R, H.descriptor);
+		Files.ReadSInt(R, H.depth); Files.ReadSInt( R, H.descriptor);
 
 		IF H.type = 0 THEN Out.String("Type 0: No image data.");
 		ELSIF (H.type = 11) OR (H.type = 32) OR (H.type = 33) THEN
@@ -64,7 +64,7 @@ BEGIN
 					ELSE
 						Out.Int(H.depth, 3);
 						Out.String("-bit image depth.");
-						Files.ReadBytes( R, string, ORD(H.IDlength));
+						Files.ReadFixString( R, string, ORD(H.IDlength));
 						string[ ORD(H.IDlength)]:= 0X;
 						Out.String(string);  Out.Ln;
 						RETURN TRUE
@@ -91,7 +91,7 @@ BEGIN
 	1, 9:
 		count := H.cmaporigin;
 		WHILE count < H.cmaplength DO
-			Files.ReadBytes(R, color, 3);
+			Files.ReadFixString(R, color, 3);
 			Pictures.SetColor(P, count, ORD(color[2]), ORD(color[1]), ORD(color[0]));
 			INC(count)
 		END;
@@ -125,7 +125,7 @@ BEGIN
 				1,3:
 					FOR county := 0 TO P.height-1 DO
 						FOR countx := 0 TO P.width -1 DO
-							Files.Read(R, temp);
+							Files.ReadChar(R, temp);
 							Pictures.Dot(P, ORD(temp), countx, county, Display.replace);
 						END;
 					END;
@@ -133,11 +133,11 @@ BEGIN
 					countx := 0; county := 0;
 					error := FALSE; done := FALSE;
 					REPEAT
-						Files.Read(R, temp);
+						Files.ReadChar(R, temp);
 						IF R.eof THEN DataFieldError; error := TRUE
 						ELSIF ORD(temp) > 127 THEN
 							count := 128;
-							Files.Read(R, temp2);
+							Files.ReadChar(R, temp2);
 							IF R.eof THEN DataFieldError; error := TRUE
 							ELSE
 								WHILE (count <= ORD(temp) ) & ~R.eof DO
@@ -154,7 +154,7 @@ BEGIN
 						ELSE
 							count := 0;
 							WHILE (count <= ORD(temp)) & ~R.eof DO
-								Files.Read(R, temp2);
+								Files.ReadChar(R, temp2);
 								IF R.eof THEN DataFieldError; error := TRUE
 								ELSE
 									Pictures.Dot(P, ORD(temp2), countx, county, Display.replace);
@@ -188,7 +188,7 @@ BEGIN
 				WHILE county < P.height DO
 					countx := 0;
 					WHILE countx < P.width DO
-						Files.ReadBytes(R, color, 3);
+						Files.ReadFixString(R, colora, 3);
 						color[0] := ORD(colora[0]);
 						color[1] := ORD(colora[1]);
 						color[2] := ORD(colora[2]);
@@ -220,10 +220,10 @@ BEGIN
 				error := FALSE; done := FALSE;
 				count := 0; county := 0; countx := 0;
 				REPEAT
-					Files.Read(R, temp);
+					Files.ReadChar(R, temp);
 					IF R.eof THEN DataFieldError; error := TRUE
 					ELSIF ORD(temp) > 127 THEN
-						Files.ReadBytes(R, color, 3);
+						Files.ReadFixString(R, colora, 3);
 						color[0] := ORD(colora[0]);
 						color[1] := ORD(colora[1]);
 						color[2] := ORD(colora[2]);
@@ -273,7 +273,7 @@ BEGIN
 						ELSE
 							count3 := 0;
 							WHILE count3 <= ORD(temp) DO
-								Files.ReadBytes(R, color, 3);
+								Files.ReadFixString(R, colora, 3);
 								color[0] := ORD(colora[0]);
 								color[1] := ORD(colora[1]);
 								color[2] := ORD(colora[2]);

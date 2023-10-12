@@ -114,7 +114,7 @@ MODULE Rectangles;	(** portable *)  (*NW 25.2.90 / 1.2.92 / JG 14.6.94 ported to
 
 	PROCEDURE Read(obj: Graphics.Object; VAR R: Files.Rider; VAR C: Graphics.Context);
 		VAR w, v: SHORTINT; len: INTEGER;
-	BEGIN Files.ReadInt(R, len); Files.Read(R, w); Files.Read(R, v);
+	BEGIN Files.ReadInt(R, len); Files.ReadSInt(R, w); Files.ReadSInt(R, v);
 		obj(Rectangle).lw := w; obj(Rectangle).vers := v
 	END Read;
 
