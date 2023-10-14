@@ -249,7 +249,7 @@ END CloseAllBrackets;
 
 (** Add a new operator to the expression tree. The operator must be either built-in or been added by
 AddPrefixOperator/AddPostfixOperator resp. AddInfixOperator before. This is exported for CalculatorGadgets. *)
-PROCEDURE AppendOperator*(VAR exp: Expression; op: ARRAY OF CHAR);
+PROCEDURE AppendOperator*(VAR exp: Expression; IN op: ARRAY OF CHAR);
 VAR
 	rider: Reference;
 	eval: Operator;
@@ -447,7 +447,7 @@ f must be PROCEDURE(x: LONGREAL) returning LONGREAL. For example to define the u
 
 		Calculator.AddPrefixOperator("log",log);
 *)
-PROCEDURE AddPrefixOperator*(name: ARRAY OF CHAR; f: UnaryFunc);
+PROCEDURE AddPrefixOperator*(IN name: ARRAY OF CHAR; f: UnaryFunc);
 VAR
 	op: PrefixOperator;
 	rider: Reference;
@@ -473,7 +473,7 @@ operator modulo
 
 		Calculator.AddInfixOperator("mod",0,modulo);
 *)
-PROCEDURE AddInfixOperator*(name: ARRAY OF CHAR; w: INTEGER; f: BinaryFunc);
+PROCEDURE AddInfixOperator*(IN name: ARRAY OF CHAR; w: INTEGER; f: BinaryFunc);
 VAR
 	op: InfixOperator;
 	rider: Reference;
@@ -509,7 +509,7 @@ f must be PROCEDURE(x: LONGREAL) returning LONGREAL. For example to define a sim
 
 		Calculator.AddPostfixOperator("!",fac);
 *)
-PROCEDURE AddPostfixOperator*(name: ARRAY OF CHAR; f: UnaryFunc);
+PROCEDURE AddPostfixOperator*(IN name: ARRAY OF CHAR; f: UnaryFunc);
 VAR
 	op: PrefixOperator;
 	rider: Reference;

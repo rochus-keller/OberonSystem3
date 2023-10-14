@@ -195,7 +195,7 @@ MODULE Styles;	(** portable *) (* RS, Wed, 9-Jun-1993 *)
 
 	PROCEDURE ReadLong (VAR R: Files.Rider; VAR x: LONGINT);
 	VAR c0, c1, c2: CHAR; s1: SHORTINT;
-	BEGIN Files.Read(R, c0); Files.Read(R, c1); Files.Read(R, c2); Files.Read(R, s1);
+	BEGIN Files.ReadChar(R, c0); Files.ReadChar(R, c1); Files.ReadChar(R, c2); Files.ReadSInt(R, s1);
 		x := s1; x := ((x * 100H + ORD(c2)) * 100H + ORD(c1)) * 100H + ORD(c0)
 	END ReadLong;
 
@@ -222,7 +222,7 @@ MODULE Styles;	(** portable *) (* RS, Wed, 9-Jun-1993 *)
 	PROCEDURE WriteData (VAR W: Files.Rider; style: Style);
 		VAR i: INTEGER;
 	BEGIN
-		Files.Write(W, 0CFX); Files.Write(W, Version);
+		Files.WriteChar(W, 0CFX); Files.WriteChar(W, Version);
 		Files.WriteNum(W, SetToInt(style.opts));
 		Files.WriteNum(W, style.paraW);
 		Files.WriteNum(W, style.left);	(* left offset *)
@@ -236,15 +236,15 @@ MODULE Styles;	(** portable *) (* RS, Wed, 9-Jun-1993 *)
 	PROCEDURE ReadData (VAR R: Files.Rider; style: Style);
 		VAR i: INTEGER; n: LONGINT; x, y: CHAR;
 	BEGIN
-		Files.Read(R, y); Files.Read(R, x);
+		Files.ReadChar(R, y); Files.ReadChar(R, x);
 		IF x = 0X THEN	(*old*)	(*opts=[y|0|0|0]*)
-			Files.Read(R, x); Files.Read(R, x);	(*skip*)
+			Files.ReadChar(R, x); Files.ReadChar(R, x);	(*skip*)
 			style.opts := IntToSet(ORD(y));
 			ReadLong(R, style.paraW);
 			ReadLong(R, style.left);	(* left offset *)
 			ReadLong(R, style.lsp);	(* line spacing *)
 			ReadLong(R, style.gap);
-			Files.Read(R, style.nTabs);
+			Files.ReadSInt(R, style.nTabs);
 			i := 0; WHILE i < style.nTabs DO ReadLong(R, style.tab[i]); INC(i) END;
 			WHILE i < MaxTabs DO style.tab[i] := 0; INC(i) END;
 		ELSIF x = Version THEN	(*[CF|1]*)
@@ -254,7 +254,7 @@ MODULE Styles;	(** portable *) (* RS, Wed, 9-Jun-1993 *)
 			Files.ReadNum(R, style.lsp);	(* line spacing *)
 			IF style.lsp > 0 THEN Files.ReadNum(R, style.dsr) END;
 			Files.ReadNum(R, style.gap);
-			Files.Read(R, style.nTabs);
+			Files.ReadSInt(R, style.nTabs);
 			i := 0; WHILE i < style.nTabs DO Files.ReadNum(R, style.tab[i]); INC(i) END;
 			WHILE i < MaxTabs DO style.tab[i] := 0; INC(i) END;
 		ELSE HALT(33)
@@ -707,12 +707,12 @@ MODULE Styles;	(** portable *) (* RS, Wed, 9-Jun-1993 *)
 		END
 	END LibMetrics;
 
-	PROCEDURE WString(first: BOOLEAN; s, t: ARRAY OF CHAR);
+	PROCEDURE WString(first: BOOLEAN; IN s, t: ARRAY OF CHAR);
 	BEGIN Texts.Write(W, " ");
 		IF first THEN Texts.WriteString(W, s) ELSE Texts.WriteString(W, t) END
 	END WString;
 
-	PROCEDURE String(VAR M: ParamMsg; flag: INTEGER; VAR set: SET; s, t: ARRAY OF CHAR);
+	PROCEDURE String(VAR M: ParamMsg; flag: INTEGER; VAR set: SET; IN s, t: ARRAY OF CHAR);
 	BEGIN
 		IF M.id = get THEN Texts.Write(W, " ");
 			IF flag IN set THEN Texts.WriteString(W, s) ELSE Texts.WriteString(W, t) END

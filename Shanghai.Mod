@@ -258,7 +258,7 @@ BEGIN
 	Display3.CenterString(Q, Display3.black, x, y, w, h, textFnt, text, Display.paint)
 END DrawGameOver;
 
-PROCEDURE FlashTiles (F: Frame; Q: Display3.Mask; x, y: INTEGER; tiles: ARRAY OF INTEGER; cnt: INTEGER);
+PROCEDURE FlashTiles (F: Frame; Q: Display3.Mask; x, y: INTEGER; IN tiles: ARRAY OF INTEGER; cnt: INTEGER);
 VAR i, time: LONGINT;
 BEGIN
 	FOR i := 0 TO cnt DO DrawTile(Q, 12, x, y, F.board[tiles[i]]) END;

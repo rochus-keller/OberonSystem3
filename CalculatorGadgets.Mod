@@ -231,7 +231,7 @@ BEGIN
 	RETURN(TRUE);
 END RemDigit;
 
-PROCEDURE ApplyFunction(E: Engine; s: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE ApplyFunction(E: Engine; IN s: ARRAY OF CHAR): BOOLEAN;
 	(* use funktion s on E's current value *)
 VAR
 	ok: BOOLEAN;
@@ -285,7 +285,7 @@ BEGIN
 	RETURN(ok);
 END ApplyFunction;
 
-PROCEDURE AddSpecial(E: Engine; s: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE AddSpecial(E: Engine; IN s: ARRAY OF CHAR): BOOLEAN;
 	(* use a "special" operation on E's expression tree *)
 VAR
 	ok,keep: BOOLEAN;
@@ -350,7 +350,7 @@ BEGIN
 	RETURN(ok);
 END AddSpecial;
 
-PROCEDURE AddConstant(E: Engine; s: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE AddConstant(E: Engine; IN s: ARRAY OF CHAR): BOOLEAN;
 	(* add a predefined constant *)
 VAR
 	ok: BOOLEAN;
@@ -364,7 +364,7 @@ BEGIN
 	RETURN(ok);
 END AddConstant;
 
-PROCEDURE AddOperator(E: Engine; s: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE AddOperator(E: Engine; IN s: ARRAY OF CHAR): BOOLEAN;
 VAR
 	i: INTEGER;
 BEGIN

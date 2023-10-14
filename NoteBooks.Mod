@@ -222,7 +222,7 @@ BEGIN
 	f.next := NIL
 END RemovePage;
 
-PROCEDURE LocatePage(F: NoteBook; type: ARRAY OF CHAR): Display.Frame;
+PROCEDURE LocatePage(F: NoteBook; IN type: ARRAY OF CHAR): Display.Frame;
 VAR f, f0: Display.Frame; s: ARRAY 64 OF CHAR;
 BEGIN
 	f := F.pages; f0 := NIL;

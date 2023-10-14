@@ -429,7 +429,7 @@ BEGIN
 		IF tag = Documents.Id THEN
 			Files.ReadString(R, name);	(* skip over generator name *)
 			Files.ReadInt(R, D.X); Files.ReadInt(R, D.Y); Files.ReadInt(R, D.W); Files.ReadInt(R, D.H);
-			Files.Read(R, ch);
+			Files.ReadChar(R, ch);
 			IF ch = Objects.LibBlockId THEN
 				NEW(lib); Objects.OpenLibrary(lib); Objects.LoadLibrary(lib, F, Files.Pos(R), len);
 				lib.GetObj(lib, 0, obj);	(* by default *)

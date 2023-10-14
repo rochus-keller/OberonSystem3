@@ -45,7 +45,7 @@ BEGIN
 	ELSIF	base = 8	THEN shift := 3; size := 11
 	ELSIF	base = 16	THEN shift := 4; size := 8
 	END;
-	IF LEN(str) < size+1 THEN COPY ("str to short", str); RETURN END;
+	IF LEN(str) < size+1 THEN str := "str to short"; RETURN END;
 	i := 0; j := 0;
 	WHILE i < size DO
 		str[j] := Digit[BIT.LAND(BIT.LLSH(val, (i+1)*shift - 32), base-1)];
@@ -63,7 +63,7 @@ BEGIN
 	IF (base <= 1) OR (base > 16) THEN  str := "???"; RETURN END;
 	IF (base = 2) OR (base = 16) THEN BitPatternToStr (val, str, base); RETURN END;
 	IF val = MIN(LONGINT) THEN
-		COPY (Min[base-1], str); RETURN
+		str := Min[base-1]; RETURN
 	END;
 	IF val < 0 THEN val := -val; str[0] := "-"; j := 1	ELSE	j := 0	END;
 	i := 0;
@@ -94,7 +94,7 @@ BEGIN
 END RealToStr;
 
 (* ============================================================= *)
-PROCEDURE StrToInt* (s: ARRAY OF CHAR; VAR val: LONGINT; base: LONGINT);
+PROCEDURE StrToInt* (IN s: ARRAY OF CHAR; VAR val: LONGINT; base: LONGINT);
 	VAR j: LONGINT; neg: BOOLEAN;
 	
 	PROCEDURE IsOK (ch: CHAR; base: LONGINT): BOOLEAN;

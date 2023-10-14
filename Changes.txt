@@ -4,8 +4,7 @@ on 2023-10-05
 This is Native Oberon System 3 Release 2.3.6 (Stand-alone) according to readme.txt 
 
 Uncompressed all arc files using https://github.com/pcayuela/oldftpETHZOberon/tree/master/System3/Win95NT/PlugIn
-and the Compress.ExtractAll command from the Compress.Mod found in 
-https://sourceforge.net/projects/nativeoberon/files/nativeoberon/Native%20Oberon%202.3.7%20Alpha/NativeOberon2.3.7.tar.gz/download
+and the Compress.ExtractAll command.
 
 All extracted source files have the same modification date of 1999-05-13
 The same applies to the files in apps, docu and gadgets.arc
@@ -72,7 +71,13 @@ Modification steps:
   https://github.com/OberonSystem3/TheOberonCompanionCD/blob/main/Linux/LinuxOberonApps.tgz
 - Added more modules: Draw, Rectangles, Splines, Circles, Tetris, In, RandomNumbers, JPEG, BIT, GIF, XBM, BMP, PCX, ICO, TGA, IFF, PPM, XPM, PSD
   required to run Draw and Tetris apps; minimal system 7 commit
-  
+- Managed to extract the system and application support files of release 2.3.6 from the virtual disk files included in the native DOS version
+  downloaded from https://github.com/pcayuela/oldftpETHZOberon/tree/master/System3/Native/DosBased/Full using the tool
+  https://github.com/rochus-keller/Oberon/tree/master/tools/ExtractVirtDisk 
+- Added more modules to support the 2.3.6 system and application files, like Script, ScriptFrames, Styles, EditKeys and ColorWells
+- Added more applications like Shanghai, Asteroids, Sokoban, Scramble, FontEditor, Calculator, NoteBooks, HPCalc, ET, Solitaire, Spider, FreeCell
+- Implemented https://en.wikibooks.org/wiki/Oberon/ETH_Oberon/keyboard assignments in PAL
+- Minimal system 8 commit, which has a decent feature set for people to explore the platform
 
 
 

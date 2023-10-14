@@ -223,7 +223,7 @@ VAR
 	b,w: INTEGER;	(* drawing colors *)
 	timer: Timer;	(* active kickers *)
 
-PROCEDURE FontGeometry(dim: ARRAY OF CHAR; fdx: INTEGER);
+PROCEDURE FontGeometry(IN dim: ARRAY OF CHAR; fdx: INTEGER);
 	(* query font's parameters for zooming *)
 VAR
 	fn: Objects.Name;
@@ -657,7 +657,7 @@ BEGIN
 		END;
 	ELSIF (id = Objects.load) THEN
 		Files.ReadBool(R,obj.thrust0); Files.ReadBool(R,obj.thrust);
-		Files.Read(R,obj.shield0); Files.Read(R,obj.shield);
+		Files.ReadSInt(R,obj.shield0); Files.ReadSInt(R,obj.shield);
 		Files.ReadInt(R,obj.shieldval); Files.ReadInt(R,obj.warpval);
 		LoadShapeRef(R,obj.shape0);
 		NEW(obj.px2,shThrShip.n); NEW(obj.py2,shThrShip.n);
@@ -1175,7 +1175,7 @@ VAR
 BEGIN
 	WITH me: Timer DO
 		model:= me.model;
-		IF ~model.paused THEN
+		IF (model # NIL) & ~model.paused THEN
 			time:= Oberon.Time();	(* slow down animation *)
 			IF (me.trigger <= time) THEN
 				obj:= model.objects;
@@ -1579,7 +1579,7 @@ BEGIN
 		Files.ReadString(R,str);								(* Document Version *)
 		Files.ReadInt(R,D.X); Files.ReadInt(R,D.Y);
 		Files.ReadInt(R,D.W); Files.ReadInt(R,D.H);
-		Files.Read(R,id);
+		Files.ReadChar(R,id);
 		IF (str # Version) & (str # CompVers) THEN   (* Check Program Version *)
 			Out.String("Unmatching "); Out.String(str); Out.Ln();
 		ELSIF (id = Objects.LibBlockId) THEN		  (* Check for correct id *)
@@ -1619,7 +1619,11 @@ VAR
 	model: Field;
 BEGIN
 	F:= NIL; frame:= NIL;
-	IF (D.name = "") THEN D.name:= DefName; ELSE F:= Files.Old(D.name); END;
+	IF (D.name = "") THEN 
+  	D.name:= DefName; 
+  ELSE 
+    F:= Files.Old(D.name); 
+  END;
 	IF (F # NIL) THEN
 		OldDocument(F,D,frame); Files.Close(F);
 	ELSE

@@ -86,8 +86,8 @@ of characters, each character being a pattern and and metric data.
 	END GetChar;
 
 	PROCEDURE Internalize (F: Font; VAR R: Files.Rider; type: SHORTINT);
-	VAR n: SHORTINT; ch: CHAR;
-			NofRuns, NofBoxes, N, i, k, l, m: INTEGER;
+	VAR n: INTEGER; // n must be INTEGER instead of SHORTINT because of the Shanghai game font
+			NofRuns, NofBoxes, N, i, k, l, m: INTEGER; ch: CHAR;
 			run: ARRAY MaxRuns OF RunRec;
 			box: ARRAY 256 OF BoxRec; 
 			ind: FontIndexDesc; pat: Display.Pattern;

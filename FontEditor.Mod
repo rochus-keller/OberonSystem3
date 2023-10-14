@@ -154,7 +154,7 @@ BEGIN
 	END
 END ConvertPostoString;
 
-PROCEDURE ConvertStringtoPos(s: ARRAY OF CHAR; VAR pos: INTEGER);
+PROCEDURE ConvertStringtoPos(IN s: ARRAY OF CHAR; VAR pos: INTEGER);
 (* Wandelt einen String in einen entsprechenden ASCII-Code um *)
 VAR i: INTEGER; hex: ARRAY 17 OF CHAR;
 BEGIN
@@ -284,7 +284,7 @@ BEGIN
 	END
 END DocHandler;
 
-PROCEDURE OpenDoc(P: Pictures.Picture; f: Font; pos: INTEGER; name: ARRAY OF CHAR);
+PROCEDURE OpenDoc(P: Pictures.Picture; f: Font; pos: INTEGER; IN name: ARRAY OF CHAR);
 (* Ein Document mit dem Charactercode "pos" und Documentname "name", dargestellt im Picture, wird geöffnet *)
 VAR doc: Documents.Document; zoom: INTEGER;
 		obj: Character;
@@ -1107,11 +1107,11 @@ END NewPreview;
 PROCEDURE LoadFont(VAR F: Font; VAR R: Files.Rider);
 VAR bitW, bitH: LONGINT; k, l, i: INTEGER; type: CHAR;
 BEGIN F := NIL;
-	Files.Read(R, type);
+	Files.ReadChar(R, type);
 	IF type = 0DBX THEN NEW(F);
-		Files.Read(R, F.type); 
-		Files.Read(R, F.family); 
-		Files.Read(R, F.variant); 
+		Files.ReadChar(R, F.type); 
+		Files.ReadChar(R, F.family); 
+		Files.ReadChar(R, F.variant); 
 		Files.ReadInt(R, F.height); 
 		Files.ReadInt(R, F.minX); 
 		Files.ReadInt(R, F.maxX); 
@@ -1156,7 +1156,7 @@ BEGIN F := NIL;
 		WHILE k # 256 DO
 			IF F.p[k]=1 THEN
 				i := (F.box[k].w + 7) DIV 8 * F.box[k].h; F.p[k] := F.pos; 
-				WHILE i # 0 DO Files.Read(R, F.raster[F.pos]); INC(F.pos); DEC(i) END;
+				WHILE i # 0 DO Files.ReadChar(R, F.raster[F.pos]); INC(F.pos); DEC(i) END;
 			END;
 			INC(k)
 		END
@@ -1196,10 +1196,10 @@ END Load;
 PROCEDURE StoreFont(VAR F: Font; VAR R: Files.Rider);
 VAR pos: LONGINT; nofRuns, k, l, i: INTEGER;
 BEGIN
-	Files.Write(R, 0DBX);
-	Files.Write(R, F.type);
-	Files.Write(R, F.family);
-	Files.Write(R, F.variant);
+	Files.WriteChar(R, 0DBX);
+	Files.WriteChar(R, F.type);
+	Files.WriteChar(R, F.family);
+	Files.WriteChar(R, F.variant);
 	Files.WriteInt(R, F.height);
 	Files.WriteInt(R, F.minX); Files.WriteInt(R, F.maxX);
 	Files.WriteInt(R, F.minY); Files.WriteInt(R, F.maxY);
@@ -1234,7 +1234,7 @@ BEGIN
 	WHILE k # 256 DO
 		IF F.p[k]#undef THEN
 			i := (F.box[k].w + 7) DIV 8 * F.box[k].h; pos:=F.p[k]; 
-			WHILE i # 0 DO Files.Write(R, F.raster[pos]); INC(pos); DEC(i) END;
+			WHILE i # 0 DO Files.WriteChar(R, F.raster[pos]); INC(pos); DEC(i) END;
 		END;
 		INC(k);
 	END;

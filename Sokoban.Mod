@@ -230,7 +230,7 @@ MODULE Sokoban;	(** portable *) (* Copyright (C) 1995 by Emil J. Zeller *)
 				Files.ReadInt(R, F.m);
 				FOR  i := 1 TO F.n DO
 					FOR j := 1 TO F.m DO
-						Files.Read(R, F.world[i, j]);
+						Files.ReadSInt(R, F.world[i, j]);
 						IF F.world[i, j] = Man THEN
 							F.mani := i; F.manj := j
 						END
@@ -281,7 +281,7 @@ MODULE Sokoban;	(** portable *) (* Copyright (C) 1995 by Emil J. Zeller *)
 		WHILE ~R.eof DO
 			Files.ReadInt(R, moves);
 			Files.ReadLInt(R, time);
-			Files.ReadBytes(R, name, 32);
+			Files.ReadFixString(R, name, 32);
 			Texts.WriteInt(W, level, 8);
 			Texts.WriteInt(W, moves, 8);
 			Texts.WriteInt(W, time DIV Input.TimeUnit, 8);
@@ -331,7 +331,7 @@ MODULE Sokoban;	(** portable *) (* Copyright (C) 1995 by Emil J. Zeller *)
 			IF ~R.eof THEN
 				Files.ReadInt(R, moves);
 				Files.ReadLInt(R, time);
-				Files.ReadBytes(R, name, 32)
+				Files.ReadFixString(R, name, 32)
 			ELSE
 				level := MIN(INTEGER)
 			END
@@ -344,7 +344,7 @@ MODULE Sokoban;	(** portable *) (* Copyright (C) 1995 by Emil J. Zeller *)
 			Files.WriteInt(R, F.level);
 			Files.WriteInt(R, F.moves);
 			Files.WriteLInt(R, F.time);
-			Files.WriteBytes(R, F.userName, 32);
+			Files.WriteFixString(R, F.userName, 32);
 			Files.Close(file);
 			ShowHighScores()
 		ELSE
@@ -812,7 +812,7 @@ MODULE Sokoban;	(** portable *) (* Copyright (C) 1995 by Emil J. Zeller *)
 						Files.ReadBool(M.R, F.done);
 						FOR x := 1 TO F.n DO
 							FOR y := 1 TO F.m DO
-								Files.Read(M.R, F.world[x, y])
+								Files.ReadSInt(M.R, F.world[x, y])
 							END
 						END;
 						Files.ReadLInt(M.R, F.time);

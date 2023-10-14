@@ -1193,7 +1193,7 @@ MODULE ScriptFrames;	(** portable *) (* RS, Wed, 9-Jun-1993*)
 		END
 	END Show;
 
-	PROCEDURE CallCmd (cmd: ARRAY OF CHAR; F: Frame; pos: LONGINT; new: BOOLEAN);
+	PROCEDURE CallCmd (IN cmd: ARRAY OF CHAR; F: Frame; pos: LONGINT; new: BOOLEAN);
 		VAR res: INTEGER; par: Oberon.ParList;
 	BEGIN
 		NEW(par);
@@ -1214,7 +1214,7 @@ MODULE ScriptFrames;	(** portable *) (* RS, Wed, 9-Jun-1993*)
 
 	(*---message handling---*)
 
-	PROCEDURE Warning(s: ARRAY OF CHAR);
+	PROCEDURE Warning(IN s: ARRAY OF CHAR);
 	BEGIN
 		Texts.SetFont(W, Fonts.Default); Texts.WriteString(W, s); Texts.WriteLn(W);
 		Texts.Append(Oberon.Log, W.buf)

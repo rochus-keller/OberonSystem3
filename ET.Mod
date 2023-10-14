@@ -640,18 +640,18 @@ VAR
 		IF ~ handled THEN TextFrames.Handle(F, M) END
 	END Handle;
 	
-	PROCEDURE AsciiText(name: ARRAY OF CHAR): Texts.Text;
+	PROCEDURE AsciiText(IN name: ARRAY OF CHAR): Texts.Text;
 		VAR text: Texts.Text;	res: INTEGER;	ch, pch: CHAR;
 			f, g : Files.File;	Rf, Rg : Files.Rider;
 	BEGIN
 		f := Files.Old(name);
 		IF f # NIL THEN g := Files.New(AsciiTemp);
-			Files.Set(Rf, f, 0); Files.Set(Rg, g, 0); Files.Read(Rf, ch); pch := 0X;
+			Files.Set(Rf, f, 0); Files.Set(Rg, g, 0); Files.ReadChar(Rf, ch); pch := 0X;
 			WHILE ~Rf.eof DO
-				IF (ch = LF) & (pch # CR) THEN Files.Write(Rg, CR)	(* unix *)
-				ELSIF (ch # LF) & (ch # 1AX) THEN Files.Write(Rg, ch) 
+				IF (ch = LF) & (pch # CR) THEN Files.WriteChar(Rg, CR)	(* unix *)
+				ELSIF (ch # LF) & (ch # 1AX) THEN Files.WriteChar(Rg, ch) 
 				END;
-				pch := ch; Files.Read(Rf, ch) 
+				pch := ch; Files.ReadChar(Rf, ch) 
 			END;
 			Files.Register(g);
 			text := TextFrames.Text(AsciiTemp);
@@ -661,7 +661,7 @@ VAR
 		RETURN text
 	END AsciiText;
 	
-	PROCEDURE NewMF(mTitle: ARRAY OF CHAR; typ: INTEGER; VAR menuH: INTEGER): TextFrames.Frame;
+	PROCEDURE NewMF(IN mTitle: ARRAY OF CHAR; typ: INTEGER; VAR menuH: INTEGER): TextFrames.Frame;
 		VAR F: TextFrames.Frame;
 	BEGIN
 		menuH := TextFrames.menuH;
@@ -678,7 +678,7 @@ VAR
 		RETURN F
 	END NewETF;
 
-	PROCEDURE OpenViewer(text: Texts.Text; title: ARRAY OF CHAR; pos: LONGINT;
+	PROCEDURE OpenViewer(text: Texts.Text; IN title: ARRAY OF CHAR; pos: LONGINT;
 												X, Y: INTEGER; kind: SHORTINT): Viewers.Viewer;
 		VAR mF: TextFrames.Frame;	menuH: INTEGER;
 	BEGIN
@@ -803,8 +803,8 @@ VAR
 
 		PROCEDURE WritePair(ch: CHAR; x: LONGINT);
 		BEGIN
-			Files.Write(r, ch);
-			Files.Write(r, CHR(x DIV 10 + 30H)); Files.Write(r, CHR(x MOD 10 + 30H))
+			Files.WriteChar(r, ch);
+			Files.Write(r, (x DIV 10 + 30H)); Files.Write(r, (x MOD 10 + 30H))
 		END WritePair;
 
 	BEGIN
@@ -813,20 +813,20 @@ VAR
 		(* WritePair(":", t MOD 64) *)
 	END WriteDate;
 	
-	PROCEDURE UpdateNameLog(name: ARRAY OF CHAR; typ: CHAR);
+	PROCEDURE UpdateNameLog(IN name: ARRAY OF CHAR; typ: CHAR);
 		VAR t, d: LONGINT;	i: INTEGER;
 	BEGIN
 		IF log.f # NIL THEN
 			Oberon.GetClock (t, d); WriteDate(log.r, t, d);
 			Files.WriteChar(log.r, " "); Files.WriteChar(log.r, " ");
-			i := 0; WHILE name[i] # 0X DO Files.Write(log.r, name[i]); INC(i) END;
-			IF typ # "t" THEN Files.WriteChar(log.r, " "); Files.Write(log.r, typ) END;
-			Files.Write(log.r, CR);
+			i := 0; WHILE name[i] # 0X DO Files.WriteChar(log.r, name[i]); INC(i) END;
+			IF typ # "t" THEN Files.WriteChar(log.r, " "); Files.WriteChar(log.r, typ) END;
+			Files.WriteChar(log.r, CR);
 			Files.Close(log.f)	(* to flush buffers *)
 		END	
 	END UpdateNameLog;
 	
-	PROCEDURE RenameOld(name: ARRAY OF CHAR);
+	PROCEDURE RenameOld(IN name: ARRAY OF CHAR);
 		VAR bck: ARRAY 32 OF CHAR;	i, res: INTEGER;
 	BEGIN
 		i := 0; WHILE (i < 32-5) & (name[i]# 0X) DO bck[i] := name[i]; INC(i) END;
@@ -867,7 +867,7 @@ VAR
 			ELSE Files.Set(r, f, 0);
 				Texts.OpenReader(R, tF.text, 0); Texts.Read(R, ch);
 				WHILE ~ R.eot DO
-					Files.Write(r, ch); IF (ch = CR) & (typ = "a") THEN Files.Write(r, LF) END;
+					Files.WriteChar(r, ch); IF (ch = CR) & (typ = "a") THEN Files.WriteChar(r, LF) END;
 					Texts.Read(R, ch)
 				END
 			END;
@@ -1106,7 +1106,7 @@ VAR
 		END
 	END Error;
 
-	PROCEDURE MenuExchange(F: Frame; vwrName, menuStr: ARRAY OF CHAR);
+	PROCEDURE MenuExchange(F: Frame; IN vwrName, menuStr: ARRAY OF CHAR);
 		VAR mF: TextFrames.Frame;	menuH: INTEGER;
 	BEGIN
 		IF F IS TextFrames.Frame THEN
@@ -1296,7 +1296,7 @@ VAR
 		END
 	END Do;
 	
-	PROCEDURE Process(text: Texts.Text; beg, end: LONGINT; s: ARRAY OF CHAR);
+	PROCEDURE Process(text: Texts.Text; beg, end: LONGINT; IN s: ARRAY OF CHAR);
 		VAR S: Texts.Scanner;	pos: LONGINT;	i: INTEGER;
 	BEGIN
 		i := 0; WHILE (s[i] # 0X) & (s[i] # "*") DO INC(i) END;
@@ -1458,7 +1458,7 @@ VAR
 		END
 	END SetMenu;
 	
-	PROCEDURE StrSearch(pat: ARRAY OF CHAR;  VAR str: ARRAY OF CHAR;  VAR pos: LONGINT);
+	PROCEDURE StrSearch(IN pat: ARRAY OF CHAR;  VAR str: ARRAY OF CHAR;  VAR pos: LONGINT);
 		VAR i: LONGINT; found: BOOLEAN;
 	BEGIN
 		found := FALSE;
@@ -1482,9 +1482,11 @@ VAR
 		str[pos] := 0X
 	END StrDelete;
 	
-	PROCEDURE ShowText(title: ARRAY OF CHAR; T: Texts.Text; W, H: INTEGER);
+	PROCEDURE ShowText(IN title0: ARRAY OF CHAR; T: Texts.Text; W, H: INTEGER);
 		VAR X, Y: INTEGER; V: Viewers.Viewer; pos: LONGINT;
+    		title: ARRAY VAR STRLEN(title0)+1 OF CHAR;
 	BEGIN
+	  title := title0;
 		IF T = Oberon.Log THEN
 			Oberon.AllocateSystemViewer(Oberon.SystemTrack(Oberon.Par.vwr.X), X, Y);
 			LogOpen(X, Y)

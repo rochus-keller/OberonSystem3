@@ -69,7 +69,7 @@ MODULE Script;	(** portable *)	(* RS, Wed, 9-Jun-1993*)
 		END
 	END MarkBrk;
 
-	PROCEDURE OpenViewer (name: ARRAY OF CHAR; F: Display.Frame);
+	PROCEDURE OpenViewer (IN name: ARRAY OF CHAR; F: Display.Frame);
 		VAR X, Y : INTEGER; V : MenuViewers.Viewer;
 	BEGIN Oberon.AllocateUserViewer(Oberon.UserTrack(Oberon.Mouse.X), X, Y);
 		V := MenuViewers.New(TextFrames.NewMenu(name, MenuStr),  F, TextFrames.menuH, X, Y )
@@ -449,7 +449,7 @@ MODULE Script;	(** portable *)	(* RS, Wed, 9-Jun-1993*)
 
 
 (* Script.Print server ( * | ^ | name) {option} ~ *)
-	PROCEDURE PrintUnit(T: Texts.Text; name: ARRAY OF CHAR; fnt: Fonts.Font; opts: SET; pn0, pnb, pne, copies: INTEGER);
+	PROCEDURE PrintUnit(T: Texts.Text; IN name: ARRAY OF CHAR; fnt: Fonts.Font; opts: SET; pn0, pnb, pne, copies: INTEGER);
 	TYPE
 		Line = POINTER TO LineDesc;
 
@@ -635,7 +635,7 @@ MODULE Script;	(** portable *)	(* RS, Wed, 9-Jun-1993*)
 			Printer.String(x, y, s, fnt)
 		END PrintNum;
 
-		PROCEDURE PageHeader(VAR title: ARRAY OF CHAR; pn: INTEGER; opts: SET);
+		PROCEDURE PageHeader(IN title: ARRAY OF CHAR; pn: INTEGER; opts: SET);
 		VAR y, i, w: INTEGER;
 		BEGIN
 			IF ~print(pn, pnb, pne) THEN RETURN END;
@@ -862,7 +862,7 @@ VAR
 	title: ARRAY 32 OF CHAR;
 	T: Texts.Text; beg, end, time: LONGINT;
 	
-	PROCEDURE PrintText(T: Texts.Text; title: ARRAY OF CHAR; VAR S: Texts.Scanner);
+	PROCEDURE PrintText(T: Texts.Text; IN title: ARRAY OF CHAR; VAR S: Texts.Scanner);
 	VAR opts: SET; pn0, pnb, pne, copies: INTEGER; fnt: Fonts.Font;
 	BEGIN
 		leftX := 290; pagW := SHORT(Styles.pageW DIV Printer.Unit);	(*reset default print metrics*)

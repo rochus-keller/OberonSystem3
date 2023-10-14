@@ -64,6 +64,7 @@ VAR
       IF f.name = name THEN RETURN f END;
       f := f.next
     END;
+    IF P.file_exists(name) = 0 THEN RETURN NIL END;
     id := P.file_open(name);
     IF id < 0 THEN RETURN NIL END;
     NEW(f);

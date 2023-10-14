@@ -326,6 +326,7 @@ BEGIN
 		(* on new stack *)
 	//InitTimer;  (*InitBeeps;*)
 	//InitClock;  InitRuntime
+	IF ObxPal.version() < 7 THEN PRINTLN("incompatible PAL version!"); HALT(0) END
 END Kernel.
 
 (*

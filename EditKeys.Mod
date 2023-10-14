@@ -70,7 +70,7 @@ MODULE EditKeys;	(** portable *)	(* CAS/MH 27 Jan 93 / jm 2.5.95 *)
 			voff: SHORTINT
 		END;
 
-	PROCEDURE OpenText(title: ARRAY OF CHAR; T: Texts.Text; systemtrack: BOOLEAN);
+	PROCEDURE OpenText(IN title: ARRAY OF CHAR; T: Texts.Text; systemtrack: BOOLEAN);
 	VAR D: Documents.Document; f: TextGadgets.Frame;
 	BEGIN
 		NEW(D); TextDocs.InitDoc(D); (* make document wrapper *)
@@ -98,7 +98,7 @@ MODULE EditKeys;	(** portable *)	(* CAS/MH 27 Jan 93 / jm 2.5.95 *)
 	BEGIN Texts.Write(W, ch)
 	END Ch;
 
-	PROCEDURE Str (s: ARRAY OF CHAR);
+	PROCEDURE Str (IN s: ARRAY OF CHAR);
 	BEGIN Texts.WriteString(W, s)
 	END Str;
 
@@ -190,7 +190,7 @@ MODULE EditKeys;	(** portable *)	(* CAS/MH 27 Jan 93 / jm 2.5.95 *)
 
 	(* macro compiler *)
 
-	PROCEDURE Mark (err: ARRAY OF CHAR);
+	PROCEDURE Mark (IN err: ARRAY OF CHAR);
 	BEGIN INC(errs);
 		IF Texts.Pos(R) - errpos > 9 THEN
 			errpos := Texts.Pos(R); Ln; Str("  pos  "); Texts.WriteInt(W, errpos, 0); Gap; Str(err); WLog
@@ -290,7 +290,7 @@ MODULE EditKeys;	(** portable *)	(* CAS/MH 27 Jan 93 / jm 2.5.95 *)
 		stretch := NIL
 	END ParseText;
 
-	PROCEDURE ReadText (name: ARRAY OF CHAR; beg: LONGINT);
+	PROCEDURE ReadText (IN name: ARRAY OF CHAR; beg: LONGINT);
 	BEGIN Texts.OpenReader(R, T, beg); GetCh;
 		IF ~R.eot THEN Str("EditKeys reading "); Str(name); WLog; errs := 0; errpos := -10; ParseText;
 			IF errs = 0 THEN (*Str(" done")*) ELSE Str(" error"); ResetDefs END;
@@ -311,7 +311,7 @@ MODULE EditKeys;	(** portable *)	(* CAS/MH 27 Jan 93 / jm 2.5.95 *)
 	BEGIN Texts.Delete(frame.text, beg, end); TextGadgets0.SetCaret(frame, beg)
 	END Delete;
 
-	PROCEDURE Err (def: Definition; s: ARRAY OF CHAR);
+	PROCEDURE Err (def: Definition; IN s: ARRAY OF CHAR);
 	BEGIN INC(errs); Gap; Str(s); Str(" in "); FlipStr(def.trig); Ln; WLog
 	END Err;
 

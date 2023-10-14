@@ -257,7 +257,7 @@ PROCEDURE GetModelValue (F: CalcModel; pos: INTEGER; VAR s: ARRAY OF CHAR): INTE
 BEGIN
 	(* Check Range *)
 	IF (F.TOS <= pos*2) THEN
-		COPY ("", s); IF pos < 4 THEN RETURN 0	ELSE RETURN -1	END
+		s := ""; IF pos < 4 THEN RETURN 0	ELSE RETURN -1	END
 	END;
 	IF F.Mode = Real THEN
 		l := F.Stack[F.TOS - 2*pos - 1];  h := F.Stack[F.TOS - 2*pos - 2];
@@ -278,7 +278,7 @@ BEGIN
 		ELSIF M.name = "Base" THEN
 			M.class := Objects.Int; M.i := F.Base; M.res := 0;
 		ELSIF M.name = "Status" THEN
-			M.class := Objects.String; COPY (StatusMsg[F.Status], M.s); M.res := 0;
+			M.class := Objects.String; M.s := StatusMsg[F.Status]; M.res := 0;
 		ELSIF M.name = "TOS" THEN
 (*
 			M.class := Objects.String; Strings.IntToStr (F.TOS, M.s); M.res := 0;
@@ -520,7 +520,7 @@ END Calc;
 (* ============================================================ *)
 (*	Some gadgets common things *)
 
-PROCEDURE NewButton(caption, cmd: ARRAY OF CHAR):Objects.Object;	(* here, to make every button the same size *)
+PROCEDURE NewButton(IN caption, cmd: ARRAY OF CHAR):Objects.Object;	(* here, to make every button the same size *)
 	VAR v: Objects.Object;
 BEGIN
 	v := Gadgets.CreateObject("BasicGadgets.NewButton");
@@ -532,23 +532,23 @@ END NewButton;
 (* ============================================================ *)
 (*	Function List handling *)
 
-PROCEDURE FindClass (class: ARRAY OF CHAR): Functions;
+PROCEDURE FindClass (IN class: ARRAY OF CHAR): Functions;
 	VAR p: FunctionClass;
 BEGIN
 	p := Func;
 	WHILE (p.next # NIL) & (p.next.name # class) DO p := p.next END;
-	IF p.next = NIL THEN NEW(p.next); COPY (class, p.next.name); p.next.list := NIL; p.next.mode := {} END;
+	IF p.next = NIL THEN NEW(p.next); p.next.name := class; p.next.list := NIL; p.next.mode := {} END;
 	RETURN p.next
 END FindClass;
 
-PROCEDURE NewFunction (class, name, caption: ARRAY OF CHAR; mode: SET);
+PROCEDURE NewFunction (IN class, name, caption: ARRAY OF CHAR; mode: SET);
 	VAR p, q: Functions;
 BEGIN
 	p := FindClass (class); p.mode := p.mode + mode;
 	
 	(* it's inefficient, but the new entries are appended at the end of the structure, to
 		preserve the insertion order. *)
-	NEW (q); COPY (name, q.name); COPY (caption, q.caption); q.mode := mode;
+	NEW (q); q.name := name; q.caption := caption; q.mode := mode;
 	WHILE p.list # NIL DO p := p.list END;
 	q.list := p.list; p.list := q
 END NewFunction;
@@ -575,7 +575,7 @@ BEGIN
 	Texts.OpenScanner (S, Oberon.Par.text, Oberon.Par.pos);
 	Texts.Scan (S);
 	IF S.class # Texts.Name THEN RETURN END;
-	COPY (S.s, class); f := FindClass (class);
+	class := S.s; f := FindClass (class);
 	
 	(* get the model *)
 	o := Gadgets.FindObj (Gadgets.context, "CM"); m := o(CalcModel);
@@ -656,7 +656,7 @@ BEGIN
 	NEW (F); TextFields.InitTextField (F); F.handle := LTFHandle; Objects.NewObj := F
 END NewLockedTF;
 
-PROCEDURE NewView (gen: ARRAY OF CHAR; model: Objects.Object; field: ARRAY OF CHAR): Gadgets.Frame;
+PROCEDURE NewView (IN gen: ARRAY OF CHAR; model: Objects.Object; IN field: ARRAY OF CHAR): Gadgets.Frame;
 	VAR v: Objects.Object;
 BEGIN
 	IF gen = "BasicGadgets.NewButton" THEN v := NewButton("", "") ELSE v := Gadgets.CreateObject(gen) END;
@@ -671,7 +671,7 @@ END NewView;
 PROCEDURE New*;	(* create a new HPCalc panel *)
 	VAR	p: Panels.Panel; c: CalcModel; v: Gadgets.Frame; f: FunctionClass; x, y: INTEGER; cmd: ARRAY 64 OF CHAR;
 
-	PROCEDURE NewCommand (msg: ARRAY OF CHAR; x, y: INTEGER);
+	PROCEDURE NewCommand (IN msg: ARRAY OF CHAR; x, y: INTEGER);
 		VAR v: Objects.Object;
 	BEGIN
 		v := NewButton (msg, cmd); Panels.InsertChild (p, v(Gadgets.Frame), x, y);
