@@ -7,7 +7,7 @@ MainModule=@ByteArray(Oberon)
 MainProc=@ByteArray(Loop)
 Options=@ByteArray()
 Suffixes=@Invalid()
-WorkingDir=/home/me/Programme/build/Files2.3.6
+WorkingDir=/home/me/Programme/build/Files2.3.6_
 
 [.]
 size=0

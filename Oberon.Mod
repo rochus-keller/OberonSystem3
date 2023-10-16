@@ -690,13 +690,17 @@ BEGIN
   NextTask.next := NextTask;
   Collect;
   Fonts.Default := Fonts.This("Oberon10.Scn.Fnt");
-  CurFnt := Fonts.Default;
-  CurCol := Display.FG;
-  CurOff := 0;
-
-  conftime := -1; confdate := -1; NEW(conftext);
+  IF Fonts.Default = NIL THEN
+    PRINTLN("This system cannot run because no font could be loaded");
+  ELSE
+    CurFnt := Fonts.Default;
+    CurCol := Display.FG;
+    CurOff := 0;
   
-  LoadSystem
+    conftime := -1; confdate := -1; NEW(conftext);
+    
+    LoadSystem
+  END;
 END Oberon.
 
 (** Remarks:

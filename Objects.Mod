@@ -256,6 +256,7 @@ Most entities in Oberon are derived from this base type.
           L := proc();
            L.name := name;
           L.Load(L);  Kernel.RegisterObject(L, Cleanup, FALSE);
+          IF L.ind = NIL THEN RETURN NIL END; // RK the file could not be found and there is no default font
           IF name = L.name THEN
             L.next := FirstLib.next; FirstLib.next := L
           ELSE

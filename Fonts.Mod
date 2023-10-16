@@ -190,10 +190,12 @@ of characters, each character being a pattern and and metric data.
 
 	PROCEDURE Substitute (F: Font);
 	BEGIN F.type := substitute;
-		F.height := Default.height;
-		F.minX := Default.minX; F.maxX := Default.maxX;
-		F.minY := Default.minY; F.maxY := Default.maxY;
-		F.ind := Default.ind;
+	  IF Default # NIL THEN
+  		F.height := Default.height;
+  		F.minX := Default.minX; F.maxX := Default.maxX;
+  		F.minY := Default.minY; F.maxY := Default.maxY;
+  		F.ind := Default.ind;
+  	END;
 		IF TraceMissing THEN
 			Kernel.WriteString("Missing: ");  Kernel.WriteString(F.name);  Kernel.WriteLn
 		END
@@ -248,7 +250,9 @@ of characters, each character being a pattern and and metric data.
 							IF (L.type = metric) OR (L.type = font) THEN Internalize(L, R, metric) ELSE Substitute(L) END
 						ELSE Substitute(L) END
 					ELSE Substitute(L) END
-				ELSE Substitute(L) END
+				ELSE 
+  				Substitute(L) 
+  			END
 			END
 		END
 	END Load;
