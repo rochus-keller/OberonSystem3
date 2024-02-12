@@ -78,6 +78,7 @@ Modification steps:
 - Added more applications like Shanghai, Asteroids, Sokoban, Scramble, FontEditor, Calculator, NoteBooks, HPCalc, ET, Solitaire, Spider, FreeCell
 - Implemented https://en.wikibooks.org/wiki/Oberon/ETH_Oberon/keyboard assignments in PAL
 - Minimal system 8 commit, which has a decent feature set for people to explore the platform
+- Added Juice compiler modules from version 1.1 (1997)
 
 
 
