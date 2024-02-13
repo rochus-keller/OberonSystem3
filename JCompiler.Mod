@@ -77,7 +77,7 @@ MODULE JCompiler;	(* tk 8/5/96 *)
 		RETURN t
 	END GetText;
 				
-	PROCEDURE Module* (source: Texts.Reader; opt: ARRAY OF CHAR; log: Texts.Text; VAR error: BOOLEAN);
+	PROCEDURE Module* (source: Texts.Reader; IN opt: ARRAY OF CHAR; log: Texts.Text; VAR error: BOOLEAN);
 		VAR newSF, extSF: BOOLEAN; options: SET; p: OPT.Node; modName: OPS.Name; i: INTEGER; ch: CHAR;
 	BEGIN
 		options := {}; i := 0;
@@ -118,14 +118,14 @@ MODULE JCompiler;	(* tk 8/5/96 *)
 			S.nextCh := ch; Texts.Scan(S)
 		END GetOptions;
 		
-		PROCEDURE Do(filename: ARRAY OF CHAR; beg: LONGINT; options: ARRAY OF CHAR);
+		PROCEDURE Do(IN filename: ARRAY OF CHAR; beg: LONGINT; options: ARRAY OF CHAR);
 			VAR S1: Texts.Scanner; line: INTEGER; name: ARRAY 32 OF CHAR;
 		BEGIN
 			Texts.WriteString(W, filename); Texts.WriteString(W, "  compiling  ");
 			Texts.OpenScanner(S1, source, beg); Texts.Scan(S1);
 			WHILE ~S1.eot & ((S1.class # Texts.Name) OR (S1.s # "MODULE")) DO Texts.Scan(S1) END;
 			IF (S1.class = Texts.Name) & (S1.s = "MODULE") THEN Texts.Scan(S1); 
-				IF S1.class = Texts.Name THEN COPY(S1.s, name); Texts.WriteString(W, S1.s) END
+				IF S1.class = Texts.Name THEN  name := S1.s; Texts.WriteString(W, S1.s) END
 			END;
 			Texts.Append(Oberon.Log, W.buf);
 			line := S.line; 
@@ -136,7 +136,7 @@ MODULE JCompiler;	(* tk 8/5/96 *)
 		END Do;
 
 	BEGIN
-		error := FALSE; defopt[0] := 0X; COPY(dpath, OPM.outputPath); OPS.Get := NIL; 
+		error := FALSE; defopt[0] := 0X;  OPM.outputPath := dpath; OPS.Get := NIL; 
 		Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S); SignOn;
 		IF (S.class = Texts.Char) & (S.c # Oberon.OptionChar) THEN
 			IF S.c = "*" THEN	source := GetText(F);
@@ -176,7 +176,7 @@ MODULE JCompiler;	(* tk 8/5/96 *)
 				END
 			END
 		END;
-		Oberon.Collect; COPY(dpath, OPM.outputPath)
+		Oberon.Collect;  OPM.outputPath := dpath
 	END Compile;
 
 	PROCEDURE SetDestPath*;
@@ -186,7 +186,7 @@ MODULE JCompiler;	(* tk 8/5/96 *)
 			IF	time >= 0	THEN	Texts.OpenScanner(S, T, beg); Texts.Scan(S)	END
 		END;
 		IF	(S.class IN {Texts.Name, Texts.String})	THEN	Texts.WriteString(W, "Compiler.SetDestPath "); Texts.WriteString(W, S.s);
-			Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf); COPY(S.s, dpath); COPY(dpath, OPM.outputPath)
+			Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);  dpath := S.s; COPY(dpath, OPM.outputPath)
 		END
 	END SetDestPath;
 

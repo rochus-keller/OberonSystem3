@@ -36,7 +36,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 	(* Juice Compiler - Symbol Table Handler *)
 
 	IMPORT
-		SYS:=SYSTEM, Files, OPS := JOCS, OPM := JOCM;
+		Files, OPS := JOCS, OPM := JOCM;
 
 	CONST
 		MaxConstLen* = OPS.MaxStrLen; 
@@ -212,19 +212,19 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 	END NewExt;
 
 	PROCEDURE DoubleStructArr(VAR x: StructArr);
-		VAR i: LONGINT; h: StructArr;
+		VAR i,n: LONGINT; h: StructArr;
 	BEGIN
 		i := LEN(x^); h := x; NEW(x, 2*i);
 		ASSERT(x # NIL);
-		SYS.MOVE(SYS.ADR(h[0]), SYS.ADR(x[0]), i*SIZE(Struct));
+		FOR n := 0 TO i-1 DO x[n] := h[n] END; 
 	END DoubleStructArr;
 
 	PROCEDURE DoubleModArr(VAR x: ModArr);
-		VAR i: LONGINT; h: ModArr;
+		VAR i,n: LONGINT; h: ModArr;
 	BEGIN
 		i := LEN(x^); h := x; NEW(x, 2*i);
 		ASSERT(x # NIL);
-		SYS.MOVE(SYS.ADR(h[0]), SYS.ADR(x[0]), i*SIZE(Module));
+		FOR n := 0 TO i-1 DO x[n] := h[n] END; 
 	END DoubleModArr;
 
 	PROCEDURE MarkObj*(obj: Object);
@@ -302,7 +302,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 				END
 			ELSE (*insert*) ob1:=NewObj(); ob1.leaf := TRUE;
 				IF left THEN ob0.left := ob1 ELSE ob0.right := ob1 END;
-				ob1.left:=NIL; ob1.right:=NIL; COPY(name, ob1.name);
+				ob1.left:=NIL; ob1.right:=NIL;  ob1.name := name;
 				ob1.mnolev := topScope.mnolev; EXIT
 			END
 		END; obj := ob1
@@ -326,7 +326,8 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 		CONST nsf=10; esf=11;
 	BEGIN topScope := universe; OpenScope(0, NIL); nofmod := 1; SYSimported := FALSE; impSelf:=FALSE;
 		sfpresent:=TRUE; newSF:=nsf IN opt; extSF:=newSF OR (esf IN opt);
-		modules[0]:=NewMod(); SYS.MOVE(SYS.VAL(LONGINT, topScope), SYS.VAL(LONGINT, modules[0]), SIZE(ObjDesc));
+		modules[0]:=NewMod(); 
+		modules[0](Object)^ := topScope^; 
 		modules[0].name:=name;
 		topScope:=modules[0]; 
 	END Init;
@@ -453,7 +454,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 			ELSIF	obj.history=modified	THEN	errNo:=452
 			ELSE	RETURN
 			END;
-			COPY(obj.name, OPM.errName);
+			 OPM.errName := obj.name;
 			IF errNo=451 THEN (* inserted *)
 				IF ~extSF THEN err(errNo) END;
 				symExtended:=TRUE;
@@ -647,11 +648,11 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 		END InObj;
 
 		PROCEDURE InConst;
-			VAR conval: Const; s: INTEGER; r: REAL;
+			VAR conval: Const; s: INTEGER; r: REAL; l: LONGINT;
 		BEGIN	NEW(conval); obj.conval:=conval;
 			CASE	tag	OF
 			| SFtypBool, SFtypChar, SFtypSInt..SFtypLInt:	Files.ReadNum(R, conval.intval)
-			| SFtypSet:	Files.ReadNum(R, SYS.VAL(LONGINT, conval.setval)); conval.setval:=OPM.FlipSet(conval.setval);
+			| SFtypSet:	Files.ReadNum(R, l); conval.setval := BITS(l); conval.setval:=OPM.FlipSet(conval.setval);
 			| SFtypReal:	Files.ReadReal(R, r); conval.realval:=r; conval.intval:=OPM.ConstNotAlloc;
 			| SFtypLReal:	Files.ReadLReal(R, conval.realval); conval.intval:=OPM.ConstNotAlloc;
 			| SFtypString:	NEW(conval.ext); OPM.ReadString(R, conval.ext^); 
@@ -662,14 +663,14 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 
 		PROCEDURE InCode;
 			VAR conval: Const; ext: ConstExt; ch: CHAR; i, s: INTEGER;
-		BEGIN	NEW(conval); obj.conval:=conval; NEW(ext); conval.ext:=ext; Files.Read(R, ch); s:=ORD(ch); ext[0]:=ch; i:=1;
-			WHILE	i <= s	DO	Files.Read(R, ext[i]); INC(i)	END
+		BEGIN	NEW(conval); obj.conval:=conval; NEW(ext); conval.ext:=ext; Files.ReadChar(R, ch); s:=ORD(ch); ext[0]:=ch; i:=1;
+			WHILE	i <= s	DO	Files.ReadChar(R, ext[i]); INC(i)	END
 		END InCode;
 
 	BEGIN	i:=0;
 		WHILE	(i < nofmod) & (impName#modules[i].name)	DO	INC(i)	END;
 		IF	i < nofmod	THEN	M:=modules[i]; new:=FALSE; 
-		ELSE	M:=NewMod(); COPY(impName, M.name); M.mnolev:=-nofmod; 
+		ELSE	M:=NewMod();  M.name := impName; M.mnolev:=-nofmod; 
 			modules[nofmod]:=M; 
 			INC(nofmod); 
 			IF nofmod>=LEN(modules^) THEN DoubleModArr(modules) END;
@@ -825,7 +826,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 			OPM.SymW(CHR(tag)); OutStruct(typ.BaseTyp);
 			NEW(tobj); tobj.mode:=Typ; tobj.nxtobj:=objects; objects:=tobj; tobj.typ:=typ;
 			IF	typ.strobj=NIL	THEN	OPM.SymW(0X)
-			ELSE	FPrintErr(typ.strobj); OPM.SymWString(typ.strobj.name); COPY(typ.strobj.name, tobj.name)	END;
+			ELSE	FPrintErr(typ.strobj); OPM.SymWString(typ.strobj.name);  tobj.name := typ.strobj.name	END;
 			CASE	tag	OF
 			| SFtypDynArr:
 			| SFtypArray:	OPM.SymWNum(typ.n)
@@ -907,7 +908,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 	PROCEDURE Export*(VAR modName: OPS.Name; VAR newsf, extsf: BOOLEAN);
 		VAR mods: SHORTINT; aliasName: OPS.Name;
 	BEGIN symExtended:=FALSE; symNew:=FALSE; nofstruc:=0; nofemod:=0; objects:=NIL;
-		modNo:=0; COPY("@self", aliasName); mods:=nofmod;
+		modNo:=0;  aliasName := "@self"; mods:=nofmod;
 		Import(aliasName, modName, modName); nofmod:=mods;
 		IF OPM.noerr THEN expGlobal:=TRUE; CompOldSym(modules[0].publics);
 			OutScope(topScope.right, TRUE); expGlobal:=FALSE;

@@ -726,7 +726,7 @@ MODULE JOCB;	(* RC 6.3.89 / tk 8.5.96 *)
 				ELSE (*g = LInt*)
 					r := x^.conval^.realval;
 					IF (r < MIN(LONGINT)) OR (r > MAX(LONGINT)) THEN err(203); r := 1 END ;
-					x^.conval^.intval := ENTIER(r); SetIntType(x)
+					x^.conval^.intval := FLOOR(r); SetIntType(x)
 				END
 			ELSE (* (f IN {Char, Byte}) & (g IN {Byte} + intSet) OR (f = Undef) *)
 			END ;

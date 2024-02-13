@@ -265,7 +265,7 @@ MODULE JOCP;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 				IF nofFwdPtr < LEN(FwdPtr) THEN FwdPtr[nofFwdPtr] := typ; INC(nofFwdPtr)
 				ELSE err(224)
 				END ;
-				typ^.link := OPT.NewObj(); COPY(OPS.name, typ^.link^.name);
+				typ^.link := OPT.NewObj();  typ^.link^.name := OPS.name;
 				typ^.BaseTyp := OPT.undftyp; OPS.Get(sym) (*forward ref*)
 			ELSE qualident(id);
 				IF id^.mode = Typ THEN
@@ -1070,13 +1070,13 @@ MODULE JOCP;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 		OPS.Get(sym);
 		IF sym = module THEN OPS.Get(sym) ELSE err(16) END ;
 		IF sym = ident THEN OPT.Init(OPS.name, opt);
-			COPY(OPS.name, modName); OPS.Get(sym); CheckSym(semicolon);
+			 modName := OPS.name; OPS.Get(sym); CheckSym(semicolon);
 			IF sym = import THEN OPS.Get(sym);
 				LOOP
 					IF sym = ident THEN
-						COPY(OPS.name, aliasName); COPY(aliasName, impName); OPS.Get(sym);
+						 aliasName := OPS.name; COPY(aliasName, impName); OPS.Get(sym);
 						IF sym = becomes THEN OPS.Get(sym);
-							IF sym = ident THEN COPY(OPS.name, impName); OPS.Get(sym) ELSE err(ident) END
+							IF sym = ident THEN  impName := OPS.name; OPS.Get(sym) ELSE err(ident) END
 						END ;
 						OPT.Import(aliasName, impName, modName)
 					ELSE err(ident)

@@ -36,7 +36,7 @@ MODULE JOCM;	(* tk 8/5/96 *)
 	(* Juice Compiler - Machine dependent constants needed before code generation *)
 
 	IMPORT
-		Texts, Oberon, Files, Fonts, FileDir, Registry, SYSTEM;
+		Texts, Oberon, Files, Fonts, FileDir;
 
 	CONST 
 		(* basic type sizes *)
@@ -58,8 +58,8 @@ MODULE JOCM;	(* tk 8/5/96 *)
 		(* target machine minimum values of basic types expressed in host machine format: *)
 		MinSInt* = -80H;
 		MinInt* = -8000H;
-		MinLInt* =  80000000H;	(*-2147483648*)
-		MinRealPat = 0FF7FFFFFH;	(* most  negative, 32-bit pattern *)
+		MinLInt* =  80000000HI;	(*-2147483648*)
+		MinRealPat = 0FF7FFFFFHI;	(* most  negative, 32-bit pattern *)
 		MinLRealPatL = 0FFEFFFFFH;	(* most  negative, lower 32-bit pattern *)
 		MinLRealPatH = 0FFFFFFFFH;	(* most  negative, higher 32-bit pattern *)
 		
@@ -68,7 +68,7 @@ MODULE JOCM;	(* tk 8/5/96 *)
 		MaxInt* = 7FFFH;
 		MaxLInt* = 7FFFFFFFH;	(*2147483647*)
 		MaxSet* = 31;	(* must be >= 15, else the bootstraped compiler cannot run (IN-tests) *)
-		MaxRealPat = 7F7FFFFFH;	(* most positive, 32-bit pattern *)
+		MaxRealPat = 7F7FFFFFHI;	(* most positive, 32-bit pattern *)
 		MaxLRealPatL = 7FEFFFFFH;	(* most positive, lower 32-bit pattern *)
 		MaxLRealPatH = 0FFFFFFFFH;		(* most positive, higher 32-bit pattern *)
 		
@@ -129,13 +129,15 @@ MODULE JOCM;	(* tk 8/5/96 *)
 						
 	VAR
 		LRealPat: RECORD L, H: LONGINT END ;
-		lastpos, pat: LONGINT;	(* last position error in source file *)
+		lastpos: LONGINT;	(* last position error in source file *)
 		inR: Texts.Reader;
 		Log: Texts.Text; W: Texts.Writer;
 		RefF, ObjF, ModF, SymF: Files.Rider;
 		RefFile, ObjFile, ModFile, SymFile: Files.File;
 		ObjFName: ARRAY 512 OF CHAR;
 		nopath: ARRAY 2 OF CHAR;
+		tmp: ARRAY 8 OF BYTE;
+		i: INT8;
 
 	PROCEDURE FlipSet* (s: SET): SET;
 		VAR d: SET; i: INTEGER; proc: ARRAY 32 OF CHAR;
@@ -143,13 +145,12 @@ MODULE JOCM;	(* tk 8/5/96 *)
 		(* on intel based and MC680x0 base machines:
 			RETURN s
 		*)
-		Registry.Get("SystemInfo", "Processor", proc);
-		IF proc # "PowerPC" THEN RETURN s
-		ELSE
+		RETURN s
+		(* ELSE if PowerPC
 			d := {}; i := 0;
 			WHILE i < 32 DO IF i IN s THEN INCL(d, 31-i) END; INC(i) END;
 			RETURN d
-		END
+		END*)
 	END FlipSet;
 
 	PROCEDURE Init* (opt: SET; source: Texts.Reader; log: Texts.Text);
@@ -179,26 +180,31 @@ MODULE JOCM;	(* tk 8/5/96 *)
 	(* ----- Fingerprint calculation ----- *)
 
 	PROCEDURE FPrint*(VAR fp: LONGINT; val: LONGINT);
-	BEGIN fp := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, SYSTEM.ROT(fp, 7)) / SYSTEM.VAL(SET, val))
+	BEGIN fp := ORD(BITS(ROR(fp, 7)) / BITS(val))
 	END FPrint;
 
 	PROCEDURE FPrintSet*(VAR fp: LONGINT; set: SET);
-	BEGIN FPrint(fp, SYSTEM.VAL(LONGINT, FlipSet(set)))
+	BEGIN FPrint(fp, ORD(FlipSet(set)))
 	END FPrintSet;
 
 	PROCEDURE FPrintReal*(VAR fp: LONGINT; real: REAL);
-	BEGIN FPrint(fp, SYSTEM.VAL(LONGINT, real))
+	VAR tmp: ARRAY 4 OF BYTE; l: LONGINT;
+	BEGIN BYTES(tmp,real); NUMBER(l,tmp); // TODO: direct CAST
+  	FPrint(fp, l)
 	END FPrintReal;
 
 	PROCEDURE FPrintLReal*(VAR fp: LONGINT; lr: LONGREAL);
-		VAR l, h: LONGINT; proc: ARRAY 32 OF CHAR;
+		VAR l, h: LONGINT; proc: ARRAY 32 OF CHAR; tmp: ARRAY 8 OF BYTE; i: INT8;
 	BEGIN
-		Registry.Get("SystemInfo", "Processor", proc);
-		IF proc = "Intel" THEN
-			SYSTEM.GET(SYSTEM.ADR(lr)+4, l); SYSTEM.GET(SYSTEM.ADR(lr), h);
-		ELSE
+		// TODO Registry.Get("SystemInfo", "Processor", proc);
+		//IF proc = "Intel" THEN
+		BYTES(tmp,lr); 
+		NUMBER(h,tmp); // lower four bytes
+		FOR i := 0 TO 3 DO tmp[i] := tmp[i+4] END;
+		NUMBER(l,tmp); // higher four bytes
+		(* TODO ELSE
 			SYSTEM.GET(SYSTEM.ADR(lr), l); SYSTEM.GET(SYSTEM.ADR(lr)+4, h)
-		END;
+		END;*)
 		FPrint(fp, l); FPrint(fp, h);
 	END FPrintLReal;
 	
@@ -208,14 +214,14 @@ MODULE JOCM;	(* tk 8/5/96 *)
 	PROCEDURE WString(VAR R: Files.Rider; VAR s: ARRAY OF CHAR);
 		VAR i: INTEGER; ch: CHAR;
 	BEGIN	i := 0; ch := s[i];
-		IF ch = 0X THEN Files.Write(R, 0X); RETURN END;
+		IF ch = 0X THEN Files.WriteChar(R, 0X); RETURN END;
 		WHILE (ch # 0X) & (ch < 7FX) DO INC(i); ch := s[i] END;
-		IF i > 1 THEN Files.WriteBytes(R, s, i-1) END;
-		IF ch = 0X THEN Files.Write(R, CHR(ORD(s[i-1])+80H))
+		IF i > 1 THEN Files.WriteFixString(R, s, i-1) END;
+		IF ch = 0X THEN Files.WriteChar(R, CHR(ORD(s[i-1])+80H))
 		ELSE	
-			IF i > 0 THEN Files.Write(R, s[i-1]) END;
-			Files.Write(R, 7FX); REPEAT Files.Write(R, ch); INC(i); ch := s[i] UNTIL ch = 0X;
-			Files.Write(R, 0X)
+			IF i > 0 THEN Files.WriteChar(R, s[i-1]) END;
+			Files.WriteChar(R, 7FX); REPEAT Files.WriteChar(R, ch); INC(i); ch := s[i] UNTIL ch = 0X;
+			Files.WriteChar(R, 0X)
 		END
 	END WString;
 
@@ -225,7 +231,7 @@ MODULE JOCM;	(* tk 8/5/96 *)
 	BEGIN	Texts.Write(W, ch); Texts.Append(Log, W.buf)
 	END LogW;
 	
-	PROCEDURE LogWStr* (s: ARRAY OF CHAR);
+	PROCEDURE LogWStr* (IN s: ARRAY OF CHAR);
 	BEGIN	Texts.WriteString(W, s); Texts.Append(Log, W.buf)
 	END LogWStr;
 	
@@ -268,13 +274,13 @@ MODULE JOCM;	(* tk 8/5/96 *)
 	PROCEDURE ReadString*(VAR R: Files.Rider; VAR string: ARRAY OF CHAR);
 		VAR i: INTEGER; ch: CHAR;
 	BEGIN i := 0;
-		LOOP Files.Read(R, ch);
+		LOOP Files.ReadChar(R, ch);
 			IF ch = 0X THEN string[i] := 0X; RETURN
 			ELSIF ch < 7FX THEN string[i]:=ch; INC(i)
 			ELSIF ch > 7FX THEN string[i] := CHR(ORD(ch)-80H); string[i+1] := 0X; RETURN
 			ELSE (* ch = 7FX *) EXIT END
 		END;
-		LOOP Files.Read(R, ch);
+		LOOP Files.ReadChar(R, ch);
 			IF ch = 0X THEN string[i]:=0X; RETURN
 			ELSE string[i]:=ch; INC(i) END
 		END
@@ -283,7 +289,7 @@ MODULE JOCM;	(* tk 8/5/96 *)
 	(* ----- sym output ----- *)
 	
 	PROCEDURE SymW*(b: CHAR);
-	BEGIN	Files.Write(SymF, b)
+	BEGIN	Files.WriteChar(SymF, b)
 	END SymW;
 
 	PROCEDURE SymWNum*(i: LONGINT);
@@ -299,7 +305,7 @@ MODULE JOCM;	(* tk 8/5/96 *)
 	END SymWMod;
 
 	PROCEDURE SymWSet*(s: SET);
-	BEGIN	Files.WriteNum(SymF, SYSTEM.VAL(LONGINT, FlipSet(s)))
+	BEGIN	Files.WriteNum(SymF, ORD(FlipSet(s)))
 	END SymWSet;
 
 	PROCEDURE SymWReal*(VAR r: LONGREAL);
@@ -330,8 +336,8 @@ MODULE JOCM;	(* tk 8/5/96 *)
 		SetFileName(nopath, name, fileName); done := FALSE;
 		F := Files.Old(fileName); 
 		IF F # NIL THEN done := TRUE; Files.Set(R, F, 0);
-			Files.Read(R, ch);
-			IF ch = OFtag THEN Files.Read(R, ch1); Files.ReadNum(R, symSize)
+			Files.ReadChar(R, ch);
+			IF ch = OFtag THEN Files.ReadChar(R, ch1); Files.ReadNum(R, symSize)
 			ELSE done := FALSE
 			END
 		END
@@ -339,22 +345,22 @@ MODULE JOCM;	(* tk 8/5/96 *)
 
 	PROCEDURE Begin*(VAR modName: ARRAY OF CHAR);
 	BEGIN	SetFileName(outputPath, modName, ObjFName);
-		ObjFile := Files.New(ObjFName); Files.Set(ObjF, ObjFile, 0); Files.Write(ObjF, OFtag);
+		ObjFile := Files.New(ObjFName); Files.Set(ObjF, ObjFile, 0); Files.WriteChar(ObjF, OFtag);
 		ModFile := Files.New(""); Files.Set(ModF, ModFile, 0); 
 		SymFile := Files.New(""); Files.Set(SymF, SymFile, 0);
 		RefFile := Files.New(""); Files.Set(RefF, RefFile, 0);
-		Files.Write(ObjF, OFportable)
+		Files.WriteChar(ObjF, OFportable)
 	END Begin;
 
 	PROCEDURE Commit(F: Files.File);
 		VAR ch: CHAR; R: Files.Rider;
-	BEGIN	Files.Set(R, F, 0); Files.Read(R, ch);
-		WHILE ~R.eof DO Files.Write(ObjF, ch); Files.Read(R, ch) END
+	BEGIN	Files.Set(R, F, 0); Files.ReadChar(R, ch);
+		WHILE ~R.eof DO Files.WriteChar(ObjF, ch); Files.ReadChar(R, ch) END
 	END Commit;
 
 	PROCEDURE EndSym*;
 		VAR sfsize: LONGINT;   
-	BEGIN	Files.Write(ModF, 0X); 
+	BEGIN	Files.WriteChar(ModF, 0X); 
 		sfsize := Files.Length(SymFile)+Files.Length(ModFile); Files.WriteNum(ObjF, sfsize); 
 		Commit(ModFile); Commit(SymFile);
 		ModFile := Files.New(""); Files.Set(ModF, ModFile, 0); SymFile := Files.New(""); Files.Set(SymF, SymFile, 0)
@@ -362,16 +368,25 @@ MODULE JOCM;	(* tk 8/5/96 *)
 
 	PROCEDURE EndObj*;
 	BEGIN
-		Files.Write(ModF, 0X); Commit(ModFile); Files.Write(SymF, 0X); Commit(SymFile);
+		Files.WriteChar(ModF, 0X); Commit(ModFile); Files.WriteChar(SymF, 0X); Commit(SymFile);
 		Files.Register(ObjFile)
 	END EndObj;
 
 BEGIN
-	pat := MinRealPat; SYSTEM.MOVE(SYSTEM.ADR(pat), SYSTEM.ADR(MinReal), 4);	(*-3.40282346E38*)
-	pat := MaxRealPat; SYSTEM.MOVE(SYSTEM.ADR(pat), SYSTEM.ADR(MaxReal), 4);	(*3.40282346E38*)
-	LRealPat.L := MinLRealPatL; LRealPat.H := MinLRealPatH;
-	SYSTEM.MOVE(SYSTEM.ADR(LRealPat), SYSTEM.ADR(MinLReal), 8);	(*-1.7976931348623157D308*)
-	LRealPat.L := MaxLRealPatL; LRealPat.H := MaxLRealPatH;
-	SYSTEM.MOVE(SYSTEM.ADR(LRealPat), SYSTEM.ADR(MaxLReal), 8);	(*1.7976931348623157D308*)
+	BYTES(tmp, MinRealPat);
+	NUMBER(MinReal, tmp); (*-3.40282346E38*)
+	BYTES(tmp, MaxRealPat); 
+	NUMBER(MaxReal, tmp); (*3.40282346E38*)
+	
+	BYTES(tmp,MinLRealPatH);
+	FOR i := 0 TO 3 DO tmp[i+4] := tmp[i] END;
+	BYTES(tmp,MinLRealPatL);
+	NUMBER(MinLReal,tmp); 	(*-1.7976931348623157D308*)
+
+	BYTES(tmp,MaxLRealPatH);
+	FOR i := 0 TO 3 DO tmp[i+4] := tmp[i] END;
+	BYTES(tmp,MaxLRealPatL);
+	NUMBER(MaxLReal,tmp); (*1.7976931348623157D308*)
+
 	Texts.OpenWriter(W); Log := Oberon.Log; 
 END JOCM.
