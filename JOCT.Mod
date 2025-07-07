@@ -516,7 +516,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 	(* ----- read sym file ----- *)
 
 	PROCEDURE Imp(VAR impName, modName: OPS.Name; VAR M: Module);
-		VAR R: Files.Rider; i: INTEGER; tag: LONGINT; done: BOOLEAN; mode: SHORTINT; obj, last: Object; tdum: Struct;
+		VAR R: Files.Rider; i: INTEGER; tag: LONGINT; done: BOOLEAN; mode: SHORTINT; obj, last_: Object; tdum: Struct;
 			new: BOOLEAN;
 			
 		PROCEDURE^InStruct(VAR typ: Struct; par: BOOLEAN);
@@ -623,7 +623,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 				typtag:=tag; Files.ReadNum(R, tag); typ.extlev := -1;
 				InStruct(btyp, par); typ.BaseTyp:=btyp;
 				IF	(typ.form=Pointer) & (typ.BaseTyp=NIL) THEN typ:=ptrtyp; DEC(M.nofstr); RETURN END;
-				NEW(tobj); tobj.mode:=Typ; tobj.nxtobj:=last; last:=tobj; tobj.typ:=typ; OPM.ReadString(R, tobj.name);
+				NEW(tobj); tobj.mode:=Typ; tobj.nxtobj:=last_; last_:=tobj; tobj.typ:=typ; OPM.ReadString(R, tobj.name);
 				typ.strobj:=tobj; 
 				IF	tobj.name#""	THEN	tobj.vis:=vis; tobj.typ:=typ; InsertImport(tobj, M)	END;
 				CASE	typtag	OF
@@ -641,7 +641,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 		END InStruct;
 
 		PROCEDURE InObj;
-		BEGIN	NEW(obj); obj.mode:=mode; obj.nxtobj:=last; last:=obj;
+		BEGIN	NEW(obj); obj.mode:=mode; obj.nxtobj:=last_; last_:=obj;
 			IF tag=SFreadonly THEN Files.ReadNum(R, tag); obj.vis:=externalR ELSE obj.vis:=external END;
 			IF tag=SFleaf THEN Files.ReadNum(R, tag); obj.leaf:=TRUE END;
 			InStruct(obj.typ, FALSE); OPM.ReadString(R, obj.name); InsertImport(obj, M)
@@ -683,7 +683,7 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 			IF	done	THEN	GetImports;
 				IF	OPM.noerr	THEN
 					i:=0; WHILE i<nofmod DO modules[i].nofreimp:=0; INC(i) END;
-					last:=NIL; Files.ReadNum(R, tag);
+					last_:=NIL; Files.ReadNum(R, tag);
 					IF	tag=SFconst	THEN	mode:=Con; Files.ReadNum(R, tag);
 						WHILE	tag < SFvar	DO	InObj; InConst; Files.ReadNum(R, tag)	END
 					END;
@@ -707,10 +707,10 @@ MODULE JOCT;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 					IF	tag=SFtyp	THEN	Files.ReadNum(R, tag);
 						WHILE	tag < SFend	DO	InStruct(tdum, FALSE); Files.ReadNum(R, tag)	END
 					END;
-					M.publics:=last; 
-					WHILE last # NIL DO
-						IF (last.mode = Typ) & (last.typ.form = Comp) & (last.typ.comp = Record) THEN SetTypFlags(last.typ) END;
-						last := last.nxtobj
+					M.publics:=last_; 
+					WHILE last_ # NIL DO
+						IF (last_.mode = Typ) & (last_.typ.form = Comp) & (last_.typ.comp = Record) THEN SetTypFlags(last_.typ) END;
+						last_ := last_.nxtobj
 					END;
 					Files.Close(Files.Base(R))
 				END

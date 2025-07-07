@@ -10,7 +10,7 @@ And here is a screenshot of the migrated Oberon gadget system desktop:
 
 ![Oberon System 3 Desktop Screenshot](http://software.rochus-keller.ch/oberon_system_3_obxpal_2.3.6_minimal_system_6.png)
 
-The migrated system is based on the PC Native Oberon System 3 Release 2.3.6 (Stand-alone) originally downloaded from [here](https://github.com/pcayuela/oldftpETHZOberon/tree/master/System3/Native/StdAlone). 
+The migrated system is based on the PC Native Oberon System 3 Release 2.3.6 (Stand-alone) originally downloaded from [here](https://github.com/pcayuela/oldftpETHZOberon/tree/master/System3/Native/StdAlone) (see also [the archived original site](https://web.archive.org/web/20060409015552/http://www.oberon.ethz.ch/native/)). 
 
 See [Changes.txt](./Changes.txt) for additional information about the applied migration steps, and [MigrationStatus.ods](./MigrationStatus.ods) for a module status matrix. Also note that there is a Git commit history documenting all modifications starting from the original code.
 
