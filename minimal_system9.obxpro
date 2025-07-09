@@ -1,13 +1,15 @@
 [General]
+AppArgs=
 BuildDir=/home/me/Programme/build
 BuiltInOakwood=false
 BuiltInObSysInner=false
+EnvVars=@Invalid()
 IntegerIsInt16=true
 MainModule=@ByteArray(Oberon)
 MainProc=@ByteArray(Loop)
 Options=@ByteArray()
 Suffixes=@Invalid()
-WorkingDir=/home/me/Programme/build/Files2.3.6_
+WorkingDir=/home/me/Programme/build/Files
 
 [.]
 size=0

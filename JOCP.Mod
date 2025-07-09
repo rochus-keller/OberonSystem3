@@ -611,12 +611,17 @@ MODULE JOCP;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 			name: OPS.Name;
 			mode, vis: SHORTINT;
 			forward: BOOLEAN;
+			altCsyntax: BOOLEAN;
 
 		PROCEDURE GetCode;
 			VAR ext: OPT.ConstExt; n: INTEGER; c: LONGINT;
 		BEGIN
 			ext := OPT.NewExt(); proc^.conval^.ext := ext; n := 0;
-			IF sym = string THEN
+			IF altCsyntax THEN
+  			(* for the [C] syntax we use the procedure name as ext name *)
+				WHILE name[n] # 0X DO ext[n+1] := name[n]; INC(n) END ;
+				ext^[0] := CHR(n)
+			ELSIF sym = string THEN
 				WHILE OPS.str[n] # 0X DO ext[n+1] := OPS.str[n]; INC(n) END ;
 				ext^[0] := CHR(n); OPS.Get(sym)
 			ELSE
@@ -709,15 +714,30 @@ MODULE JOCP;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 			END
 		END TProcDecl;
 	
-	BEGIN proc := NIL; forward := FALSE; x := NIL; mode := LProc;
+	BEGIN proc := NIL; forward := FALSE; x := NIL; mode := LProc; altCsyntax := FALSE;
 		IF (sym # ident) & (sym # lparen) THEN
 			IF sym = times THEN	(* mode set later in OPB.CheckAssign *)
 			ELSIF sym = arrow THEN forward := TRUE
 			ELSIF sym = plus THEN mode := IProc
-			ELSIF sym = minus THEN mode := CProc
-			ELSE err(ident)
+			ELSIF sym = minus THEN mode := CProc (* PROCEDURE- printf(format: ARRAY OF CHAR): LONGINT "printf"; *)
+			ELSIF sym = lbrak THEN (* PROCEDURE [C] printf(format: ARRAY OF CHAR): LONGINT; *)
+        OPS.Get(sym);
+        IF sym = ident THEN
+            IF OPS.name = "C" THEN
+                mode := CProc;
+                altCsyntax := TRUE;
+                OPS.Get(sym);
+                IF sym # rbrak THEN OPM.err(rbrak) END
+            ELSE
+                err(ident) (* Expected "C" *)
+            END
+        ELSE
+            err(ident)
+        END
+ 			ELSE err(ident)
 			END ;
-			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END ;
+			(* TODO RK: importing SYSTEM doesn't work yet
+		  IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END ; *)
 			OPS.Get(sym)
 		END ;
 		IF sym = lparen THEN TProcDecl
