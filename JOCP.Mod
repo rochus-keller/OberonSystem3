@@ -1094,7 +1094,7 @@ MODULE JOCP;	(* NW, RC 6.3.89 / tk 30.6.96 *)
 			IF sym = import THEN OPS.Get(sym);
 				LOOP
 					IF sym = ident THEN
-						 aliasName := OPS.name; COPY(aliasName, impName); OPS.Get(sym);
+						 aliasName := OPS.name; impName := aliasName; OPS.Get(sym);
 						IF sym = becomes THEN OPS.Get(sym);
 							IF sym = ident THEN  impName := OPS.name; OPS.Get(sym) ELSE err(ident) END
 						END ;

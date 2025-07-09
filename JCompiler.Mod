@@ -186,7 +186,7 @@ MODULE JCompiler;	(* tk 8/5/96 *)
 			IF	time >= 0	THEN	Texts.OpenScanner(S, T, beg); Texts.Scan(S)	END
 		END;
 		IF	(S.class IN {Texts.Name, Texts.String})	THEN	Texts.WriteString(W, "Compiler.SetDestPath "); Texts.WriteString(W, S.s);
-			Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);  dpath := S.s; COPY(dpath, OPM.outputPath)
+			Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);  dpath := S.s; OPM.outputPath := dpath
 		END
 	END SetDestPath;
 
