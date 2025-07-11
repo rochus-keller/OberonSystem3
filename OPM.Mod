@@ -216,14 +216,14 @@ MODULE OPM;	(** non-portable *)
 	PROCEDURE WString(VAR R: Files.Rider; VAR s: ARRAY OF CHAR);
 		VAR i: INTEGER; ch: CHAR;
 	BEGIN	i:=0; ch:=s[i];
-		IF	ch=0X	THEN	Files.Write(R, 0X); RETURN	END;
+		IF	ch=0X	THEN	Files.Write(R, 0); RETURN	END;
 		WHILE	(ch#0X) & (ch<7FX)	DO	INC(i); ch:=s[i]	END;
-		IF	i>1	THEN	Files.WriteBytes(R, s, i-1)	END;
-		IF	ch=0X	THEN	Files.Write(R, CHR(ORD(s[i-1])+80H))
+		IF	i>1	THEN	Files.WriteFixString(R, s, i-1)	END;
+		IF	ch=0X	THEN	Files.Write(R, ORD(s[i-1])+80H)
 		ELSE	
-			IF	i>0	THEN	Files.Write(R, s[i-1])	END;
-			Files.Write(R, 7FX); REPEAT	Files.Write(R, ch); INC(i); ch:=s[i]	UNTIL ch=0X;
-			Files.Write(R, 0X)
+			IF	i>0	THEN	Files.Write(R, ORD(s[i-1]))	END;
+			Files.Write(R, 7FH); REPEAT	Files.Write(R, ORD(ch)); INC(i); ch:=s[i]	UNTIL ch=0X;
+			Files.Write(R, 0)
 		END
 	END WString;
 
@@ -307,15 +307,15 @@ MODULE OPM;	(** non-portable *)
 	(* ------------------------- Write Symbol File ------------------------- *)
 	
 	PROCEDURE SymW*(b: CHAR);
-	BEGIN	Files.Write(newSymF, b)
+	BEGIN	Files.Write(newSymF, ORD(b))
 	END SymW;
 
 	PROCEDURE SymWCh*(ch: CHAR);
-	BEGIN Files.Write(newSymF, ch)
+	BEGIN Files.Write(newSymF, ORD(ch))
 	END SymWCh;
 
 	PROCEDURE SymWTag*(k: INTEGER);
-	BEGIN Files.Write(newSymF, CHR(k))
+	BEGIN Files.Write(newSymF, k)
 	END SymWTag;
 
 	PROCEDURE SymWInt*(k: LONGINT);
@@ -357,7 +357,7 @@ MODULE OPM;	(** non-portable *)
 	(* ------------------------- Write Reference & Object Files ------------------------- *)
 
 	PROCEDURE RefW*(ch: CHAR);
-	BEGIN Files.Write(RefF, ch)
+	BEGIN Files.Write(RefF, ORD(ch))
 	END RefW;
 
 	PROCEDURE RefWNum* (i: LONGINT);
@@ -366,7 +366,7 @@ MODULE OPM;	(** non-portable *)
 	END RefWNum;
 
 	PROCEDURE ObjW*(ch: CHAR);
-	BEGIN Files.Write(ObjF, ch)
+	BEGIN Files.Write(ObjF, ORD(ch))
 	END ObjW;
 
 	PROCEDURE ObjWInt*(i: INTEGER);
@@ -396,9 +396,9 @@ MODULE OPM;	(** non-portable *)
 	END ObjAllocInt;
 
 	PROCEDURE ObjFillInt*(pos: LONGINT; int: INTEGER);
-		VAR savepos: LONGINT;
+		VAR savepos: LONGINT; tmp: ARRAY 2 OF SYSTEM.BYTE;
 	BEGIN	savepos:=Files.Pos(ObjF);
-		Files.Set(ObjF, ObjFile, pos); Files.WriteBytes(ObjF, int, 2);
+		Files.Set(ObjF, ObjFile, pos); BYTES(tmp, int); Files.WriteBytes(ObjF, tmp, 2);
 		Files.Set(ObjF, ObjFile, savepos);
 	END ObjFillInt;
 
@@ -412,8 +412,8 @@ MODULE OPM;	(** non-portable *)
 		done := FALSE;
 		F := Files.Old(fileName);
 		IF F # NIL THEN done := TRUE; Files.Set(R, F, 0);
-			Files.Read(R, ch);
-			IF ch=OFtag THEN Files.Read(R, ch1); Files.ReadNum(R, symSize);
+			Files.ReadChar(R, ch);
+			IF ch=OFtag THEN Files.ReadChar(R, ch1); Files.ReadNum(R, symSize);
 				IF ((aos IN options) & (ch1 # OFaos)) OR (~(aos IN options) & (ch1 # OFnative)) THEN
 					err(151); done := FALSE
 				END
@@ -428,45 +428,45 @@ MODULE OPM;	(** non-portable *)
 		MakeFileName(outputPath, outputPrefix, modName, ObjFName, extension);
 		ObjFile:=Files.New(ObjFName);
 		IF ObjFile = NIL THEN  err(153);  RETURN  END;
-		Files.Set(ObjF, ObjFile, 0); Files.Write(ObjF, OFtag);
+		Files.Set(ObjF, ObjFile, 0); Files.Write(ObjF, ORD(OFtag));
 		ModFile:=Files.New(""); Files.Set(ModF, ModFile, 0); 
 		newSymFile:=Files.New(""); Files.Set(newSymF, newSymFile, 0);
 		RefFile := Files.New(""); Files.Set(RefF, RefFile, 0);
 		IF aos IN options THEN
-			Files.Write(ObjF, OFaos)
+			Files.Write(ObjF, ORD(OFaos))
 		ELSE
-			Files.Write(ObjF, OFnative);
+			Files.Write(ObjF, ORD(OFnative));
 		END;
 	END Begin;
 
 	PROCEDURE Commit(F: Files.File);
 		VAR ch: CHAR; R: Files.Rider;
-	BEGIN	Files.Set(R, F, 0); Files.Read(R, ch);
-		WHILE	~R.eof	DO	Files.Write(ObjF, ch); Files.Read(R, ch)	END
+	BEGIN	Files.Set(R, F, 0); Files.ReadChar(R, ch);
+		WHILE	~R.eof	DO	Files.Write(ObjF, ORD(ch)); Files.ReadChar(R, ch)	END
 	END Commit;
 
 	PROCEDURE EndSym*;
 		VAR sfsize: LONGINT;  
-	BEGIN	Files.Write(ModF, 0X); 
+	BEGIN	Files.Write(ModF, 0); 
 		sfsize:=Files.Length(newSymFile)+Files.Length(ModFile); Files.WriteNum(ObjF, sfsize);
 		Commit(ModFile); Commit(newSymFile);
 		refpatch:=Files.Pos(ObjF); ObjWInt(0); ObjWInt(0)
 	END EndSym;
 
 	PROCEDURE EndObj*;
-		VAR refsize: LONGINT;
+		VAR refsize: LONGINT; tmp: ARRAY 4 OF SYSTEM.BYTE;
 	BEGIN
 		refsize:=Files.Length(RefFile); ObjW(8DX); Commit(RefFile); 
-		Files.Set(ObjF, ObjFile, refpatch); ObjWBytes(refsize, 4); 
+		Files.Set(ObjF, ObjFile, refpatch); BYTES(tmp, refsize); ObjWBytes(tmp, 4); 
 		Files.Register(ObjFile); 
 	END EndObj;
 	
 	PROCEDURE CloseObj*;
-		VAR refsize: LONGINT; ch: CHAR; ref: Files.Rider;
+		VAR refsize: LONGINT; ch: CHAR; ref: Files.Rider; tmp: ARRAY 4 OF SYSTEM.BYTE;
 	BEGIN (*ref block*)
 		refsize:=Files.Length(RefFile);
-		Files.Set(ref, RefFile, 0); Files.Read(ref, ch); WHILE ~ref.eof DO ObjW(ch); Files.Read(ref, ch) END;
-		Files.Set(ObjF, ObjFile, refpatch); ObjWBytes(refsize, 4);
+		Files.Set(ref, RefFile, 0); Files.ReadChar(ref, ch); WHILE ~ref.eof DO ObjW(ch); Files.ReadChar(ref, ch) END;
+		Files.Set(ObjF, ObjFile, refpatch); BYTES(tmp, refsize); ObjWBytes(tmp, 4);
 		Files.Register(ObjFile)
 	END CloseObj;
 

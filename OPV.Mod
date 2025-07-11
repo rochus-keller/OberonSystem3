@@ -883,7 +883,7 @@ END TypeName;
 	END Call;
 	
 	PROCEDURE Expression (n: OPT.Node; VAR z: OPC.Item; selfForUnlock: OPT.Node);
-		VAR x, y: OPC.Item; f: INTEGER; real: REAL; con: OPT.Const; typ: OPT.Struct;
+		VAR x, y: OPC.Item; f: INTEGER; real: REAL; con: OPT.Const; typ: OPT.Struct; tmp: ARRAY 8 OF BYTE;
 		
 		PROCEDURE AllocConst (VAR bytes: ARRAY OF SYSTEM.BYTE; len, align: LONGINT);
 			VAR con1, con2: OPT.Const;
@@ -907,16 +907,20 @@ END TypeName;
 					Byte..LInt, NilTyp, Pointer:
 						z.mode := Con; z.adr := con.intval
 				  | Set:
-						z.mode := Con; z.adr := SYSTEM.VAL (LONGINT, con.setval)
+						z.mode := Con; z.adr := ORD(con.setval)
 				  | String:
-						AllocConst (con.ext^, con.intval2, 4); 
+  				  tmp[0] := ORD(con.ext[0]); tmp[1] := ORD(con.ext[1]);
+  				  tmp[2] := ORD(con.ext[2]); tmp[3] := ORD(con.ext[3]);
+						AllocConst (tmp, con.intval2, 4); 
 						z.mode := Abs; z.adr := con.intval; z.offs := con.intval2 (* length *); z.inx := OPL.none
 				  | Real:
 						real := SHORT (con.realval);
-						AllocConst (real, 4, 4); 
+						BYTES(tmp, real);
+						AllocConst (tmp, 4, 4); 
 						z.mode := Abs; z.adr := con.intval; z.inx := OPL.none
 				  | LReal:
-						AllocConst (con.realval, 8, 4);
+  				  BYTES(tmp, con.realval);
+						AllocConst (tmp, 8, 4);
 						z.mode := Abs; z.adr := con.intval; z.inx := OPL.none
 				END
 		  | Nupto:

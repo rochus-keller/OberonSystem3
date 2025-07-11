@@ -80,6 +80,7 @@ Modification steps:
 - Minimal system 8 commit, which has a decent feature set for people to explore the platform
 - Added Juice compiler modules from version 1.1 (1997); adapted it like the previous modules; minimal system 9 commit
 - Migrated Compress.Mod
+- Added OP2 compiler modules from System 3 2001; adapted it like the previous modules; minimal system 10 commit
 
 
 

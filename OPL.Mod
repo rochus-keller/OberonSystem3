@@ -2803,10 +2803,10 @@ ASSERT(~loaded(instr.dest));
 	
 	PROCEDURE AllocTypDesc* (typ: OPT.Struct);
 	(* typ.tdadr = entryNr adr *)
-		VAR nil: LONGINT; table: RecTable; i: LONGINT;
+		VAR nil: LONGINT; table: RecTable; i: LONGINT; tmp: ARRAY 4 OF SYSTEM.BYTE;
 	BEGIN
 		IF typ.comp = Record THEN
-			nil := 0; AllocConst (nil, 4, 4, typ.tdadr);
+			nil := 0; BYTES(tmp,nil); AllocConst (tmp, 4, 4, typ.tdadr);
 			IF typ.extlev > MaxExtensions THEN OPM.err (233)
 			ELSIF (typ.mno = 0) THEN
 				IF nofrecs>=LEN(recTab) THEN
@@ -3016,7 +3016,7 @@ ASSERT(~loaded(instr.dest));
 	END Export;
 
 	PROCEDURE Use(obj: OPT.Object);
-		VAR typ: OPT.Struct; alias: BOOLEAN;
+		VAR typ: OPT.Struct; alias: BOOLEAN; tmp: ARRAY 4 OF SYSTEM.BYTE;
 
 		PROCEDURE UseRecord(typ: OPT.Struct);
 			VAR name: ARRAY 32 OF CHAR;
@@ -3075,6 +3075,7 @@ ASSERT(~loaded(instr.dest));
 			typ, btyp: OPT.Struct;
 			commandTab: ARRAY MaxCommands OF OPT.Object;
 			newMthTab: ARRAY MaxEntry OF OPT.Object;
+			tmp: ARRAY 4 OF SYSTEM.BYTE;
 	
 		PROCEDURE WriteName (VAR name: ARRAY OF CHAR);
 			VAR i: INTEGER; ch: CHAR;
@@ -3190,7 +3191,7 @@ ASSERT(~loaded(instr.dest));
 		OPM.ObjWInt (SHORT(nofptrs)); OPM.ObjWInt (nofrecs);
 		OPM.ObjWInt (OPT.nofmod-1);
 		OPM.ObjWInt (nofVarCons); OPM.ObjWInt (nofLinks-linkCorrection);
-		OPM.ObjWBytes (OPO.dsize, 4); OPM.ObjWInt (SHORT (OPO.csize)); OPM.ObjWInt (SHORT (OPO.pc));
+		BYTES(tmp,OPO.dsize); OPM.ObjWBytes (tmp, 4); OPM.ObjWInt (SHORT (OPO.csize)); OPM.ObjWInt (SHORT (OPO.pc));
 		WriteName (modName);
 	(* entry block *)
 		OPM.ObjW (EntryTag);
@@ -3208,7 +3209,8 @@ ASSERT(~loaded(instr.dest));
 		OPM.ObjW (pointerTag);
 		i := 0; 
 		WHILE i < nofptrs DO
-			OPM.ObjWBytes (ptrTab[i], 4);
+  		BYTES(tmp, ptrTab[i]);
+			OPM.ObjWBytes (tmp, 4);
 			INC (i)
 		END;
 	(* import block *)
@@ -3278,7 +3280,8 @@ ASSERT(~loaded(instr.dest));
 			typ := recTab [i];
 			nofptrs := 0;
 			FindPtrs (typ, 0);
-			OPM.ObjWBytes (typ.size, 4); (* record size *)
+			BYTES(tmp, typ.size);
+			OPM.ObjWBytes (tmp, 4); (* record size *)
 			OPM.ObjWInt (SHORT (typ.tdadr));	(* td adr *)
 			btyp := typ.BaseTyp;
 			IF btyp = NIL THEN 
@@ -3287,7 +3290,7 @@ ASSERT(~loaded(instr.dest));
 			ELSE
 				nofinhmth := SHORT (btyp.n);
 				OPM.ObjWInt (btyp.mno);
-				IF btyp.mno = 0 THEN OPM.ObjWBytes(btyp.tdadr, 4)
+				IF btyp.mno = 0 THEN BYTES(tmp, btyp.tdadr); OPM.ObjWBytes(tmp, 4)
 				ELSE OPM.ObjWLInt(btyp.strobj.fp)
 				END
 			END;
@@ -3311,7 +3314,8 @@ ASSERT(~loaded(instr.dest));
 			END;
 			k := 0;
 			WHILE k < nofptrs DO
-				OPM.ObjWBytes (ptrTab[k], 4);
+  			BYTES(tmp, ptrTab[k]);
+				OPM.ObjWBytes (tmp, 4);
 				INC (k)
 			END;
 			INC (i)

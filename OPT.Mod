@@ -822,13 +822,13 @@ MODULE OPT;	(* non-portable *)
 	PROCEDURE ReadString(VAR R: Files.Rider; VAR string: ARRAY OF CHAR);
 		VAR i: INTEGER; ch: CHAR;
 	BEGIN i := 0;
-		LOOP Files.Read(R, ch);
+		LOOP Files.ReadChar(R, ch);
 			IF ch = 0X THEN string[i] := 0X; RETURN
 			ELSIF ch < 7FX THEN string[i]:=ch; INC(i)
 			ELSIF ch > 7FX THEN string[i] := CHR(ORD(ch)-80H); string[i+1] := 0X; RETURN
 			ELSE (* ch = 7FX *) EXIT END
 		END;
-		LOOP Files.Read(R, ch);
+		LOOP Files.ReadChar(R, ch);
 			IF ch = 0X THEN string[i]:=0X; RETURN
 			ELSE string[i]:=ch; INC(i) END
 		END
@@ -878,16 +878,16 @@ MODULE OPT;	(* non-portable *)
 			VAR scope, last, fld: Object; btyp: Struct; n: LONGINT; flags: SET;  conval: Const;
 		BEGIN	NEW(scope); scope.mode:=Head; scope.mnolev:=-typ.mno; last:=NIL; btyp:=typ.BaseTyp;
 			conval := NewConst();  typ.strobj.conval := conval;
-			Files.ReadNum (R, SYSTEM.VAL (LONGINT, flags));
+			Files.ReadSet (R, flags);
 			IF 0 IN flags THEN  INCL(conval.setval, protectedObj)  END;
 			IF 1 IN flags THEN  INCL(conval.setval, activeObj)  END;
 			IF 2 IN flags THEN  INCL(conval.setval, safe)  END;
-			Files.Read (R, typ.strobj.prio);
+			Files.ReadSInt (R, typ.strobj.prio);
 			Files.ReadNum(R, tag);
 			WHILE	tag<SFtproc	DO	NEW(fld); 
 				IF	last#NIL	THEN	last.link:=fld	END;
 				last:=fld;
-				IF tag=SFobjflag THEN Files.Read(R, fld.sysflag); Files.ReadNum(R, tag) END;
+				IF tag=SFobjflag THEN Files.ReadSInt(R, fld.sysflag); Files.ReadNum(R, tag) END;
 				IF tag=SFreadonly THEN Files.ReadNum(R, tag); fld.vis:=externalR ELSE fld.vis:=external END;
 				fld.mode:=Fld; InStruct(fld.typ, FALSE); ReadString(R, fld.name);
 				IF	fld.name=""	THEN	fld.vis:=internal	END;
@@ -970,7 +970,7 @@ MODULE OPT;	(* non-portable *)
 
 		PROCEDURE InObj;
 		BEGIN	NEW(obj); obj.mode:=mode; obj.nxtobj:=last; last:=obj;
-			IF (tag = SFobjflag) THEN  Files.Read(R, obj.sysflag); Files.ReadNum(R, tag)  END;
+			IF (tag = SFobjflag) THEN  Files.ReadSInt(R, obj.sysflag); Files.ReadNum(R, tag)  END;
 			IF tag=SFreadonly THEN Files.ReadNum(R, tag); obj.vis:=externalR ELSE obj.vis:=external END;
 			(*IF tag=SFleaf THEN Files.ReadNum(R, tag); obj.leaf:=TRUE END;*)
 			InStruct(obj.typ, FALSE); ReadString(R, obj.name);
@@ -984,23 +984,23 @@ MODULE OPT;	(* non-portable *)
 			NEW(obj.code);  obj.code.class := 29; (*Nassembler*)
 			obj.code.conval := NewConst();	(*OPV takes the code position from it! *)
 			obj.code.obj := obj;
-			Files.Read(R, ch);
+			Files.ReadChar(R, ch);
 			REPEAT
 				NEW(n);  n.conval := NewConst();  ext := NewExt();  n.conval.ext := ext;
 				IF  obj.code.left = NIL  THEN  obj.code.left := n  ELSE  last.link := n  END;
 				last := n;
 				len := ORD(ch);  ext[0] := ch;  i := 1;
-				WHILE i <= len DO  Files.Read(R, ext[i]); INC(i)  END;
-				Files.Read(R, ch)
+				WHILE i <= len DO  Files.ReadChar(R, ext[i]); INC(i)  END;
+				Files.ReadChar(R, ch)
 			UNTIL ch = 0X
 		END InCProc;
 
 		PROCEDURE InConst;
-			VAR conval: Const; s: INTEGER; r: REAL;
+			VAR conval: Const; s: INTEGER; r: REAL; 
 		BEGIN	NEW(conval); obj.conval:=conval;
 			CASE	tag	OF
 			| SFtypBool, SFtypChar, SFtypSInt..SFtypLInt:	Files.ReadNum(R, conval.intval)
-			| SFtypSet:	Files.ReadNum(R, SYSTEM.VAL(LONGINT, conval.setval))
+			| SFtypSet:	Files.ReadSet(R, conval.setval)
 			| SFtypReal:	Files.ReadReal(R, r); conval.realval := r; conval.intval := OPM.ConstNotAlloc
 			| SFtypLReal:	Files.ReadLReal(R, conval.realval); conval.intval := OPM.ConstNotAlloc
 			| SFtypString:	NEW(conval.ext); ReadString(R, conval.ext^);
@@ -1342,13 +1342,13 @@ MODULE OPT;	(* non-portable *)
 		typ.fpdone:=-1; typ.pvfp:=form; typ.pbfp:=form; typ.fp:=form;
 	END InitStruct;
 
-	PROCEDURE EnterIntConst(name: ARRAY OF CHAR; value: LONGINT);
+	PROCEDURE EnterIntConst(IN name: ARRAY OF CHAR; value: LONGINT);
 		VAR obj: Object;
 	BEGIN Insert(name, obj); obj^.conval := NewConst();
 		obj^.mode := Con; obj^.typ := sinttyp; obj^.conval^.intval := value
 	END EnterIntConst;
 
-	PROCEDURE EnterTyp(name: ARRAY OF CHAR; form: SHORTINT; size: INTEGER; VAR res: Struct; sref: SHORTINT);
+	PROCEDURE EnterTyp(IN name: ARRAY OF CHAR; form: SHORTINT; size: INTEGER; VAR res: Struct; sref: SHORTINT);
 		VAR obj: Object; typ: Struct;
 	BEGIN Insert(name, obj);
 		typ := NewStr(form, Basic); obj^.mode := Typ; obj^.typ := typ; obj^.vis := external; typ.sref:=sref; predefStruct[sref]:=typ;
@@ -1356,19 +1356,19 @@ MODULE OPT;	(* non-portable *)
 		typ.fpdone:=-1; typ.pvfp:=size; typ.pbfp:=form; typ.fp:=form
 	END EnterTyp;
 
-	PROCEDURE EnterTypAlias(name: ARRAY OF CHAR; typ: Struct);
+	PROCEDURE EnterTypAlias(IN name: ARRAY OF CHAR; typ: Struct);
 		VAR obj: Object;
 	BEGIN Insert(name, obj);
 		obj^.mode := Typ; obj^.typ := typ; obj^.vis := external
 	END EnterTypAlias;
 	
-	PROCEDURE EnterProc(name: ARRAY OF CHAR; num: INTEGER);
+	PROCEDURE EnterProc(IN name: ARRAY OF CHAR; num: INTEGER);
 		VAR obj: Object;
 	BEGIN Insert(name, obj);
 		obj.mode := SProc; obj.typ := notyp; obj.adr := num
 	END EnterProc;
 
-	PROCEDURE EnterPtr(name: ARRAY OF CHAR; num: LONGINT);
+	PROCEDURE EnterPtr(IN name: ARRAY OF CHAR; num: LONGINT);
 		VAR obj: Object;
 	BEGIN Insert(name, obj);
 		obj^.mode := Var; obj^.typ := ptrtyp; obj^.adr := num; obj^.linkadr := num; obj^.mnolev := 0
