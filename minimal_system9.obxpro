@@ -107,6 +107,8 @@ size=0
 139\RelPath=JCompiler.Mod
 14\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/Texts.Mod
 14\RelPath=Texts.Mod
+140\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/Compress.Mod
+140\RelPath=Compress.Mod
 15\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/Viewers.Mod
 15\RelPath=Viewers.Mod
 16\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/ObxPal.obx
@@ -293,7 +295,7 @@ size=0
 98\RelPath=Tetris.Mod
 99\AbsPath=/home/me/Entwicklung/Modules/OberonSystem3/In.Mod
 99\RelPath=In.Mod
-size=139
+size=140
 
 [Packages]
 1\Name=@ByteArray()

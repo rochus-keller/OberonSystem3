@@ -105,7 +105,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 			i: INTEGER;
 	BEGIN
 		pos := Files.Pos(R);
-		Files.ReadBytes(R, h.name, 32);
+		Files.ReadFixString(R, h.name, 32);
 		IF (h.name[0] = DocId0) & (h.name[1] = DocId1) THEN
 			(* new doc-format skip header *)
 			Files.Set(R, Files.Base(R), pos);
@@ -165,7 +165,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 		END;
 		Oberon.GetClock(h.time, h.date);
 		h.check := h.check+h.length+(h.time MOD xx)+(h.date MOD xx)+ENTIER(h.ratio);
-		Files.WriteBytes(R, h.name, 32);
+		Files.WriteFixString(R, h.name, 32);
 		IF h.extensions # {} THEN
 			Files.WriteLInt(R, -h.length)
 		ELSE
@@ -183,24 +183,24 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 	PROCEDURE CopyFrom(VAR Ri, Ro: Files.Rider; len: LONGINT);
 		VAR i: LONGINT;
 	BEGIN
-		Files.ReadBytes(Ri, Buffer, BufferSize);
+		Files.ReadFixString(Ri, Buffer, BufferSize);
 		i := BufferSize;
 		WHILE i <= len DO
-			Files.WriteBytes(Ro, Buffer, BufferSize);
-			Files.ReadBytes(Ri, Buffer, BufferSize);
+			Files.WriteFixString(Ro, Buffer, BufferSize);
+			Files.ReadFixString(Ri, Buffer, BufferSize);
 			INC(i, BufferSize)
 		END;
-		Files.WriteBytes(Ro, Buffer, len MOD BufferSize)
+		Files.WriteFixString(Ro, Buffer, len MOD BufferSize)
 	END CopyFrom;
 
 	PROCEDURE CopyTo(VAR Ri, Ro: Files.Rider);
 	BEGIN
-		Files.ReadBytes(Ri, Buffer, BufferSize);
+		Files.ReadFixString(Ri, Buffer, BufferSize);
 		WHILE ~Ri.eof DO
-			Files.WriteBytes(Ro, Buffer, BufferSize);
-			Files.ReadBytes(Ri, Buffer, BufferSize)
+			Files.WriteFixString(Ro, Buffer, BufferSize);
+			Files.ReadFixString(Ri, Buffer, BufferSize)
 		END;
-		Files.WriteBytes(Ro, Buffer, BufferSize-Ri.res)
+		Files.WriteFixString(Ro, Buffer, BufferSize-Ri.res)
 	END CopyTo;
 
 	PROCEDURE FlushBits(VAR R: Files.Rider);
@@ -210,7 +210,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 			INC(BufferPtr)
 		END;
 		IF BufferPtr > 0 THEN
-			Files.WriteBytes(R, Buffer, BufferPtr);
+			Files.WriteFixString(R, Buffer, BufferPtr);
 			INC(Len, BufferPtr)
 		END
 	END FlushBits;
@@ -220,7 +220,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 	BEGIN
 		IF CurBitNr = 7 THEN
 			IF BufferPtr = BufferSize THEN
-				Files.ReadBytes(R, Buffer, BufferSize);
+				Files.ReadFixString(R, Buffer, BufferSize);
 				INC(Len, BufferSize-R.res);
 				IF Len >= (maxLen+BufferSize) THEN Err := TRUE END;
 				BufferPtr := 0
@@ -242,7 +242,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 		WHILE i >= 0 DO
 			IF CurBitNr = 7 THEN
 				IF BufferPtr = BufferSize THEN
-					Files.ReadBytes(R, Buffer, BufferSize);
+					Files.ReadFixString(R, Buffer, BufferSize);
 					INC(Len, BufferSize-R.res);
 					IF Len >= (maxLen+BufferSize) THEN Err := TRUE END;
 					BufferPtr := 0
@@ -270,7 +270,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 			Buffer[BufferPtr] := CHR(CurByte);
 			INC(BufferPtr);
 			IF BufferPtr = BufferSize THEN
-				Files.WriteBytes(R,  Buffer, BufferSize);
+				Files.WriteFixString(R,  Buffer, BufferSize);
 				INC(Len, BufferSize);
 				BufferPtr := 0
 			END;
@@ -293,7 +293,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 				Buffer[BufferPtr] := CHR(CurByte);
 				INC(BufferPtr);
 				IF BufferPtr = BufferSize THEN
-					Files.WriteBytes(R, Buffer, BufferSize);
+					Files.WriteFixString(R, Buffer, BufferSize);
 					INC(Len, BufferSize);
 					BufferPtr := 0
 				END;
@@ -436,7 +436,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 	PROCEDURE Compress(VAR Input, Output: Files.Rider; maxbytes: LONGINT);
 		VAR
 			i, lookAheadBytes, currentPosition, replaceCount, matchLength, matchPosition: INTEGER;
-			ch: CHAR;
+			ch: BYTE;
 			bytesread: LONGINT;
 	BEGIN
 		Init();
@@ -446,9 +446,9 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 		WHILE (i < LookAheadSize) & ~Input.eof & (bytesread < maxbytes) DO
 			Files.Read(Input, ch);
 			INC(bytesread);
-			Window[currentPosition+i] := ch;
+			Window[currentPosition+i] := CHR(ch);
 			IF currentPosition+i < RawLookAheadSize+1 THEN
-				Window[currentPosition+i+WindowSize-1] := ch
+				Window[currentPosition+i+WindowSize-1] := CHR(ch)
 			END;
 			INC(i)
 		END;
@@ -479,8 +479,8 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 				IF Input.eof OR (bytesread >= maxbytes) THEN
 					DEC(lookAheadBytes)
 				ELSE
-					Window[currentPosition+LookAheadSize] := ch;
-					Window[(currentPosition+LookAheadSize) MOD (WindowSize-1)] := ch
+					Window[currentPosition+LookAheadSize] := CHR(ch);
+					Window[(currentPosition+LookAheadSize) MOD (WindowSize-1)] := CHR(ch)
 				END;
 				currentPosition := (currentPosition+1) MOD (WindowSize-1);
 				IF lookAheadBytes # 0 THEN
@@ -504,7 +504,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 		LOOP
 			IF InputBit(Input) # 0 THEN
 				ch := CHR(InputBits(Input, 8));
-				Files.Write(Output, ch);
+				Files.Write(Output, ORD(ch));
 				Window[currentPosition] := ch;
 				IF currentPosition < RawLookAheadSize+1 THEN
 					Window[currentPosition+WindowSize-1] := ch
@@ -518,7 +518,7 @@ MODULE Compress;	(** portable *) (* (c) ejz, first version: 14.1.92, this versio
 				i := 0;
 				WHILE i <= matchLength DO
 					ch := Window[matchPosition+i];
-					Files.Write(Output, ch);
+					Files.Write(Output, ORD(ch));
 					Window[currentPosition] := ch;
 					IF currentPosition < RawLookAheadSize+1 THEN
 						Window[currentPosition+WindowSize-1] := ch;
@@ -1208,6 +1208,7 @@ TextFrames *)
 			L: Objects.LinkMsg;
 			A: Objects.AttrMsg;
 	BEGIN
+		verbose := TRUE;
 		Enumerate(D.name, ShowHead, sorted, res);
 		verbose := FALSE;
 		IF res = ArchiveNotFound THEN
