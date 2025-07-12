@@ -93,7 +93,7 @@ VAR
 		Docu: BOOLEAN;
 		W: Texts.Writer;
 		
-	PROCEDURE Message(str: ARRAY OF CHAR);
+	PROCEDURE Message(IN str: ARRAY OF CHAR);
 	BEGIN
 		Texts.WriteString(W, str);  Texts.WriteLn(W);  Texts.Append(Oberon.Log, W.buf)
 	END Message;
@@ -149,7 +149,7 @@ VAR
 
 (* Table Insertion Procedures *)
 	(* Generates the hash index k for the n-th try. n>=0 *)
-	PROCEDURE HashFn(VAR name: ARRAY OF CHAR; VAR k, n: INTEGER);
+	PROCEDURE HashFn(IN name: ARRAY OF CHAR; VAR k, n: INTEGER);
 		VAR i: INTEGER;
 	BEGIN
 		IF n = 0 THEN
@@ -163,7 +163,7 @@ VAR
 		END
 	END HashFn;
 	
-	PROCEDURE FindInstruction(VAR name: ARRAY OF CHAR; VAR inx: INTEGER);
+	PROCEDURE FindInstruction(IN name: ARRAY OF CHAR; VAR inx: INTEGER);
 		VAR n: INTEGER;
 	BEGIN
 		n := 0;
@@ -175,7 +175,7 @@ VAR
 		END;
 	END FindInstruction;
 	
-	PROCEDURE InsertMnemo(name: ARRAY OF CHAR; VAR k: INTEGER; target: SET);
+	PROCEDURE InsertMnemo(IN name: ARRAY OF CHAR; VAR k: INTEGER; target: SET);
 		VAR n: INTEGER;
 	BEGIN
 		n := 0;
@@ -185,7 +185,7 @@ VAR
 		IF InstrTab[k].name = name THEN 
 			Texts.WriteString(W, name); Message(" already in the table");  RETURN
 		END;
-		COPY(name, InstrTab[k].name);  InstrTab[k].target := target;
+		InstrTab[k].name := name;  InstrTab[k].target := target;
 		InstrTab[k].start := OpTabN; InstrTab[k].end := OpTabN;
 		
 		DEC(n);
@@ -193,7 +193,7 @@ VAR
 		Average := Average + n; INC(InstrCount);
 	END InsertMnemo;
 	
-	PROCEDURE InsertAlias(name, alias: ARRAY OF CHAR);
+	PROCEDURE InsertAlias(IN name, alias: ARRAY OF CHAR);
 		VAR n,a: INTEGER;
 	BEGIN
 		FindInstruction(name, n);

@@ -1074,7 +1074,7 @@ Intel i386 :
 			GenFlags (bt, y, x);
 			SetCC (z, CS)
 		ELSE
-			x.adr := SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), x.adr);  x.typ := OPT.linttyp;
+			x.adr := LSL(1I, x.adr);  x.typ := OPT.linttyp;
 			GenFlags (test, y, x);
 			SetCC (z, NE)	(*jump on ZF flag*)
 		END
@@ -1473,7 +1473,7 @@ Intel i386 :
 		  | lsh:
 				IF y.mode = Con THEN
 					IF x.mode = Con THEN
-						MakeCon (z, OPT.linttyp, SYSTEM.LSH (x.adr, y.adr))										(* shift error *)
+						MakeCon (z, OPT.linttyp, LSL (x.adr, y.adr))										(* shift error *)
 					ELSIF y.adr > 0 THEN
 						load (x); Gen3 (sal, z, x, y) 
 					ELSIF y.adr < 0 THEN
@@ -1500,11 +1500,11 @@ Intel i386 :
 						MakeCon (z, x.typ, 0);
 						CASE x.typ.form OF
 							Byte, Char, SInt:
-								z.adr := SYSTEM.ROT (SYSTEM.VAL (SHORTINT, x.adr), SHORT (y.adr))
+								z.adr := ROR (SHORT(SHORT( x.adr)), -SHORT (y.adr))
 						  | Int:
-								z.adr := SYSTEM.ROT (SYSTEM.VAL (INTEGER, x.adr), SHORT (y.adr))
+								z.adr := ROR (SHORT( x.adr), -SHORT (y.adr))
 						  | LInt:
-								z.adr := SYSTEM.ROT ( x.adr, SHORT (y.adr))
+								z.adr := ROR ( x.adr, -SHORT (y.adr))
 						END
 					ELSE
 						load (x); Gen3 (rol,  z, x, y)

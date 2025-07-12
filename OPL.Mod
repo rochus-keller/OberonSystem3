@@ -2076,7 +2076,7 @@ ASSERT(~loaded(instr.dest));
 			END
 		END ClearStack;
 		
-		PROCEDURE TraverseLocals(offset: LONGINT; obj: OPT.Object);
+		PROCEDURE TraverseLocals(offset: LONGINT; obj: OPT.Object; VAR enoff, ensize: LONGINT);
 			(*!!! The locals are traversed in descending order (list traversal), the recfields are traversed
 				using a recursive postfix traversal to reverse the list !!!*)
 			VAR	size, adr, oldoff, oldsize: LONGINT; t: OPT.Struct;
@@ -2084,19 +2084,19 @@ ASSERT(~loaded(instr.dest));
 			PROCEDURE TraverseRecord(offset: LONGINT; t: OPT.Struct);
 			BEGIN
 				IF t.BaseTyp # NIL THEN TraverseRecord(offset, t.BaseTyp) END;
-				TraverseLocals(offset, t.link)
+				TraverseLocals(offset, t.link, enoff, ensize)
 			END TraverseRecord;
 		BEGIN
 			WHILE obj # NIL DO
 				WHILE (obj#NIL) & ~(obj.mode IN {Var, Fld}) DO obj := obj.link END;
 				IF obj # NIL THEN
-					IF obj.mode = Fld THEN	TraverseLocals(offset, obj.link)	END;	(*rec-fields: first traverse the rest of list*)
+					IF obj.mode = Fld THEN	TraverseLocals(offset, obj.link, enoff, ensize)	END;	(*rec-fields: first traverse the rest of list*)
 					t := obj.typ;  size := 0;
 					IF obj.mode = Var THEN  adr := obj.linkadr  ELSE adr := offset+obj.adr  END;
 					IF (t.form = Pointer) OR (t.form = ProcTyp) OR (obj.name = OPT.HdPtrName) THEN	size := 4
 					ELSIF t.comp = Record THEN
 						WHILE t # NIL DO
-							TraverseLocals(adr, t.link);  t := t.BaseTyp
+							TraverseLocals(adr, t.link, enoff, ensize);  t := t.BaseTyp
 						END;
 						size := 0
 					ELSIF t.comp = StaticArr THEN
@@ -2105,7 +2105,7 @@ ASSERT(~loaded(instr.dest));
 							size := obj.typ.size
 						ELSIF t.comp = Record THEN
 							oldoff := enoff; oldsize := ensize; enoff := 0; ensize := 0;
-							TraverseLocals(10000, t.link);
+							TraverseLocals(10000, t.link, enoff, ensize);
 							IF ensize # 0 THEN	(*contains pointers*)
 								size := obj.typ.size
 							END;
@@ -2163,7 +2163,7 @@ ASSERT(~loaded(instr.dest));
 				ELSE
 					OPO.GenTyp1 (SUB, ImmReg, ESP, noBase, noInx, noScale, noDisp, locSize);
 					enoff := 0; ensize := 0;
-					TraverseLocals(0, locals);
+					TraverseLocals(0, locals, enoff, ensize);
 					IF ensize # 0 THEN ClearStack(enoff, ensize) END;
 					ClearStack(-locSize, 0);		(*force touch of the whole remaining stack*)
 				END
@@ -2755,7 +2755,7 @@ ASSERT(~loaded(instr.dest));
 	END AddLink;
 	
 	PROCEDURE AllocConst* (VAR s: ARRAY OF SYSTEM.BYTE; len, align: LONGINT; VAR adr: LONGINT);
-		VAR fill: LONGINT; table: OPO.ConstArray;
+		VAR fill: LONGINT; table: OPO.ConstArray; i: INTEGER;
 	BEGIN
 		IF ~ConstErr THEN
 			adr := OPO.csize;
@@ -2766,21 +2766,25 @@ ASSERT(~loaded(instr.dest));
 			ELSE
 				IF OPO.csize + fill >= LEN(OPO.constant) THEN 
 					NEW(table, LEN(OPO.constant)*2);
-					SYSTEM.MOVE(SYSTEM.ADR(OPO.constant[0]), SYSTEM.ADR(table[0]), adr);
+					FOR i := 0 TO adr-1 DO
+  					table[i] := OPO.constant[i];
+  				END;
 					OPO.constant:=table
 				END;
 				WHILE fill > 0 DO
 					OPO.constant [OPO.csize] := 0X; INC (OPO.csize);
 					DEC (fill)
 				END;
-				SYSTEM.MOVE (SYSTEM.ADR (s[0]), SYSTEM.ADR (OPO.constant [adr]), len)
+				FOR i := 0 TO len - 1 DO
+  				OPO.constant[i+adr] := CHR(s[i]);
+  			END
 			END
 		ELSE adr := 0
 		END
 	END AllocConst;
 	
 	PROCEDURE AllocCaseTab* (low, high: LONGINT; VAR tab: LONGINT);
-		VAR len, i: LONGINT; table: OPO.ConstArray;
+		VAR len, i, j: LONGINT; table: OPO.ConstArray;
 	BEGIN
 		IF ~ConstErr THEN
 			len := 4 * (high - low + 1);
@@ -2792,7 +2796,9 @@ ASSERT(~loaded(instr.dest));
 			ELSE
 				IF OPO.csize >= LEN(OPO.constant) THEN 
 					NEW(table, LEN(OPO.constant)*2);
-					SYSTEM.MOVE(SYSTEM.ADR(OPO.constant[0]), SYSTEM.ADR(table[0]), tab);
+					FOR j := 0 TO LEN(OPO.constant)-1 DO
+  					table[j] := OPO.constant[j];
+  				END;
 					OPO.constant:=table
 				END;
 				i := tab; WHILE i < OPO.csize DO OPO.constant [i] := CHR (255); (* = -1 *) INC (i) END
@@ -2865,7 +2871,7 @@ ASSERT(~loaded(instr.dest));
 		END
 	END OutRefPoint;
 	
-	PROCEDURE OutRefName* (name: ARRAY OF CHAR);
+	PROCEDURE OutRefName* (IN name: ARRAY OF CHAR);
 		VAR
 			ch: CHAR;
 			i: INTEGER;
@@ -2934,11 +2940,11 @@ ASSERT(~loaded(instr.dest));
 
 	PROCEDURE LSW (x: LONGINT): LONGINT;
 	BEGIN (* least significant word (unsigned) *)
-		RETURN SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, x) * SYSTEM.VAL(SET, 0FFFFH))
+		RETURN ORD(BITS(x) * BITS(0FFFFH))
 	END LSW;
 	
 	PROCEDURE Export(obj: OPT.Object; VAR nofExp: INTEGER);
-		VAR typ: OPT.Struct; i: LONGINT; tmp: ExpTable;
+		VAR typ: OPT.Struct; i, j: LONGINT; tmp: ExpTable;
 
 		PROCEDURE ExportMeth(fld: OPT.Object; basetyp: OPT.Struct; VAR noFld: INTEGER);
 		BEGIN
@@ -2995,7 +3001,9 @@ ASSERT(~loaded(instr.dest));
 					END;
 					IF exppos = LEN(explist) THEN	(*grow*)
 						NEW(tmp, 32+LEN(explist));
-						SYSTEM.MOVE(SYSTEM.ADR(explist[0]), SYSTEM.ADR(tmp[0]), 4*LEN(explist));
+						FOR j := 0 TO LEN(explist) - 1 DO
+  						tmp[j] := explist[j];
+  					END;
 						explist := tmp
 					END;
 					explist[exppos] := obj.fp; INC(exppos);

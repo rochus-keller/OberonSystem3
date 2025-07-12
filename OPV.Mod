@@ -1124,7 +1124,7 @@ END TypeName;
 									WHILE par.name[i] # 0X DO name[i] := par.name[i]; INC(i) END;
 									name[i] := "."; INC(i)
 								ELSE
-									COPY("??.", name); i := 3;
+									name := "??."; i := 3;
 								END;
 								IF proc.mode = TProc THEN
 									j := 0;
@@ -1133,7 +1133,7 @@ END TypeName;
 								ELSIF proc.mode = Typ THEN			(* Type body *)
 									name[i] := "$"; name[i+1] := "$"; name[i+2] := 0X
 								END
-							ELSE COPY (proc.name, name)
+							ELSE name:=proc.name
 							END;
 							OPL.OutRefName (name); OPL.OutRefs (proc.scope.right);
 							IF dumpCode THEN

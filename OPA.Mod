@@ -174,7 +174,7 @@ VAR
 (* Special functions *)
 
 	PROCEDURE AND(a,b: LONGINT):LONGINT;
-	BEGIN RETURN(SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET,a) * SYSTEM.VAL(SET,b)))
+	BEGIN RETURN(ORD( BITS(a) * BITS(b)))
 	END AND;
 
 (* ------------------------------------------------------------------- *)
@@ -358,12 +358,12 @@ VAR
 (* ------------------------------------------------------------------- *)
 (* Symbol Table / Instr Table / Op Table  functions *)
 
-	PROCEDURE insert(VAR name: ARRAY OF CHAR; VAR obj: Object);
+	PROCEDURE insert(IN name: ARRAY OF CHAR; VAR obj: Object);
 		VAR ob0, ob1: Object; d: INTEGER;
 	BEGIN ob0 := root; ob1 := ob0.right; d := 1;
 		LOOP
 			IF ob1 = NIL THEN (*insert undefined label*)
-				NEW(ob1); COPY(name, ob1.name); ob1.typ := StFwdLabel;
+				NEW(ob1); ob1.name := name; ob1.typ := StFwdLabel;
 				ob1.left := NIL; ob1.right := NIL; ob1.fix := NIL; ob1.obj := NIL;
 				ob1.next := root.next; root.next := ob1;
 				ob1.val := OPM.errpos;
@@ -417,7 +417,7 @@ VAR
 
 		obj := ob0;
 		IF obj = NIL THEN
-			COPY(name,OPS.name); OPT.Find(ob);
+			OPS.name := name; OPT.Find(ob);
 			IF ob # NIL THEN  obj := ConvertObj(ob)  ELSE  insert(name, obj)		(* create forward jump *)
 			END;
 		END;
@@ -910,7 +910,7 @@ BEGIN
 		| 2, 4: op[0].mode := Rel32
 		END
 	END;
-	COPY(InstrTab[ind].name, name);
+	name := InstrTab[ind].name;
 	
 	Match(ind, op);
 	
@@ -1060,7 +1060,7 @@ END GenCode;
 			ELSE
 				FOR i := 0 TO 2 DO op[i].mode := none END;
 				FindInstruction(ident, ind);	(* index in the hash tab *)
-				COPY(ident, name);
+				name := ident;
 				errpos := OPM.errpos;
 				Get(sym);
 				IF ind < 0 THEN OPM.err(502); RETURN END;
@@ -1112,13 +1112,13 @@ END GenCode;
 (* ------------------------------------------------------------------- *)
 (* Initialisation functions *)
 
-	PROCEDURE InsertReg(name: ARRAY OF CHAR; t, v: INTEGER);
+	PROCEDURE InsertReg(IN name: ARRAY OF CHAR; t, v: INTEGER);
 		VAR obj: Object;
 	BEGIN
 		insert(name, obj); obj.typ := t; obj.val := v; obj.size := 0
 	END InsertReg;
 	
-	PROCEDURE InsertType(name: ARRAY OF CHAR; s: INTEGER);
+	PROCEDURE InsertType(IN name: ARRAY OF CHAR; s: INTEGER);
 		VAR obj: Object;
 	BEGIN
 		insert(name, obj); obj.typ := StType; obj.val := none; obj.size := s
@@ -1167,9 +1167,9 @@ END GenCode;
 	BEGIN root.right := NIL;
 	END Close;
 	
-	PROCEDURE InsertTarget(name: ARRAY OF CHAR; flag: SET);
+	PROCEDURE InsertTarget(IN name: ARRAY OF CHAR; flag: SET);
 	BEGIN
-		COPY(name, TargetTab[TargetCount].name);
+		TargetTab[TargetCount].name := name;
 		TargetTab[TargetCount].flag := flag;
 		INC(TargetCount);
 	END InsertTarget;

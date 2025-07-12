@@ -145,8 +145,7 @@ MODULE OPM;	(** non-portable *)
 		OFaos = 01X;
 
 	VAR
-		LRealPat: RECORD L, H: LONGINT END ;
-		lastpos, pat: LONGINT;	(* last position error in source file *)
+		lastpos: LONGINT;	(* last position error in source file *)
 		refpatch: LONGINT;	(* OM: last position error in source file *)
 		inR: Texts.Reader;
 		Log: Texts.Text;
@@ -176,7 +175,7 @@ MODULE OPM;	(** non-portable *)
 		UNTIL inR.eot OR ((inR.lib # NIL) & (inR.lib IS Fonts.Font))
 	END Get;
 	
-	PROCEDURE MakeFileName(VAR path, prefix, modName, fileName: ARRAY OF CHAR; ext: ARRAY OF CHAR);
+	PROCEDURE MakeFileName(VAR path, prefix, modName, fileName: ARRAY OF CHAR; IN ext: ARRAY OF CHAR);
 		VAR i, j: INTEGER; ch: CHAR;
 	BEGIN	i:=0; ch:=path[0];
 		WHILE	ch#0X	DO	fileName[i]:=ch; INC(i); ch:=path[i]	END;
@@ -193,21 +192,25 @@ MODULE OPM;	(** non-portable *)
 	(* ----- Fingerprint calculation ----- *)
 
 	PROCEDURE FPrint*(VAR fp: LONGINT; val: LONGINT);
-	BEGIN fp:=SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, SYSTEM.ROT(fp, 7)) / SYSTEM.VAL(SET, val))
+	BEGIN fp:=ORD(BITS(ROR(fp, -7)) / BITS(val)) (* SYSTEM.ROT is left rotating for positive n *)
 	END FPrint;
 
 	PROCEDURE FPrintSet*(VAR fp: LONGINT; set: SET);
-	BEGIN FPrint(fp, SYSTEM.VAL(LONGINT, set))
+	BEGIN FPrint(fp, ORD(set))
 	END FPrintSet;
 
 	PROCEDURE FPrintReal*(VAR fp: LONGINT; real: REAL);
-	BEGIN FPrint(fp, SYSTEM.VAL(LONGINT, real))
+	VAR n: LONGINT; tmp: ARRAY 4 OF BYTE;
+	BEGIN BYTES(tmp, real); NUMBER(n, tmp); FPrint(fp, n)
 	END FPrintReal;
 
 	PROCEDURE FPrintLReal*(VAR fp: LONGINT; lr: LONGREAL);
-		VAR l, h: LONGINT;
+		VAR l, h: LONGINT; tmp: ARRAY 8 OF BYTE; i: INTEGER;
 	BEGIN
-		SYSTEM.GET(SYSTEM.ADR(lr)+4, l); SYSTEM.GET(SYSTEM.ADR(lr), h);
+  	BYTES(tmp, lr);
+  	NUMBER(h, tmp);
+  	FOR i := 0 TO 3 DO tmp[i] := tmp[i+4] END;
+  	NUMBER(l, tmp);
 		FPrint(fp, l); FPrint(fp, h);
 	END FPrintLReal;
 	
@@ -234,7 +237,7 @@ MODULE OPM;	(** non-portable *)
 		Texts.Write(W, ch); Texts.Append(Log, W.buf)
 	END LogW;
 	
-	PROCEDURE LogWStr*(s: ARRAY OF CHAR);
+	PROCEDURE LogWStr*(IN s: ARRAY OF CHAR);
 	BEGIN
 		Texts.WriteString(W, s); Texts.Append(Log, W.buf)
 	END LogWStr;
@@ -315,7 +318,7 @@ MODULE OPM;	(** non-portable *)
 	END SymWCh;
 
 	PROCEDURE SymWTag*(k: INTEGER);
-	BEGIN Files.Write(newSymF, k)
+	BEGIN Files.Write(newSymF, SHORT(k))
 	END SymWTag;
 
 	PROCEDURE SymWInt*(k: LONGINT);
@@ -339,7 +342,7 @@ MODULE OPM;	(** non-portable *)
 	END SymWMod;
 
 	PROCEDURE SymWSet*(s: SET);
-	BEGIN	Files.WriteNum(newSymF, SYSTEM.VAL(LONGINT, s))
+	BEGIN	Files.WriteNum(newSymF, ORD(s))
 	END SymWSet;
 
 	PROCEDURE SymWReal*(r: REAL);
@@ -391,7 +394,7 @@ MODULE OPM;	(** non-portable *)
 
 	PROCEDURE ObjAllocInt*(): LONGINT;
 		VAR pos: LONGINT;
-	BEGIN	pos:=Files.Pos(ObjF); Files.WriteInt(ObjF, SYSTEM.VAL(INTEGER, 0));
+	BEGIN	pos:=Files.Pos(ObjF); Files.WriteInt(ObjF, 0);
 		RETURN pos;
 	END ObjAllocInt;
 
@@ -469,14 +472,22 @@ MODULE OPM;	(** non-portable *)
 		Files.Set(ObjF, ObjFile, refpatch); BYTES(tmp, refsize); ObjWBytes(tmp, 4);
 		Files.Register(ObjFile)
 	END CloseObj;
+	
+	PROCEDURE InitReals;
+  	VAR a, b: ARRAY 8 OF BYTE; i: INTEGER;
+	BEGIN
+  	BYTES(a, MinRealPat); NUMBER(MinReal, a);
+  	BYTES(a, MaxRealPat); NUMBER(MaxReal, a);
+  	BYTES(a, MinLRealPatL); BYTES(b, MinLRealPatH);
+  	FOR i := 0 TO 3 DO a[i+4] := b[i] END;
+  	NUMBER(MinLReal, a); (*i386: -1.7976931348623157D308*)
+  	BYTES(a, MaxLRealPatL); BYTES(b, MaxLRealPatH);
+  	FOR i := 0 TO 3 DO a[i+4] := b[i] END;
+  	NUMBER(MaxLReal, a); (*i386: 1.7976931348623157D308*)
+	END InitReals;
 
 BEGIN
-	pat := MinRealPat; SYSTEM.MOVE(SYSTEM.ADR(pat), SYSTEM.ADR(MinReal), 4);	(*i386: -3.40282346E38*)
-	pat := MaxRealPat; SYSTEM.MOVE(SYSTEM.ADR(pat), SYSTEM.ADR(MaxReal), 4);	(*i386: 3.40282346E38*)
-	LRealPat.L := MinLRealPatL; LRealPat.H := MinLRealPatH;
-	SYSTEM.MOVE(SYSTEM.ADR(LRealPat), SYSTEM.ADR(MinLReal), 8);	(*i386: -1.7976931348623157D308*)
-	LRealPat.L := MaxLRealPatL; LRealPat.H := MaxLRealPatH;
-	SYSTEM.MOVE(SYSTEM.ADR(LRealPat), SYSTEM.ADR(MaxLReal), 8);	(*i386: 1.7976931348623157D308*)
+  InitReals;
 	Texts.OpenWriter(W); Log := Oberon.Log;
 	outputPath := ""; outputPrefix := "";	(* extension is initialized in Compiler *)
 	first := TRUE

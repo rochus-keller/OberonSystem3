@@ -164,7 +164,7 @@ MODULE OPS;	(** non-portable *)
 	
 	PROCEDURE CheckOperator*(VAR id: SHORTINT);
 		VAR ch0, ch1, ch2: CHAR;
-	BEGIN id:=126; COPY(str, name);
+	BEGIN id:=126; name := str;
 		ch0:=str[0]; ch1:=str[1]; ch2:=str[2];
 		CASE ch0 OF
 		| "=", "#", "&": IF ch1=0X THEN RETURN END

@@ -228,19 +228,23 @@ MODULE OPT;	(* non-portable *)
 	END NewExt;
 
 	PROCEDURE DoubleStructArr(VAR x: StructArr);
-		VAR i: LONGINT; h: StructArr;
+		VAR i, n: LONGINT; h: StructArr;
 	BEGIN
 		i := LEN(x^); h := x; NEW(x, 2*i);
 		ASSERT(x # NIL);
-		SYSTEM.MOVE(SYSTEM.ADR(h[0]), SYSTEM.ADR(x[0]), i*SIZE(Struct));
+		FOR n := 0 TO i - 1 DO
+  		x[n] := h[n]
+  	END
 	END DoubleStructArr;
 
 	PROCEDURE DoubleModArr(VAR x: ModArr);
-		VAR i: LONGINT; h: ModArr;
+		VAR i, j: LONGINT; h: ModArr;
 	BEGIN
 		i := LEN(x^); h := x; NEW(x, 2*i);
 		ASSERT(x # NIL);
-		SYSTEM.MOVE(SYSTEM.ADR(h[0]), SYSTEM.ADR(x[0]), i*SIZE(Module));
+		FOR j := 0 TO i - 1 DO
+  		x[j] := h[j];
+  	END
 	END DoubleModArr;
 
 	PROCEDURE MarkObj*(obj: Object);
@@ -292,7 +296,7 @@ MODULE OPT;	(* non-portable *)
 		res := obj
 	END FindImport;
 
-	PROCEDURE FindField*(VAR name: ARRAY OF CHAR; typ: Struct; VAR res: Object; mark: BOOLEAN);
+	PROCEDURE FindField*(IN name: ARRAY OF CHAR; typ: Struct; VAR res: Object; mark: BOOLEAN);
 		VAR obj: Object;
 	BEGIN res:=NIL;
 		WHILE ((typ # NIL) & (typ # ToBeFixed) & (typ # undftyp)) & (res=NIL) DO obj := typ^.link;
@@ -314,7 +318,7 @@ MODULE OPT;	(* non-portable *)
 		IF mark THEN res.used:=TRUE; MarkObj(typ.strobj); typ.pbused:=TRUE END	(* mfix *)
 	END FindField;
 	
-	PROCEDURE FindInScope*(name: ARRAY OF CHAR; scope: Object; VAR res: Object);
+	PROCEDURE FindInScope*(IN name: ARRAY OF CHAR; scope: Object; VAR res: Object);
 		VAR obj, head: Object; inRec: BOOLEAN;
 	BEGIN
 		head := scope; inRec := FALSE;
@@ -349,7 +353,7 @@ MODULE OPT;	(* non-portable *)
 	BEGIN	FindInScope (OPS.name, topScope, res)
 	END Find;
 
-	PROCEDURE Insert*(name: ARRAY OF CHAR; VAR obj: Object);
+	PROCEDURE Insert*(IN name: ARRAY OF CHAR; VAR obj: Object);
 		VAR ob0, ob1: Object; left: BOOLEAN;
 	BEGIN ob0 := topScope; ob1 := ob0.right; left := FALSE;
 		LOOP
@@ -365,7 +369,7 @@ MODULE OPT;	(* non-portable *)
 				END
 			ELSE (*insert*) ob1:=NewObj(); ob1.leaf := TRUE;
 				IF left THEN ob0.left := ob1 ELSE ob0.right := ob1 END;
-				ob1.left:=NIL; ob1.right:=NIL; COPY(name, ob1.name);
+				ob1.left:=NIL; ob1.right:=NIL; ob1.name := name;
 				ob1.mnolev := topScope.mnolev; EXIT
 			END
 		END; obj := ob1
@@ -518,7 +522,7 @@ MODULE OPT;	(* non-portable *)
 		END
 	END QualResolve;
 	
-	PROCEDURE Resolve*(VAR name: ARRAY OF CHAR; VAR x, y: Node): Object;
+	PROCEDURE Resolve*(IN name: ARRAY OF CHAR; VAR x, y: Node): Object;
 		VAR op, res, scope: Object; i, d, distance: SHORTINT; wrn, warning: BOOLEAN;
 	BEGIN res:=NIL; i:=0; distance:=MAX(SHORTINT); scope:=topScope; wrn:=FALSE; warning:=FALSE;
 		WHILE scope#NIL DO
@@ -572,7 +576,7 @@ MODULE OPT;	(* non-portable *)
 		sfpresent:=TRUE;
 		newSF := (OPM.newsf IN OPM.options); extSF := newSF OR (OPM.extsf IN OPM.options);
 		modules[0]:=NewMod(); 
-		SYSTEM.MOVE(SYSTEM.VAL(LONGINT, topScope), SYSTEM.VAL(LONGINT, modules[0]), SIZE(ObjDesc));
+		modules[0](Object)^ := topScope^;
 		modules[0].name:=name;
 		topScope:=modules[0]; 
 	END Init;
@@ -732,7 +736,7 @@ MODULE OPT;	(* non-portable *)
 			ELSIF	obj.history=modified	THEN	errNo:=452
 			ELSE	RETURN
 			END;
-			COPY(obj.name, OPM.errName);
+			OPM.errName := obj.name;
 			IF errNo=451 THEN (* inserted *)
 				IF (* ~symNew & ~symExtended & *) ~extSF THEN err(errNo) END;
 				symExtended:=TRUE;
@@ -1012,7 +1016,7 @@ MODULE OPT;	(* non-portable *)
 	BEGIN	i:=0;
 		WHILE	(i < nofmod) & (impName#modules[i].name)	DO	INC(i)	END;
 		IF	i < nofmod	THEN	M:=modules[i]; new:=FALSE; 
-		ELSE	M:=NewMod(); COPY(impName, M.name); M.mnolev:=-nofmod; 
+		ELSE	M:=NewMod(); M.name := impName; M.mnolev:=-nofmod; 
 			modules[nofmod]:=M; INC(nofmod); 			
 			IF nofmod>=LEN(modules^) THEN DoubleModArr(modules) END;
 			new:=TRUE 
@@ -1169,7 +1173,7 @@ MODULE OPT;	(* non-portable *)
 		BEGIN
 			IF (fld # NIL) & (hasBody IN fld.conval.setval) THEN
 				OPM.SymW(CHR(SFtproc));	(* this is the first method!! *)
-				COPY (ObjBody, str);
+				str := ObjBody;
 				INC (count); OutStruct (notyp); OPM.SymWString (str); OutParList (fld.link)
 			END
 		END TraverseBody;
@@ -1226,7 +1230,7 @@ MODULE OPT;	(* non-portable *)
 			END;
 			NEW(tobj); tobj.mode:=Typ; tobj.nxtobj:=objects; objects:=tobj; tobj.typ:=typ;
 			IF	(typ.strobj=NIL) OR (typ.strobj.name="")	THEN	OPM.SymW(0X)
-			ELSE	FPrintErr(typ.strobj); OPM.SymWString(typ.strobj.name); COPY(typ.strobj.name, tobj.name)	END;
+			ELSE	FPrintErr(typ.strobj); OPM.SymWString(typ.strobj.name); tobj.name := typ.strobj.name	END;
 			CASE	tag	OF
 			| SFtypDynArr, SFtypOpenArr:
 			| SFtypArray: OPM.SymWNum (typ.n); 
@@ -1323,7 +1327,7 @@ MODULE OPT;	(* non-portable *)
 	PROCEDURE Export*(VAR modName: OPS.Name; VAR newsf, extsf: BOOLEAN);
 		VAR mods: SHORTINT; aliasName: OPS.Name;
 	BEGIN symExtended:=FALSE; symNew:=FALSE; nofstruc:=0; nofemod:=0; objects:=NIL;
-		modNo:=0; COPY("@self", aliasName); mods:=nofmod;
+		modNo:=0; aliasName := "@self"; mods:=nofmod;
 		Import(aliasName, modName, modName); nofmod:=mods;
 		IF OPM.noerr THEN expGlobal:=TRUE; CompOldSym(modules[0].publics);
 			OutScope(topScope.right, TRUE); expGlobal:=FALSE;

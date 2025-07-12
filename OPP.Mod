@@ -621,14 +621,14 @@ MODULE OPP;	(** non-portable *)
 	PROCEDURE ArrayType(VAR typ, banned: OPT.Struct);
 	VAR	x: OPT.Node; n: LONGINT;  sysflag: SHORTINT;
 	
-		PROCEDURE HiddenVar (name: ARRAY OF CHAR; exp: OPT.Node): OPT.Object;
+		PROCEDURE HiddenVar (IN name: ARRAY OF CHAR; exp: OPT.Node): OPT.Object;
 			VAR dim, owner: OPT.Object; y: OPT.Node;
 		BEGIN
 			owner:=OPT.topScope;  (* insert var at first place in the variables of the actual scope *)
 			WHILE (OPT.topScope.left#NIL) & (OPT.topScope.link=OPT.topScope.left.link) DO
 				OPT.topScope:=OPT.topScope.left
 			END;
-			OPT.Insert("@@", dim); COPY(name, dim^.name);
+			OPT.Insert("@@", dim); dim^.name := name;
 			dim^.link:=NIL; dim^.mode:=Var; dim^.typ:=OPT.linttyp;
 			dim.flag := {OPT.used};
 			IF OPT.topScope^.scope=NIL THEN OPT.topScope^.scope:=dim
@@ -808,9 +808,9 @@ MODULE OPP;	(** non-portable *)
 		IF sym < lparen THEN err(12);
 			REPEAT OPS.Get(sym) UNTIL sym >= lparen
 		END ;
-		COPY (OPS.name, name);
+		name := OPS.name;
 		IF sym = ident THEN qualident(id);
-			COPY (name, OPS.name);
+			OPS.name := name;
 			IF id = UndefObj THEN typ := OPT.undftyp; UndefFlag := FALSE;
 				IF (sym = period) THEN
 					OPT.FindInScope (name, ExtObj, id);
@@ -994,8 +994,8 @@ MODULE OPP;	(** non-portable *)
 		IF sym = lparen THEN
 			n := 1; OPS.Get(sym);
 		(* Create guard evaluation function *)
-			IF OPT.topScope^.link = NIL THEN COPY("$$", name)
-			ELSE COPY(OPT.topScope^.link^.name, name) END;
+			IF OPT.topScope^.link = NIL THEN name := "$$"
+			ELSE name := OPT.topScope^.link^.name END;
 			i := 0; WHILE name[i] # 0X DO INC(i) END;
 			name[i] := ".";
 			name[i+1] := "@";
@@ -1177,7 +1177,7 @@ MODULE OPP;	(** non-portable *)
 		CheckSym(rbrace)
 	END Sets;
 	
-	PROCEDURE Resolve(VAR obj: OPT.Object; name: ARRAY OF CHAR; VAR x, y: OPT.Node);
+	PROCEDURE Resolve(VAR obj: OPT.Object; IN name: ARRAY OF CHAR; VAR x, y: OPT.Node);
 	BEGIN
 		obj:=OPT.Resolve(name, x, y); OPT.MarkObj (obj)
 	END Resolve;
@@ -1434,7 +1434,7 @@ MODULE OPP;	(** non-portable *)
 			ELSE		(* oberon procedure *)
 				CheckSym(semicolon);
 				Block(procdec, statseq);
-				IF (sym=number) OR (sym=string) THEN COPY (OPS.str, OPS.name); sym := ident; proc.prio := prio END;
+				IF (sym=number) OR (sym=string) THEN OPS.name := OPS.str; sym := ident; proc.prio := prio END;
 				IF sym = ident THEN
 					IF OPS.name # proc.name THEN err(4) END;
 					OPS.Get(sym)
@@ -1544,7 +1544,7 @@ MODULE OPP;	(** non-portable *)
 			IF (fwd = NIL) OR redef THEN
 				IF ~(OPM.oberon2 IN OPM.options) OR (mode # TProc) OR (selftype # NIL) THEN
 					OPT.Insert (name, proc)
-				ELSE proc := OPT.NewObj(); COPY(name, proc.name)
+				ELSE proc := OPT.NewObj(); proc.name := name
 				END;
 				(* special case for o2-methods in an empty record *)
 				IF (scope # OPT.topScope) & (selfrec.link = NIL) THEN selfrec.link := OPT.topScope.right END;
@@ -2263,7 +2263,7 @@ OPM.LogWStr("  failed");*)
 	PROCEDURE CreateHiddenStructs;
 		VAR obj, fld1, fld2: OPT.Object;
 		
-		PROCEDURE CreateStruct(name: ARRAY OF CHAR; VAR obj: OPT.Object);
+		PROCEDURE CreateStruct(IN name: ARRAY OF CHAR; VAR obj: OPT.Object);
 		VAR typ: OPT.Struct;
 		BEGIN
 			typ := OPT.NewStr(Comp, Record);
@@ -2331,7 +2331,7 @@ OPM.LogWStr("  failed");*)
 			IF OPM.traceprocs IN OPM.options THEN
 				OPM.LogWLn; OPM.LogWStr("M "); OPM.LogWStr(OPS.name)
 			END;
-			COPY(OPS.name, shortName);
+			shortName := OPS.name;
 			OPT.Init(modName);
 			mod := OPT.NewObj(); mod.scope := OPT.topScope; OPT.topScope^.link := mod;
 			OPT.topScope.conval:=OPT.NewConst();
@@ -2341,12 +2341,12 @@ OPM.LogWStr("  failed");*)
 			INCL(mod^.conval^.setval, protectedObj);	(* module is always protected *)
 
 			ExtObj := OPT.topScope;
-			COPY(modName, mod^.name);
+			mod^.name := modName;
 			CheckSym(semicolon);
 			IF sym = import THEN OPS.Get(sym);
 				LOOP
 					IF sym = ident THEN
-						COPY(OPS.name, aliasName); COPY(aliasName, impName); OPS.Get(sym);
+						aliasName := OPS.name; impName := aliasName; OPS.Get(sym);
 						IF sym = becomes THEN OPS.Get(sym);
 							IF sym = ident THEN FullName(impName) ELSE err(ident) END
 						ELSIF sym = period THEN  err(200)

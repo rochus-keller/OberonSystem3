@@ -83,7 +83,7 @@ MODULE Compiler;	(** portable, except where noted *)
 (*
 		IF Modules.extension = ".Obx" THEN INCL(opt, OPM.aos) END;
 *)
-		COPY(Modules.extension, extension);
+		extension := Modules.extension;
 		LOOP
 			ch := options[i]; INC(i);
 			IF ch = 0X THEN EXIT
@@ -274,7 +274,7 @@ MODULE Compiler;	(** portable, except where noted *)
 				end := MAX(LONGINT)
 			END;
 			WHILE (S.class = Texts.Name) & (Texts.Pos(S) - S.len <= end) & ~error DO
-				COPY(S.s, name);  COPY(globalOpt, localOpt);
+				name := S.s;  localOpt := globalOpt;
 				Texts.Scan(S);  GetOptions(S, localOpt);
 				CompileFile(name, localOpt, error)
 			END

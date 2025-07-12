@@ -831,7 +831,7 @@ MODULE OPB;	(** non-portable *)
 	END Convert;
 
 	PROCEDURE Val(VAR x: OPT.Node;  typ: OPT.Struct);	(*SYSTEM.VAL, change type, no convertion only projection*)
-	VAR  t: OPT.Node;  f: INTEGER;  r: REAL;
+	VAR  t: OPT.Node;  f: INTEGER;  r, rr: REAL; tmp: ARRAY 4 OF BYTE; l: LONGINT;
 	BEGIN
 		f := x.typ.form;
 		IF (x^.class = Ntype) OR (x^.class = Nproc) OR
@@ -839,9 +839,10 @@ MODULE OPB;	(** non-portable *)
 		END ;
 		IF (x^.class = Nconst) & (typ.comp = Basic) THEN
 			IF (typ.form = Real) & (f IN intSet) THEN
-				x := NewRealConst(SYSTEM.VAL (REAL, x.conval.intval), typ);
+  			BYTES(tmp, x.conval.intval); NUMBER(rr, tmp);
+				x := NewRealConst(rr, typ);
 			ELSIF (typ.form IN intSet) & (f = Real) THEN
-				r := SHORT(x.conval.realval);  x := NewIntConst(SYSTEM.VAL(LONGINT, r))
+				r := SHORT(x.conval.realval);  BYTES(tmp, r); NUMBER(l, tmp); x := NewIntConst(l)
 			ELSIF (typ.form IN {SInt, Int}) & (f IN intSet) THEN	(*force sign extension*)
 				IF typ.form = SInt THEN
 					x := NewIntConst (SHORT(SHORT(x.conval.intval)))
@@ -849,9 +850,9 @@ MODULE OPB;	(** non-portable *)
 					x := NewIntConst (SHORT(x.conval.intval))
 				END
 			ELSIF (typ.form IN intSet) & (f = Set) THEN
-				x.conval.intval := SYSTEM.VAL(LONGINT, x.conval.setval)
+				x.conval.intval := ORD(x.conval.setval)
 			ELSIF (typ.form = Set) & (f IN intSet) THEN
-				x.conval.setval := SYSTEM.VAL(SET, x.conval.intval)
+				x.conval.setval := BITS(x.conval.intval)
 			ELSE
 				t := OPT.NewNode(Nmop); t^.subcl := val; t^.left := x; x := t
 			END
