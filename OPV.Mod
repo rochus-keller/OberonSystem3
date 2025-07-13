@@ -6,7 +6,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 
 
 MODULE OPV;	(** non-portable *)
-	IMPORT OPS, OPT, OPL, OPO, OPC, OPM, Oberon, SYSTEM;
+	IMPORT OPS, OPT, OPL, OPO, OPC, OPM, Oberon;
 
 
 	CONST
@@ -885,7 +885,7 @@ END TypeName;
 	PROCEDURE Expression (n: OPT.Node; VAR z: OPC.Item; selfForUnlock: OPT.Node);
 		VAR x, y: OPC.Item; f: INTEGER; real: REAL; con: OPT.Const; typ: OPT.Struct; tmp: ARRAY 8 OF BYTE;
 		
-		PROCEDURE AllocConst (VAR bytes: ARRAY OF SYSTEM.BYTE; len, align: LONGINT);
+		PROCEDURE AllocConst (VAR bytes: ARRAY OF BYTE; len, align: LONGINT);
 			VAR con1, con2: OPT.Const;
 		BEGIN
 			con1 := con;

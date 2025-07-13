@@ -8,7 +8,7 @@ MODULE OPM;	(** non-portable *)
 (* RC, NM, pjm, prk *)
 
 	IMPORT
-		Fonts, Texts, Oberon, Files, SYSTEM;
+		Fonts, Texts, Oberon, Files;
 
 	CONST (* i386 *)
 
@@ -380,7 +380,7 @@ MODULE OPM;	(** non-portable *)
 	BEGIN Files.WriteLInt(ObjF, i)
 	END ObjWLInt;
 
-	PROCEDURE ObjWBytes*(VAR bytes: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE ObjWBytes*(VAR bytes: ARRAY OF BYTE; n: LONGINT);
 	BEGIN Files.WriteBytes(ObjF, bytes, n)
 	END ObjWBytes;
 
@@ -399,7 +399,7 @@ MODULE OPM;	(** non-portable *)
 	END ObjAllocInt;
 
 	PROCEDURE ObjFillInt*(pos: LONGINT; int: INTEGER);
-		VAR savepos: LONGINT; tmp: ARRAY 2 OF SYSTEM.BYTE;
+		VAR savepos: LONGINT; tmp: ARRAY 2 OF BYTE;
 	BEGIN	savepos:=Files.Pos(ObjF);
 		Files.Set(ObjF, ObjFile, pos); BYTES(tmp, int); Files.WriteBytes(ObjF, tmp, 2);
 		Files.Set(ObjF, ObjFile, savepos);
@@ -457,7 +457,7 @@ MODULE OPM;	(** non-portable *)
 	END EndSym;
 
 	PROCEDURE EndObj*;
-		VAR refsize: LONGINT; tmp: ARRAY 4 OF SYSTEM.BYTE;
+		VAR refsize: LONGINT; tmp: ARRAY 4 OF BYTE;
 	BEGIN
 		refsize:=Files.Length(RefFile); ObjW(8DX); Commit(RefFile); 
 		Files.Set(ObjF, ObjFile, refpatch); BYTES(tmp, refsize); ObjWBytes(tmp, 4); 
@@ -465,7 +465,7 @@ MODULE OPM;	(** non-portable *)
 	END EndObj;
 	
 	PROCEDURE CloseObj*;
-		VAR refsize: LONGINT; ch: CHAR; ref: Files.Rider; tmp: ARRAY 4 OF SYSTEM.BYTE;
+		VAR refsize: LONGINT; ch: CHAR; ref: Files.Rider; tmp: ARRAY 4 OF BYTE;
 	BEGIN (*ref block*)
 		refsize:=Files.Length(RefFile);
 		Files.Set(ref, RefFile, 0); Files.ReadChar(ref, ch); WHILE ~ref.eof DO ObjW(ch); Files.ReadChar(ref, ch) END;

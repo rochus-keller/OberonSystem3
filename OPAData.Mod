@@ -1223,7 +1223,8 @@ BEGIN
 	Texts.WriteString(W, "Table Size (KB)   Avg Search Len"); Texts.WriteLn(W);
 	FOR j := min TO max DO
 		Insert(j, OpTabLen);
-		Texts.WriteInt(W, j, 10); Texts.WriteString(W, "/  "); Texts.WriteLongRealFix(W, j*SIZE(InstrDesc) / 1024, 4, 2, 0);
+		Texts.WriteInt(W, j, 10); Texts.WriteString(W, "/  "); 
+		Texts.WriteLongRealFix(W, j*SIZE(InstrDesc) / 1024, 4, 2, 0);
 		Texts.WriteString(W, ":  "); Texts.WriteLongRealFix(W, Average / InstrCount, 8, 2, 0); Texts.WriteLn(W);
 		IF Average < bestV THEN  bestV := Average;  best := j  END;
 		Texts.Append(Oberon.Log, W.buf)

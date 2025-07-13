@@ -7,7 +7,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 
 
 MODULE OPA;	(** non-portable *)
-	IMPORT SYSTEM, Files, OPM, OPS, OPT, OPB;
+	IMPORT Files, OPM, OPS, OPT, OPB;
 
 
 

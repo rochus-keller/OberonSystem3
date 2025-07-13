@@ -6,7 +6,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 
 
 MODULE OPC;	(** non-portable *)
-	IMPORT OPT, OPL, OPO, OPM, SYSTEM;
+	IMPORT OPT, OPL, OPO, OPM;
 
 
 	CONST

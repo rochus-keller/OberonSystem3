@@ -5,7 +5,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 (* NW, RC, tk, prk *)
 
 MODULE OPT;	(* non-portable *)
-	IMPORT SYSTEM, OPS, OPM, Files;
+	IMPORT OPS, OPM, Files;
 
 	CONST
 		TraceFP = FALSE;
@@ -854,11 +854,11 @@ MODULE OPT;	(* non-portable *)
 		END GetImports;
 
 		PROCEDURE InParList(VAR first: Object);
-			VAR last, par: Object;
-		BEGIN	first:=NIL; last:=NIL; Files.ReadNum(R, tag);
+			VAR last_, par: Object;
+		BEGIN	first:=NIL; last_:=NIL; Files.ReadNum(R, tag);
 			WHILE	tag#SFend	DO	NEW(par);
-				IF	last=NIL	THEN	first:=par	ELSE	last.link:=par	END;
-				last:=par;
+				IF	last_=NIL	THEN	first:=par	ELSE	last_.link:=par	END;
+				last_:=par;
 				IF	tag=SFvar	THEN	par.mode:=VarPar; Files.ReadNum(R, tag)	ELSE par.mode:=Var END;
 				(*IF	tag=SFleaf	THEN	par.leaf:=TRUE; Files.ReadNum(R, tag)	END;*)
 				InStruct(par.typ, TRUE); ReadString(R, par.name); Files.ReadNum(R, tag)
@@ -879,8 +879,8 @@ MODULE OPT;	(* non-portable *)
 		END SetTypFlags;
 		
 		PROCEDURE InRecord(typ: Struct);
-			VAR scope, last, fld: Object; btyp: Struct; n: LONGINT; flags: SET;  conval: Const;
-		BEGIN	NEW(scope); scope.mode:=Head; scope.mnolev:=-typ.mno; last:=NIL; btyp:=typ.BaseTyp;
+			VAR scope, last_, fld: Object; btyp: Struct; n: LONGINT; flags: SET;  conval: Const;
+		BEGIN	NEW(scope); scope.mode:=Head; scope.mnolev:=-typ.mno; last_:=NIL; btyp:=typ.BaseTyp;
 			conval := NewConst();  typ.strobj.conval := conval;
 			Files.ReadSet (R, flags);
 			IF 0 IN flags THEN  INCL(conval.setval, protectedObj)  END;
@@ -889,8 +889,8 @@ MODULE OPT;	(* non-portable *)
 			Files.ReadSInt (R, typ.strobj.prio);
 			Files.ReadNum(R, tag);
 			WHILE	tag<SFtproc	DO	NEW(fld); 
-				IF	last#NIL	THEN	last.link:=fld	END;
-				last:=fld;
+				IF	last_#NIL	THEN	last_.link:=fld	END;
+				last_:=fld;
 				IF tag=SFobjflag THEN Files.ReadSInt(R, fld.sysflag); Files.ReadNum(R, tag) END;
 				IF tag=SFreadonly THEN Files.ReadNum(R, tag); fld.vis:=externalR ELSE fld.vis:=external END;
 				fld.mode:=Fld; InStruct(fld.typ, FALSE); ReadString(R, fld.name);

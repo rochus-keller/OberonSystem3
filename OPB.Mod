@@ -12,7 +12,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 *)
 
 MODULE OPB;	(** non-portable *)
-	IMPORT SYSTEM, OPT, OPS, OPM;
+	IMPORT OPT, OPS, OPM;
 
 	CONST
 		AwaitIF* = TRUE;

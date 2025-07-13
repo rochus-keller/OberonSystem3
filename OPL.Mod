@@ -6,7 +6,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 
 
 MODULE OPL;	(** non-portable *)
-	IMPORT OPT, OPO, OPM, SYSTEM;
+	IMPORT OPT, OPO, OPM;
 	
 	CONST
 		NewRef = TRUE;
@@ -2754,7 +2754,7 @@ ASSERT(~loaded(instr.dest));
 		END
 	END AddLink;
 	
-	PROCEDURE AllocConst* (VAR s: ARRAY OF SYSTEM.BYTE; len, align: LONGINT; VAR adr: LONGINT);
+	PROCEDURE AllocConst* (VAR s: ARRAY OF BYTE; len, align: LONGINT; VAR adr: LONGINT);
 		VAR fill: LONGINT; table: OPO.ConstArray; i: INTEGER;
 	BEGIN
 		IF ~ConstErr THEN
@@ -2809,7 +2809,7 @@ ASSERT(~loaded(instr.dest));
 	
 	PROCEDURE AllocTypDesc* (typ: OPT.Struct);
 	(* typ.tdadr = entryNr adr *)
-		VAR nil: LONGINT; table: RecTable; i: LONGINT; tmp: ARRAY 4 OF SYSTEM.BYTE;
+		VAR nil: LONGINT; table: RecTable; i: LONGINT; tmp: ARRAY 4 OF BYTE;
 	BEGIN
 		IF typ.comp = Record THEN
 			nil := 0; BYTES(tmp,nil); AllocConst (tmp, 4, 4, typ.tdadr);
@@ -3024,7 +3024,7 @@ ASSERT(~loaded(instr.dest));
 	END Export;
 
 	PROCEDURE Use(obj: OPT.Object);
-		VAR typ: OPT.Struct; alias: BOOLEAN; tmp: ARRAY 4 OF SYSTEM.BYTE;
+		VAR typ: OPT.Struct; alias: BOOLEAN; tmp: ARRAY 4 OF BYTE;
 
 		PROCEDURE UseRecord(typ: OPT.Struct);
 			VAR name: ARRAY 32 OF CHAR;
@@ -3083,7 +3083,7 @@ ASSERT(~loaded(instr.dest));
 			typ, btyp: OPT.Struct;
 			commandTab: ARRAY MaxCommands OF OPT.Object;
 			newMthTab: ARRAY MaxEntry OF OPT.Object;
-			tmp: ARRAY 4 OF SYSTEM.BYTE;
+			tmp: ARRAY 4 OF BYTE;
 	
 		PROCEDURE WriteName (VAR name: ARRAY OF CHAR);
 			VAR i: INTEGER; ch: CHAR;
