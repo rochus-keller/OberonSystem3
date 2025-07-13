@@ -164,7 +164,7 @@ MODULE OPO;
 	END GetByte;
 	
 	PROCEDURE GetDWord* (pos: LONGINT; VAR dw: LONGINT);
-		VAR byte: INTEGER;
+		VAR byte: INTEGER; 
 	BEGIN
 		dw:= ORD (code[pos]) + LONG (ORD (code[pos+1])) * 100H + LONG (ORD (code[pos+2])) * 10000H;
 		byte:= ORD (code[pos+3]);

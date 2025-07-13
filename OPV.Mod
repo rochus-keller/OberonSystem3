@@ -883,7 +883,8 @@ END TypeName;
 	END Call;
 	
 	PROCEDURE Expression (n: OPT.Node; VAR z: OPC.Item; selfForUnlock: OPT.Node);
-		VAR x, y: OPC.Item; f: INTEGER; real: REAL; con: OPT.Const; typ: OPT.Struct; tmp: ARRAY 8 OF BYTE;
+		VAR x, y: OPC.Item; f: INTEGER; real: REAL; con: OPT.Const; typ: OPT.Struct; 
+  		tmp: ARRAY OPS.MaxStrLen OF BYTE; i: INTEGER;
 		
 		PROCEDURE AllocConst (VAR bytes: ARRAY OF BYTE; len, align: LONGINT);
 			VAR con1, con2: OPT.Const;
@@ -909,8 +910,9 @@ END TypeName;
 				  | Set:
 						z.mode := Con; z.adr := ORD(con.setval)
 				  | String:
-  				  tmp[0] := ORD(con.ext[0]); tmp[1] := ORD(con.ext[1]);
-  				  tmp[2] := ORD(con.ext[2]); tmp[3] := ORD(con.ext[3]);
+  				  FOR i := 0 TO con.intval2-1 DO
+    				  tmp[i] := ORD(con.ext[i]); 
+    				END;
 						AllocConst (tmp, con.intval2, 4); 
 						z.mode := Abs; z.adr := con.intval; z.offs := con.intval2 (* length *); z.inx := OPL.none
 				  | Real:
