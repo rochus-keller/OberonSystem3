@@ -312,6 +312,8 @@ References:
 		TypeTag = 8BX;
 		RefTag = 8CX;
 
+    OFpseudo* = 08DH;   (* New tag for “IR” code section *)
+  
 	(* hints for the pseudo machine *)
 		noHint* = -1;
 		useEAX* = 0; useECX* = 1; useEDX* = 2; useEBX* = 3; useESP* = 4; useEBP* = 5; useESI* = 6; useEDI* = 7;
@@ -3333,6 +3335,19 @@ ASSERT(~loaded(instr.dest));
 		OPM.CloseObj
 	END OutCode;
 	
+  PROCEDURE OutIR*(pc: LONGINT);
+  VAR i: LONGINT;
+  BEGIN
+    OPM.SymWTag(OFpseudo);                (* Emit identifying tag for IR section *)
+    OPM.SymWNum(pc);                       (* Write number of IR instructions *)
+    FOR i := 0 TO pc-1 DO
+      OPM.SymWNum(Instr[i].op);            (* Serialize opcode *)
+      OPM.SymWNum(Instr[i].src1);           (* First operand/slot *)
+      OPM.SymWNum(Instr[i].src2);           (* Second operand/slot *)
+      (* Add further fields if your IR needs them *)
+    END
+  END OutIR;
+  
 	PROCEDURE Close*;
 		VAR i: LONGINT;
 	BEGIN

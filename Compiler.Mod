@@ -83,7 +83,10 @@ MODULE Compiler;	(** portable, except where noted *)
 (*
 		IF Modules.extension = ".Obx" THEN INCL(opt, OPM.aos) END;
 *)
-		extension := Modules.extension;
+  	extension := Modules.extension;
+    IF extension[0] = 0X THEN
+      extension := ".Obj";
+  	END;
 		LOOP
 			ch := options[i]; INC(i);
 			IF ch = 0X THEN EXIT
@@ -192,8 +195,8 @@ MODULE Compiler;	(** portable, except where noted *)
 					OPM.errpos := 0;
 					OPC.Init;
 					OPV.Module(p);
-					IF OPM.noerr THEN
-						OPL.OutCode(modName);
+					IF OPM.noerr & ~(OPM.outir IN opt) THEN
+ 						OPL.OutCode(modName);
 						IF OPM.noerr THEN
 							OPM.LogWStr ("   "); OPM.LogWNum(OPO.pc, 1)
 						END

@@ -1094,7 +1094,7 @@ END TypeName;
 							ProcName := "Body"; EntryNr := -1;
 							Oberon.Call (DumpCode, Oberon.Par, FALSE, res)
 						END;
-						OPL.GenCode (OPC.pc);
+						OPL.GenCode (OPC.pc); (* TODO: here IR is ready to be stored *)
 						OPL.OutRefPoint (NIL); OPL.OutRefName ("$$"); OPL.OutRefs (OPT.topScope);
 						INC (OPC.level); Statement (n.left, NIL); DEC (OPC.level)
 					ELSE (* procedure *)
@@ -1145,7 +1145,7 @@ END TypeName;
 								END;
 								Oberon.Call (DumpCode, Oberon.Par, FALSE, res)
 							END;
-							OPL.GenCode (OPC.pc)
+							OPL.GenCode (OPC.pc) (* TODO: here IR is ready to be stored *)
 						END
 					END
 			  | Ninittd: (* done by the loader *)

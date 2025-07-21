@@ -120,6 +120,7 @@ MODULE OPM;	(** non-portable *)
 		trace* = 22;	(** trace procedure usage *)
 		aos* = 23;	(** aos, different objfile *)
 		traceprocs* = 24;	(** trace procedure calls *)	(* temp *)
+		outir* = 25; (** output the pseudo risc IR instead of the i386 code *)
 
 		DefOpt* = {inxchk, typchk, ptrinit, fullstackinit, assert};
 		
